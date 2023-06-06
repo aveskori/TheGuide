@@ -1,0 +1,11 @@
+﻿{
+	"id": "aveskori.applecat",
+	"name": "The Guide",
+	"version": "0.1.0",
+	"authors": "AvesKori",
+	"description": "A Mod that adds the AppleCat to the game.",
+	"requirements": [ "slime-cubed.slugbase", "Fisobs", "dressmyslugcat" ],
+	"requirements_names": [ "SlugBase 2.0", "Fisobs", "DressMySlugcat" ],
+	"checksum_override_version": false
+}
+

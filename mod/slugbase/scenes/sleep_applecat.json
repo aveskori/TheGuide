@@ -1,0 +1,36 @@
+{
+  "id": "Sleep_AppleCat",
+  "scene_folder": "scenes/sleep - applecat",
+  "images": [
+    {
+      "name": "sleep - 1",
+      "pos": [ 672, 236 ],
+      "depth": 1.8,
+      "shader": "Basic"
+    },
+    {
+      "name": "sleep - 2 - applecat",
+      "pos": [ 674, 138 ],
+      "depth": 2.0,
+      "shader": "Basic"
+    },
+    {
+      "name": "sleep - 3",
+      "pos": [ 710, 120 ],
+      "depth": 2.8,
+      "shader": "Basic"
+    },
+    {
+      "name": "sleep - 4",
+      "pos": [ 805, 109 ],
+      "depth": 3.0,
+      "shader": "Basic"
+    },
+    {
+      "name": "sleep - 5",
+      "pos": [ 489, -54 ],
+      "depth": 3.8,
+      "shader": "Basic"
+    }
+  ]
+}

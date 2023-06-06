@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>11</LangVersion>
+    <FileUpgradeFlags>40</FileUpgradeFlags>
+    <UpgradeBackupLocation>C:\Users\Nichole\Desktop\slug template\SlugTemplate-master\Backup\src\</UpgradeBackupLocation>
+    <OldToolsVersion>2.0</OldToolsVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="../lib/*.dll">
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Class1.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="DressMySlugcat">
+      <HintPath>..\..\..\..\Downloads\DressMySlugcat\plugins\DressMySlugcat.dll</HintPath>
+    </Reference>
+    <Reference Include="Fisobs">
+      <HintPath>..\..\..\..\Downloads\Fisobs.dll</HintPath>
+    </Reference>
+    <Reference Include="Nutils">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\workshop\content\312520\2959220220\plugins\Nutils.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <Target Name="GenerateMod" AfterTargets="PostBuildEvent">
+    <ItemGroup>
+      <RemovePlugins Include="../mod/plugins/*.dll" />
+    </ItemGroup>
+    <ItemGroup>
+      <CopyPlugins Include="$(TargetPath)" />
+    </ItemGroup>
+    <Delete Files="@(RemovePlugins)" />
+    <Copy SourceFiles="@(CopyPlugins)" DestinationFolder="../mod/plugins/" />
+  </Target>
+</Project>
