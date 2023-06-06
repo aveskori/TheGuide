@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
     <LangVersion>11</LangVersion>
+    <PathMap>$(MSBuildProjectDirectory)=/RainWorldMods/TheGuideMod</PathMap>
     <FileUpgradeFlags>40</FileUpgradeFlags>
     <UpgradeBackupLocation>C:\Users\Nichole\Desktop\slug template\SlugTemplate-master\Backup\src\</UpgradeBackupLocation>
     <OldToolsVersion>2.0</OldToolsVersion>
