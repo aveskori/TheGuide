@@ -11,7 +11,7 @@ using static SlugBase.Features.FeatureTypes;
 
 namespace Guide
 {
-    static class GuideGills
+    public class GuideGills 
     {
         public static readonly PlayerFeature<bool> gilled = PlayerBool("gilled");
         
@@ -25,9 +25,9 @@ namespace Guide
         }
 
         
-        private static void GuideGillsinit(On.PlayerGraphics.orig_InitiateSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
+        public static void GuideGillsinit(On.PlayerGraphics.orig_InitiateSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
         {
-            orig(self, sLeaser, rCam);
+            
             if (gilled.TryGet(self.player, out bool value) && value)
             {
                 int SpriteIndex = sLeaser.sprites.Length;
@@ -38,13 +38,13 @@ namespace Guide
                 thedata.initialgillloc = sLeaser.sprites.Length;
                 thedata.initialgillloc = sLeaser.sprites.Length + 8;
                 thedata.ready = true;
-                //self.AddToContainer(sLeaser, rCam, null);
+                self.AddToContainer(sLeaser, rCam, null);
 
                 sLeaser.sprites[SpriteIndex + 1] = new FSprite(thedata.sprite);
                 sLeaser.sprites[SpriteIndex + 2] = new FSprite(thedata.sprite);
 
 
-                /*for (int i = 0; 1 < 2; i++ )
+                for (int i = 0; 1 < 2; i++ )
                 {
                     for (int j = 0; j < 3; j++ )
                     {
@@ -52,7 +52,7 @@ namespace Guide
                         sLeaser.sprites[thedata.Gillsprite(i, j)].scaleY = 10f / Futile.atlasManager.GetElementWithName(thedata.sprite).sourcePixelSize.y;
                         sLeaser.sprites[thedata.Gillsprite(i, j)].anchorY = 0.1f;
                     }
-                }*/
+                }
 
 
             }
@@ -61,6 +61,12 @@ namespace Guide
         }
 
         public static ConditionalWeakTable<Player, Gilldata> gillstorage = new ConditionalWeakTable<Player, Gilldata>();
+
+        public GuideGills(PhysicalObject ow) : base(ow)
+        {
+        }
+
+        public override bool ShouldBeCulled => base.ShouldBeCulled;
 
         public class Gilldata
         {
@@ -136,7 +142,7 @@ namespace Guide
                         float f = Custom.VecToDeg(self.lookDirection);
                         Vector2 vector = Custom.rotateVectorDeg(Custom.DegToVec(0f), (float)num3 * num4 - num2 / 2f + num);
                         Vector2 a2 = Vector2.Lerp(vector, Custom.DirVec(pos2, pos), Mathf.Abs(f));
-                        if (data.headpositions[index].y < 0.2f)
+                        if (data.headpositions[index].y < 8f)
                         {
                             a2 -= a * Mathf.Pow(Mathf.InverseLerp(0.2f, 0f, data.headpositions[index].y), 2f) * 2f;
                         }
@@ -199,7 +205,7 @@ namespace Guide
 
             if (gilled.TryGet(self.player, out bool value) && value && gillstorage.TryGetValue(self.player, out Gilldata data) && data.ready)
             {
-                FContainer container = rCam.ReturnFContainer("Midground");
+                FContainer container = rCam.ReturnFContainer("Foreground");
                 for (int i = 0; i < 2; i++)
                 {
                     for (int j = 0; j < 3; j++)
