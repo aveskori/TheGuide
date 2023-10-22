@@ -45,62 +45,60 @@ namespace GuideSlugBase
 
             // Custom Hooks -- Scavenger AI
             On.ScavengerAI.CollectScore_PhysicalObject_bool += ScavengerAI_CollectScore_PhysicalObject_bool;
-            //On.ScavengerAI.DecideBehavior += ScavengerAI_DecideBehavior;
-            On.ScavengerAI.SocialEvent += ScavengerAI_SocialEvent;
-            On.Scavenger.GrabbedObjectSnatched += Scavenger_GrabbedObjectSnatched;
-            On.ScavengerAI.PlayerRelationship += ScavengerAI_PlayerRelationship;
-            //ScavengerBehaviorModification.Hooks();   < very not done. currently breaks scavs entirely lmao
-            
+            On.ScavengerAI.DecideBehavior += ScavengerAI_DecideBehavior;
+            On.ScavengerAI.SocialEvent += ScavengerAI_SocialEvent; //GUIDE TAKING SCAV ITEMS DOESN'T DECREASE REP
         }
 
-        private CreatureTemplate.Relationship ScavengerAI_PlayerRelationship(On.ScavengerAI.orig_PlayerRelationship orig, ScavengerAI self, RelationshipTracker.DynamicRelationship dRelation)
+        private void ScavengerAI_DecideBehavior(On.ScavengerAI.orig_DecideBehavior orig, ScavengerAI self)
         {
-            CreatureTemplate.Relationship relationship = self.StaticRelationship(dRelation.trackerRep.representedCreature).Duplicate();
-            if (dRelation.trackerRep.representedCreature.realizedCreature is Player && (dRelation.trackerRep.representedCreature.realizedCreature as Player).slugcatStats.name.value == "Guide")
+            orig(self);
+            //if ((self.scavenger.room.game.Players[0].realizedCreature as Player).slugcatStats.name.value == "Guide")
+            Player closeGuide = FindNearbyGuide(self.scavenger.room);
+            if (closeGuide != null)
             {
-                relationship = new CreatureTemplate.Relationship(CreatureTemplate.Relationship.Type.Pack, 10f);
-                (dRelation.state as ScavengerAI.ScavengerTrackState).taggedViolenceType = ScavengerAI.ViolenceType.None;
-                
-            }
-            orig(self, dRelation);
-            return relationship;
-        }
 
-        private void Scavenger_GrabbedObjectSnatched(On.Scavenger.orig_GrabbedObjectSnatched orig, Scavenger self, PhysicalObject grabbedObject, Creature thief)
-        {
-            orig(self, grabbedObject, thief);
-            if ((self.room.game.Players[0].realizedCreature as Player).slugcatStats.name.value == "Guide" && self.room != null)
-            {
-                if (thief == self.room.game.Players[0].realizedCreature as Player)
+                //if no threat detected, if has food item > set destination to player
+                if (self.behavior == ScavengerAI.Behavior.Idle)
                 {
-                    self.AI.agitation = 0f;
-                    if (self.Elite)
-                    {
-                        self.AI.agitation = 0f;
-                    }
+                    self.SetDestination(closeGuide.abstractCreature.pos); //self.scavenger.room.game.Players[0].pos
                 }
             }
-            
 
         }
 
         private void ScavengerAI_SocialEvent(On.ScavengerAI.orig_SocialEvent orig, ScavengerAI self, SocialEventRecognizer.EventID ID, Creature subjectCrit, Creature objectCrit, PhysicalObject involvedItem)
         {
-            orig(self, ID, subjectCrit, objectCrit, involvedItem);
-            if ((self.scavenger.room.game.Players[0].realizedCreature as Player).slugcatStats.name.value == "Guide" && involvedItem != null && self.scavenger.room != null)
+            //GUIDE CAN COMMIT CRIMES...
+            if (subjectCrit is Player && (subjectCrit as Player).slugcatStats.name.value == "Guide")
             {
-                if (ID == SocialEventRecognizer.EventID.Theft)
+                if (ID == SocialEventRecognizer.EventID.Theft
+                    || ID == SocialEventRecognizer.EventID.NonLethalAttackAttempt
+                    || ID == SocialEventRecognizer.EventID.NonLethalAttack
+                    || ID == SocialEventRecognizer.EventID.LethalAttackAttempt)
                 {
-                    self.scavenger.AI.agitation = 0f;
-                    if (self.scavenger.Elite)
-                    {
-                        self.scavenger.AI.agitation = 0f;
-                    }
+                    return; //JUST PRETEND IT DIDN'T HAPPEN...
                 }
             }
-            
+            orig(self, ID, subjectCrit, objectCrit, involvedItem);
+        }
 
+        public static Player FindNearbyGuide(Room myRoom)
+        {
+            if (myRoom == null)
+                return null; //WE'RE NOT EVEN IN A ROOM TO CHECK
 
+            for (int i = 0; i < myRoom.abstractRoom.creatures.Count; i++)
+            {
+                if (myRoom.abstractRoom.creatures[i].realizedCreature is Player checkPlayer
+                    && checkPlayer.slugcatStats.name.value == "Guide"
+                    && checkPlayer.room != null //&& checkPlayer.room == myRoom //MAKE SURE THEY ARE IN OUR ROOM. or maybe not...
+                    && !(checkPlayer.dead || checkPlayer.inShortcut) //AND VALID 
+                )
+                {
+                    return checkPlayer; //GUIDE FOUND! RETURN THE REFERENCE
+                }
+            }
+            return null; //NO GUIDE FOUND. RETURN NULL
         }
 
         private int ScavengerAI_CollectScore_PhysicalObject_bool(On.ScavengerAI.orig_CollectScore_PhysicalObject_bool orig, ScavengerAI self, PhysicalObject obj, bool weaponFiltered)
@@ -160,29 +158,6 @@ namespace GuideSlugBase
         }
 
 
-        
-
-        /*private void ScavengerAI_DecideBehavior(On.ScavengerAI.orig_DecideBehavior orig, ScavengerAI self)
-        {
-            orig(self);
-            int playerLocX = (self.scavenger.room.game.Players[0].pos.x) + 2;
-            int playerLocY = self.scavenger.room.game.Players[0].pos.y;
-            WorldCoordinate playerLocation = (playerLocX, playerLocY);
-            if ((self.scavenger.room.game.Players[0].realizedCreature as Player).slugcatStats.name.value == "Guide")
-            {
-                
-                //if no threat detected, if has food item > set destination to player
-                if (self.behavior == ScavengerAI.Behavior.Idle && self.scavenger.room == (self.scavenger.room.game.Players[0].realizedCreature as Player).room && self.scavenger.room != null)
-                {
-                    self.SetDestination(self.scavenger.room.game.Players[0].pos);
-                    
-                }
-
-                
-            }
-
-        }*/
-
 
 
 
@@ -191,10 +166,10 @@ namespace GuideSlugBase
         {
 
             orig(self, grabber, grabbed, graspUsed, chunkGrabbed, shareability, dominance, pacifying);
-            if ((self.grabber.room.game.Players[0].realizedCreature as Player).slugcatStats.name.value == "Guide")
+            if (grabbed is Player && (grabbed as Player).slugcatStats.name.value == "Guide")
             {
                 
-                if ((self.grabber.room.game.Players[0].realizedCreature as Player).grabbedBy.Count > 0 && slippery == true)
+                if (grabbed.grabbedBy.Count > 0 && slippery == true)
                 {
                     self.grabber.room.PlaySound(SoundID.Water_Nut_Swell, grabbed.bodyChunks[1], false, 1f, 2f, false);
                     grabber.ReleaseGrasp(graspUsed);
@@ -215,13 +190,13 @@ namespace GuideSlugBase
         
         private void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
         {
-            if (self.room?.game?.Players[0]?.realizedCreature is Player player && player?.slugcatStats.name.value == "Guide")
+            if (self.slugcatStats.name.value == "Guide")
             {
                 
                 //when underwater, slippery = true, countdown starts
                 if (self.animation == Player.AnimationIndex.DeepSwim)
                 {
-                    self.room.PlaySound(SoundID.Big_Spider_Spit, player.bodyChunks[1], false, 1f, 2f, false);
+                    self.room.PlaySound(SoundID.Big_Spider_Spit, 0f, 0.50f, 1f);
                     slipperyTime = 40 * 30;
                     slippery = true;
                     self.slugcatStats.runspeedFac = 1.5f;
@@ -282,20 +257,22 @@ namespace GuideSlugBase
                 SpriteDefinitions.AddSlugcatDefault(new Customization()
                 {
                     //-- Make sure to use the same ID as the one used for our slugcat
-                    Slugcat = "aveskori.guide",
+                    Slugcat = "Guide",
                     PlayerNumber = i,
                     CustomSprites = new List<CustomSprite>
                     {
                         //-- You can customize which spritesheet and color each body part will use
-                        new CustomSprite() { Sprite = "HEAD", SpriteSheetID = sheetID},
-                        new CustomSprite() { Sprite = "FACE", SpriteSheetID = sheetID},
-                        new CustomSprite() { Sprite = "GILLS", SpriteSheetID = sheetID, Color = Color.green },
-                        new CustomSprite() { Sprite = "BODY", SpriteSheetID = sheetID},
-                        new CustomSprite() { Sprite = "ARMS", SpriteSheetID = sheetID},
-                        new CustomSprite() { Sprite = "HIPSRIGHT", SpriteSheetID = sheetID},
-                        new CustomSprite() { Sprite = "HIPSLEFT", SpriteSheetID = sheetID},
-                        new CustomSprite() { Sprite = "TAIL", SpriteSheetID = sheetID},
-                        new CustomSprite() { Sprite = "TAILSPOTS", SpriteSheetID = sheetID, Color = Color.blue}
+                        new CustomSprite() { Sprite = "HEAD", SpriteSheetID = sheetID, Color = Color.white },
+                        new CustomSprite() { Sprite = "FACE", SpriteSheetID = sheetID, Color = Color.white },
+                        new CustomSprite() { Sprite = "GILLS", SpriteSheetID = sheetID, Color = Color.white },
+                        new CustomSprite() { Sprite = "BODY", SpriteSheetID = sheetID, Color = Color.white },
+                        new CustomSprite() { Sprite = "ARMS", SpriteSheetID = sheetID, Color = Color.white },
+                        new CustomSprite() { Sprite = "HIPS", SpriteSheetID = sheetID, Color = Color.white },
+                        new CustomSprite() { Sprite = "LEGS", SpriteSheetID = sheetID, Color = Color.white },
+                        new CustomSprite() { Sprite = "HIPSRIGHT", SpriteSheetID = sheetID, Color = Color.white },
+                        new CustomSprite() { Sprite = "HIPSLEFT", SpriteSheetID = sheetID, Color = Color.white },
+                        new CustomSprite() { Sprite = "TAIL", SpriteSheetID = sheetID, Color = Color.white},
+                        new CustomSprite() { Sprite = "TAILSPOTS", SpriteSheetID = sheetID, Color = Color.white}
                     },
 
                     //-- Customizing the tail size and color is also supported, values should be set between 0 and 1
@@ -305,6 +282,7 @@ namespace GuideSlugBase
                         Length = 4f,
                         Wideness = 1.5f,
                         Roundness = 0.9f
+                        
                     }
                 });
             }
