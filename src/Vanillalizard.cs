@@ -301,7 +301,7 @@ namespace Guide
                 temp.visualRadius = 200f;
                 temp.throwAction = "Spit";
                 temp.socialMemory = true;
-                
+
 
                 return temp;
             }
