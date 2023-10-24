@@ -1,0 +1,66 @@
+{
+  "id": "Guide_Intro",
+  "slideshow_folder": "slideshows/guide_intro",
+  "next_process": "Game",
+  "music": {
+    "name": "RW_Intro_Theme",
+    "fade_in": 40
+  },
+  "scenes": [
+    {
+      "name": "scene1",
+      "fade_in_start": 0,
+      "fade_in_end": 3.1,
+      "fade_out_start": 7.1,
+      "images": [
+        {
+          "name": "bg_slide1",
+          "pos": [ 0, 0 ],
+          "depth": 1,
+          "shader": "Basic"
+        },
+        {
+          "name": "bridge_slide1",
+          "pos": [ 0, 0 ],
+          "depth": 1,
+          "shader": "Basic"
+        }
+      ],
+      "movement": [
+        [ 8.7, 5, 0.5 ],
+        [ 10, 15, 0 ]
+      ]
+    },
+    {
+      "name": "scene2",
+      "fade_in_start": 8.1,
+      "fade_in_end": 11.25,
+      "fade_out_start": 17,
+      "images": [
+        {
+          "name": "bg_slide2",
+          "pos": [ 0, 0 ],
+          "depth": 1,
+          "shader": "Basic"
+        },
+        {
+          "name": "scavs_slide2",
+          "pos": [ 0, 0 ],
+          "depth": 1,
+          "shader": "Basic"
+        },
+        {
+          "name": "guide_slide2",
+          "pos": [ 0, 0 ],
+          "depth": 1,
+          "shader": "Basic"
+        }
+      ],
+      "movement": [
+        [ -3, 7, 1.5],
+        [ -2.5, 4, 1 ],
+        [ -10, -25, 0 ]
+      ]
+    }
+  ]
+}

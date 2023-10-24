@@ -41,12 +41,21 @@ namespace GuideSlugBase
             On.Creature.Grasp.ctor += Grasp_ctor;
             //GuideGills.Hooks();
             PebblesConversationOverride.Hooks();
+            On.JellyFish.Collide += JellyFish_Collide;
 
 
             // Custom Hooks -- Scavenger AI
             On.ScavengerAI.CollectScore_PhysicalObject_bool += ScavengerAI_CollectScore_PhysicalObject_bool;
             On.ScavengerAI.DecideBehavior += ScavengerAI_DecideBehavior;
             On.ScavengerAI.SocialEvent += ScavengerAI_SocialEvent; //GUIDE TAKING SCAV ITEMS DOESN'T DECREASE REP
+        }
+
+        private void JellyFish_Collide(On.JellyFish.orig_Collide orig, JellyFish self, PhysicalObject otherObject, int myChunk, int otherChunk)
+        {
+            if((otherObject as Player).slugcatStats.name.value != "Guide")
+            {
+                orig(self, otherObject, myChunk, otherChunk);
+            }
         }
 
         private void ScavengerAI_DecideBehavior(On.ScavengerAI.orig_DecideBehavior orig, ScavengerAI self)

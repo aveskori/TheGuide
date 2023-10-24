@@ -1,0 +1,20 @@
+Template: SI_SettingsTemplate_Inside
+DangerType: Rain
+CeilingDrips: 0.5
+RainIntensity: 0
+RumbleIntensity: 0
+WaveSpeed: 0.5
+WaveLength: 1
+WaveAmplitude: 1.405054E-08
+SecondWaveLength: 0.1666667
+SecondWaveAmplitude: 0
+Clouds: 0.409862
+Grime: 0.3840013
+WaterReflectionAlpha: 0.6442708
+Palette: 2
+EffectColorA: 3
+EffectColorB: 2
+Effects: SkyAndLightBloom-0.01546661-27.11456-72.62222, SkyDandelions-0.01546628-27.86563-128.8445, 
+PlacedObjects: DandelionPeach><279.8974><266.8091><0~0~2~3, DandelionPeach><218.1576><269.142><0~0~2~3, DandelionPeach><330.0931><284.1759><0~0~3~3, ScavengerTreasury><1679.374><217.0933><444.8334~-8.800003, LanternOnStick><1854.251><480.95><133~-83, LanternOnStick><1865.447><365.0345><118~-46, 
+FadePalette: 3, 0.5802312, 0.4802084, 0.5032724
+WetTerrain: OFF

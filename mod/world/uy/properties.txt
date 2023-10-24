@@ -1,0 +1,7 @@
+
+Room_Attr: UY_A01: Scavenger-Stay,
+Room_Attr: UY_J01: Scavenger-Like,Vulture-Forbidden,
+Room_Attr: UY_S01: Scavenger-Like,Vulture-Forbidden,
+Room_Attr: UY_SKYBRIDGE: Scavenger-Like,
+Room_Attr: UY_TREASURY01: Scavenger-Stay,
+Room_Attr: UY_WEEK2: Scavenger-Like,Vulture-Forbidden,

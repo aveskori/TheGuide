@@ -1,0 +1,6 @@
+Template: UY_SettingsTemplate_Home
+Palette: 37
+EffectColorA: 5
+EffectColorB: 3
+Effects: SkyBloom-0.1521739-52-139, LightBurn-0.6195652-51-81, 
+PlacedObjects: LightSource><98.14758><218.365><0.6195652~EffectColor1~110~-176~187~-142.3975~1~0~None~0~0, LightSource><750.8336><363.6389><0.3043478~Environment~-382~-101~50~86.60254~1~0~None~0~0, LightSource><793.0916><601.3779><0.4673913~Environment~-266~-152~132~83.60257~1~1~None~0~0, LightSource><-27.31161><586.0673><0.5652174~EffectColor1~131~-176~33~-34.39746~1~0~None~0~0, LightSource><469.1838><461.5612><0.2282609~Environment~-228~91~50~86.60254~1~1~None~0~0, LightSource><986.428><247.5634><0.7282609~EffectColor1~140~196~-337~93.60254~1~0~None~0~0, ScavengerOutpost><413.6256><416.3444><1~101~38~2~0.6669306~41~53, 
