@@ -1,0 +1,7 @@
+Template: NONE
+DangerType: FloodAndRain
+Palette: 19
+EffectColorA: 0
+EffectColorB: 13
+Effects: LightBurn-0.3478261-20-20, Fog-0.1195652-33-57, DirtyWater-0.1086956-38-108, 
+PlacedObjects: LightBeam><298.3217><446.9367><-11~274~542~275~631~2~-44~-194~0.1282607~0~0~1~None~0~0, 

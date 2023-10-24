@@ -1,0 +1,10 @@
+Template: NONE
+DangerType: Flood
+CeilingDrips: 0.5217391
+Clouds: 0.0326087
+Grime: 0.2826087
+WaterReflectionAlpha: 0.6739131
+Palette: 4
+EffectColorA: 4
+EffectColorB: 4
+PlacedObjects: LightSource><301.0067><365.9499><0.4347826~Environment~-6~124~-290~140.6025~1~0~None~0~0, LightSource><884.6308><380.6606><0.4130435~Environment~-109~47~98.00006~74.60257~1~0~None~0~0, LightSource><454.6346><309.8366><1~Environment~-4~152~-457~149.6025~1~0~None~0~0, LightSource><754.4469><308.9428><1~Environment~-9~162~-736~105.6025~1~0~None~0~0, CustomDecal><489.3528><443.8854><-62~127~320~137~310~-20~319~-177~0.326087~0.9130435~0~albinooctopus~0~0.3478261~0.5760869~0~0.4347826~0~0.423913~0, 
