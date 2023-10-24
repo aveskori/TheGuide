@@ -52,18 +52,16 @@ namespace GuideSlugBase
         private void ScavengerAI_DecideBehavior(On.ScavengerAI.orig_DecideBehavior orig, ScavengerAI self)
         {
             orig(self);
-            //if ((self.scavenger.room.game.Players[0].realizedCreature as Player).slugcatStats.name.value == "Guide")
-            Player closeGuide = FindNearbyGuide(self.scavenger.room);
-            if (closeGuide != null)
+            //if no threat detected, if has food item > set destination to player
+            if (self.behavior == ScavengerAI.Behavior.Idle)
             {
-
-                //if no threat detected, if has food item > set destination to player
-                if (self.behavior == ScavengerAI.Behavior.Idle)
+                //if ((self.scavenger.room.game.Players[0].realizedCreature as Player).slugcatStats.name.value == "Guide")
+                Player closeGuide = FindNearbyGuide(self.scavenger.room);
+                if (closeGuide != null)
                 {
                     self.SetDestination(closeGuide.abstractCreature.pos); //self.scavenger.room.game.Players[0].pos
                 }
             }
-
         }
 
         private void ScavengerAI_SocialEvent(On.ScavengerAI.orig_SocialEvent orig, ScavengerAI self, SocialEventRecognizer.EventID ID, Creature subjectCrit, Creature objectCrit, PhysicalObject involvedItem)
@@ -87,11 +85,11 @@ namespace GuideSlugBase
             if (myRoom == null)
                 return null; //WE'RE NOT EVEN IN A ROOM TO CHECK
 
-            for (int i = 0; i < myRoom.abstractRoom.creatures.Count; i++)
+            for (int i = 0; i < myRoom.game.Players.Count; i++)
             {
-                if (myRoom.abstractRoom.creatures[i].realizedCreature is Player checkPlayer
+                if (myRoom.game.Players[i].realizedCreature is Player checkPlayer
+                    && checkPlayer != null && checkPlayer.room != null //&& checkPlayer.room == myRoom //MAKE SURE THEY ARE IN OUR ROOM. or maybe not...
                     && checkPlayer.slugcatStats.name.value == "Guide"
-                    && checkPlayer.room != null //&& checkPlayer.room == myRoom //MAKE SURE THEY ARE IN OUR ROOM. or maybe not...
                     && !(checkPlayer.dead || checkPlayer.inShortcut) //AND VALID 
                 )
                 {
@@ -166,52 +164,50 @@ namespace GuideSlugBase
         {
 
             orig(self, grabber, grabbed, graspUsed, chunkGrabbed, shareability, dominance, pacifying);
-            if (grabbed is Player && (grabbed as Player).slugcatStats.name.value == "Guide")
+            if (grabbed is Player player && (grabbed as Player).slugcatStats.name.value == "Guide")
             {
-                
-                if (grabbed.grabbedBy.Count > 0 && slippery == true)
+
+                if (grabbed.grabbedBy.Count > 0 && player.GetCat().slippery == true)
                 {
                     self.grabber.room.PlaySound(SoundID.Water_Nut_Swell, grabbed.bodyChunks[1], false, 1f, 2f, false);
                     grabber.ReleaseGrasp(graspUsed);
                     grabbed.AllGraspsLetGoOfThisObject(true);
-                    slipperyTime = 40 * 15;
-                    slippery = true;
+                    player.GetCat().slipperyTime = 40 * 15;
+                    player.GetCat().slippery = true;
                 }
-                
+
             }
         }
-        //state slippery and countdown
-        int slipperyTime;
-        bool slippery;
-        
-        int rnd = UnityEngine.Random.Range(0, 2);
-        public bool Pebbles_Guide = true;
-        
-        
+
+        //UNUSED?
+        //int rnd = UnityEngine.Random.Range(0, 2);
+        //public bool Pebbles_Guide = true;
+
+
         private void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
         {
             if (self.slugcatStats.name.value == "Guide")
             {
-                
+
                 //when underwater, slippery = true, countdown starts
                 if (self.animation == Player.AnimationIndex.DeepSwim)
                 {
                     self.room.PlaySound(SoundID.Big_Spider_Spit, 0f, 0.50f, 1f);
-                    slipperyTime = 40 * 30;
-                    slippery = true;
+                    self.GetCat().slipperyTime = 40 * 30;
+                    self.GetCat().slippery = true;
                     self.slugcatStats.runspeedFac = 1.5f;
                     self.slugcatStats.corridorClimbSpeedFac = 1.6f;
                     self.slugcatStats.poleClimbSpeedFac = 1.6f;
                     self.waterFriction = 0.99f;
                 }
                 //slippery countdown
-                if (slipperyTime > 0)
+                if (self.GetCat().slipperyTime > 0)
                 {
-                    slipperyTime--;
+                    self.GetCat().slipperyTime--;
                 }
                 else
                 {
-                    slippery = false;
+                    self.GetCat().slippery = false;
                     self.slugcatStats.runspeedFac = 1f;
                     self.slugcatStats.corridorClimbSpeedFac = 1f;
                     self.slugcatStats.poleClimbSpeedFac = 1f;
@@ -278,11 +274,11 @@ namespace GuideSlugBase
                     //-- Customizing the tail size and color is also supported, values should be set between 0 and 1
                     CustomTail = new CustomTail()
                     {
-                        
+
                         Length = 4f,
                         Wideness = 1.5f,
                         Roundness = 0.9f
-                        
+
                     }
                 });
             }
@@ -293,4 +289,24 @@ namespace GuideSlugBase
             Futile.atlasManager.LoadImage("atlases/icon_LanternSpear");
         }
     }
+}
+
+public static class GuideStatusClass
+{
+    public class GuideStatus
+    {
+        // Define your variables to store here!
+        //state slippery and countdown
+        public int slipperyTime;
+        public bool slippery;
+
+        public GuideStatus()
+        {
+            // Initialize your variables here! (Anything not added here will be null or false or 0 (default values))
+        }
+    }
+
+    // This part lets you access the stored stuff by simply doing "self.GetCat()" in Plugin.cs or everywhere else!
+    private static readonly ConditionalWeakTable<Player, GuideStatus> CWT = new();
+    public static GuideStatus GetCat(this Player player) => CWT.GetValue(player, _ => new());
 }

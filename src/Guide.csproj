@@ -18,12 +18,6 @@
     <Compile Remove="LanternSpear01.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="DressMySlugcat">
-      <HintPath>..\..\..\..\Downloads\DressMySlugcat\plugins\DressMySlugcat.dll</HintPath>
-    </Reference>
-    <Reference Include="Fisobs">
-      <HintPath>..\..\..\..\Downloads\Fisobs.dll</HintPath>
-    </Reference>
     <Reference Include="Nutils">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\workshop\content\312520\2959220220\plugins\Nutils.dll</HintPath>
     </Reference>
