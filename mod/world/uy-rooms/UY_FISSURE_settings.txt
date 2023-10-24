@@ -1,0 +1,15 @@
+Template: UY_SettingsTemplate_Road
+CeilingDrips: 0.5869565
+WaveAmplitude: 0.0326087
+SecondWaveAmplitude: 0
+Grime: 0.5543478
+BkgDroneVolume: 0.4956522
+RandomItemSpearChance: 0.4717391
+WaterReflectionAlpha: 0.1956522
+Palette: 27
+EffectColorA: 22
+EffectColorB: 6
+Effects: Darkness-0.1847826-20-20, Fog-0.02173913-33-124, Contrast-0-197-241, SunBlock-0-31-75, SkyBloom-0.07608695-265-181, Bloom-0.07608695-298-131, 
+PlacedObjects: DangleFruit><966.4685><1328.802><-186~23~2~3, DangleFruit><997.8291><1298.896><-222~76~2~3, LightBeam><242.618><1136.9><-29~356~558~356~552~-1~-255~-175~0.1173912~1~0.07608695~1~None~0~0, Vine><209.0757><1529.185><575~43, LightBeam><282.05><491.0001><-14~231~532~231~502~-22~-332~-187~0.4326087~0~0.8260869~1~None~0~0, 
+AmbientSounds: OMNI><AM_WIN-HowlingWnd.ogg><108.4972><448.8><0.6739131><0.8043478, OMNI><MSC-LowGroans.ogg><116.0377><521.0536><0.5652174><0.6673913, 
+FadePalette: 35, 0, 0, 0

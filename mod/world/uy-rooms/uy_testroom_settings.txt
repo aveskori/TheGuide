@@ -1,0 +1,2 @@
+Palette: 14
+PlacedObjects: MultiplayerItem><332.4141><462.8856><GuideSpear~17.32051~-10~1, 
