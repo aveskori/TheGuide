@@ -110,58 +110,50 @@ namespace GuideSlugBase
 
         private int ScavengerAI_CollectScore_PhysicalObject_bool(On.ScavengerAI.orig_CollectScore_PhysicalObject_bool orig, ScavengerAI self, PhysicalObject obj, bool weaponFiltered)
         {
-            if ((self.scavenger.room.game.Players[0].realizedCreature as Player).slugcatStats.name.value == "Guide")
+            if (self.scavenger.room != null && obj != null && FindNearbyGuide(self.scavenger.room) != null)
             {
-                if (self.scavenger.room != null && obj != null)
+                if (obj is DangleFruit)
                 {
-                    if (obj is DangleFruit)
-                    {
-                        return 2;
-                    }
-                    if (obj is WaterNut || obj is GooieDuck)
-                    {
-                        if (self.scavenger.room.game.IsStorySession && self.scavenger.room.world.region.name == "GW")
-                        {
-                            return 7;
-                        }
-                        else
-                        {
-                            return 3;
-                        }
-                        
-                    }
-                    if (obj is DandelionPeach)
-                    {
-                        if (self.scavenger.room.game.IsStorySession && self.scavenger.room.world.region.name == "SI")
-                        {
-                            return 2;
-                        }
-                        else
-                        {
-                            return 5;
-                        }
-
-                    }
-                    if (obj is GlowWeed || obj is LillyPuck)
+                    return 2;
+                }
+                if (obj is WaterNut || obj is GooieDuck)
+                {
+                    if (self.scavenger.room.game.IsStorySession && self.scavenger.room.world.region.name == "GW")
                     {
                         return 7;
                     }
-                    if (obj is LanternSpear)
+                    else
                     {
-                        return 0;
+                        return 3;
                     }
-                    if (obj is SlimeMold)
+                        
+                }
+                if (obj is DandelionPeach)
+                {
+                    if (self.scavenger.room.game.IsStorySession && self.scavenger.room.world.region.name == "SI")
+                    {
+                        return 2;
+                    }
+                    else
                     {
                         return 5;
                     }
+
                 }
-                return orig(self, obj, weaponFiltered);
+                if (obj is GlowWeed || obj is LillyPuck)
+                {
+                    return 7;
+                }
+                if (obj is LanternSpear)
+                {
+                    return 0;
+                }
+                if (obj is SlimeMold)
+                {
+                    return 5;
+                }
             }
-            else
-            {
-                return orig(self, obj, weaponFiltered);
-            }
-            
+            return orig(self, obj, weaponFiltered);
         }
 
 
