@@ -41,7 +41,8 @@ namespace GuideSlugBase
             On.Creature.Grasp.ctor += Grasp_ctor;
             //GuideGills.Hooks();
             PebblesConversationOverride.Hooks();
-            On.JellyFish.Collide += JellyFish_Collide;
+            On.JellyFish.Collide += JellyFish_Collide;  //Guide immunity to jellyfish stuns
+            On.Centipede.Shock += Centipede_Shock;
 
 
             // Custom Hooks -- Scavenger AI
@@ -50,9 +51,30 @@ namespace GuideSlugBase
             On.ScavengerAI.SocialEvent += ScavengerAI_SocialEvent; //GUIDE TAKING SCAV ITEMS DOESN'T DECREASE REP
         }
 
+        private void Centipede_Shock(On.Centipede.orig_Shock orig, Centipede self, PhysicalObject shockObj)
+        {
+            //check if player guide AND slippery, else run orig
+            if(shockObj is Player && (shockObj as Player).slugcatStats.name.value == "Guide" && (shockObj as Player).GetCat().slippery)
+            {
+                self.room.PlaySound(SoundID.Centipede_Shock, 1f, 1.5f, 0.5f);
+                self.LoseAllGrasps();
+                self.room.PlaySound(SoundID.Slugcat_Bite_Centipede, 1f, 2f, 0.75f);
+                return;
+            }
+            else
+            {
+                orig(self, shockObj);
+            }
+        }
+
         private void JellyFish_Collide(On.JellyFish.orig_Collide orig, JellyFish self, PhysicalObject otherObject, int myChunk, int otherChunk)
         {
-            if((otherObject as Player).slugcatStats.name.value != "Guide")
+            if((otherObject as Player).slugcatStats.name.value == "Guide")
+            {
+                self.room.PlaySound(SoundID.Slugcat_Bite_Centipede, self.bodyChunks[0], false, 1.5f, 1.5f);
+                return;
+            }
+            else
             {
                 orig(self, otherObject, myChunk, otherChunk);
             }
@@ -300,6 +322,7 @@ public static class GuideStatusClass
         //state slippery and countdown
         public int slipperyTime;
         public bool slippery;
+        public bool artiSpawn;
 
         public GuideStatus()
         {
