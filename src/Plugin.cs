@@ -42,7 +42,10 @@ namespace GuideSlugBase
             //GuideGills.Hooks();
             PebblesConversationOverride.Hooks();
             On.JellyFish.Collide += JellyFish_Collide;  //Guide immunity to jellyfish stuns
+            On.JellyFish.Update += JellyFish_Update; //AND JELLYFISH TICKLES...
             On.Centipede.Shock += Centipede_Shock;
+            On.Player.SpitOutOfShortCut += Player_SpitOutOfShortCut; //HUD HINTS
+            
 
 
             // Custom Hooks -- Scavenger AI
@@ -50,6 +53,10 @@ namespace GuideSlugBase
             On.ScavengerAI.DecideBehavior += ScavengerAI_DecideBehavior;
             On.ScavengerAI.SocialEvent += ScavengerAI_SocialEvent; //GUIDE TAKING SCAV ITEMS DOESN'T DECREASE REP
         }
+
+        
+
+        
 
         private void Centipede_Shock(On.Centipede.orig_Shock orig, Centipede self, PhysicalObject shockObj)
         {
@@ -69,7 +76,7 @@ namespace GuideSlugBase
 
         private void JellyFish_Collide(On.JellyFish.orig_Collide orig, JellyFish self, PhysicalObject otherObject, int myChunk, int otherChunk)
         {
-            if((otherObject as Player).slugcatStats.name.value == "Guide")
+            if((otherObject as Player).slugcatStats?.name?.value == "Guide")
             {
                 self.room.PlaySound(SoundID.Slugcat_Bite_Centipede, self.bodyChunks[0], false, 1.5f, 1.5f);
                 return;
@@ -77,6 +84,19 @@ namespace GuideSlugBase
             else
             {
                 orig(self, otherObject, myChunk, otherChunk);
+            }
+        }
+
+        private void JellyFish_Update(On.JellyFish.orig_Update orig, JellyFish self, bool eu)
+        {
+            orig(self, eu);
+            //DON'T GRAB ONTO GUIDE
+            for (int i = 0; i < self.tentacles.Length; i++)
+            {
+                if (self.latchOnToBodyChunks[i] != null && self.latchOnToBodyChunks[i].owner is Player player && player.slugcatStats?.name?.value == "Guide")
+                {
+                    self.latchOnToBodyChunks[i] = null; //LET GO
+                }
             }
         }
 
@@ -240,6 +260,21 @@ namespace GuideSlugBase
             orig(self, eu);
         }
 
+
+        bool shownHudHint = false;
+
+        //HUD HINT MESSAGE CHECK WHEN LEAVING A SHORTCUT
+        private void Player_SpitOutOfShortCut(On.Player.orig_SpitOutOfShortCut orig, Player self, RWCustom.IntVector2 pos, Room newRoom, bool spitOutAllSticks)
+        {
+            orig(self, pos, newRoom, spitOutAllSticks);
+
+            if (!shownHudHint && self.slugcatStats.name.value == "Guide" && !self.dead && self.room != null && self.room.water && self.abstractCreature.world.game.IsStorySession && self.room.game.cameras[0].hud != null)
+            {
+                self.room.game.cameras[0].hud.textPrompt.AddMessage("Hint: water is wet or something", 20, 200, false, false);
+                self.room.game.cameras[0].hud.textPrompt.AddMessage("You can add more parts also", 20, 200, false, false);
+                shownHudHint = true;
+            }
+        }
 
 
         public static bool IsPostInit;
