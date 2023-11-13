@@ -10,33 +10,47 @@ using On.MoreSlugcats;
 
 namespace Guide
 {
-    public class VanillaLizard
-    {               
-            //enum setup
-            public static CreatureTemplate.Type vanillaLizard = new(nameof(VanillaLizard), true);
-            public static void UnregisterValues()
+
+    public static class CustomTemplates
+    {
+        public static CreatureTemplate.Type vanillaLizard = new(nameof(CustomTemplates), true);
+        public static CreatureTemplate.Type moleMouse = new(nameof(MoleMouse), true);
+
+        public static void UnregisterValues()
+        {
+            if (vanillaLizard != null)
             {
-                if (vanillaLizard != null)
-                {
-                    vanillaLizard.Unregister();
-                    vanillaLizard = null;
-                }
+                vanillaLizard.Unregister();
+                vanillaLizard = null;
             }
+            if (moleMouse != null)
+            {
+                moleMouse.Unregister();
+                moleMouse = null;
+            }
+        }
+    }
+    public static class SandboxUnlockID
+    {
+        public static MultiplayerUnlocks.SandboxUnlockID VLiz = new(nameof(VLiz), true);
+        public static MultiplayerUnlocks.SandboxUnlockID MMouse = new(nameof(MMouse), true);
+        public static void UnregisterValues()
+        {
+            if (VLiz != null)
+            {
+                VLiz.Unregister();
+                VLiz = null;
+            }
+            if (MMouse != null)
+            {
+                MMouse.Unregister();
+                MMouse = null;
+            }
+        }
     }
 
         //sandbox setup
-        public static class SandboxUnlockID
-        {
-            public static MultiplayerUnlocks.SandboxUnlockID VLiz = new(nameof(VLiz), true);
-            public static void UnregisterValues()
-            {
-                if (VLiz != null)
-                {
-                    VLiz.Unregister();
-                    VLiz = null;
-                }
-            }
-        }
+        
         public class VanHooks
         {
             public static void Hooks()
@@ -60,7 +74,7 @@ namespace Guide
         private static void VanApplySprites(On.LizardGraphics.orig_ApplyPalette orig, LizardGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, RoomPalette palette)
         {
             orig(self, sLeaser, rCam, palette);
-            if (self.lizard.Template.type == VanillaLizard.vanillaLizard)
+            if (self.lizard.Template.type == CustomTemplates.vanillaLizard)
             {
                 self.ColorBody(sLeaser, new Color(0.9333f, 0.9098f, 0.8666f));
             }
@@ -78,7 +92,7 @@ namespace Guide
             private static void VnSpitAggressive(On.LizardAI.orig_AggressiveBehavior orig, LizardAI self, Tracker.CreatureRepresentation target, float tongueChance)
             {
                 orig(self, target, tongueChance);
-                if (self.lizard.Template.type == VanillaLizard.vanillaLizard && target.VisualContact)
+                if (self.lizard.Template.type == CustomTemplates.vanillaLizard && target.VisualContact)
                 {
                     self.lizard.JawOpen = Mathf.Clamp(self.lizard.JawOpen + 0.1f, 0f, 1f);
                 }
@@ -87,7 +101,7 @@ namespace Guide
             private static void VnSpitFix(On.LizardAI.orig_Update orig, LizardAI self)
             {
                 orig(self);
-                if (self.lizard.Template.type == VanillaLizard.vanillaLizard && self.redSpitAI.spitting)
+                if (self.lizard.Template.type == CustomTemplates.vanillaLizard && self.redSpitAI.spitting)
                 {
                     self.lizard.EnterAnimation(Lizard.Animation.Spit, false);
                 }
@@ -97,7 +111,7 @@ namespace Guide
             {
                 orig(self, creature, world);
 
-                if (self.lizard.Template.type == VanillaLizard.vanillaLizard)
+                if (self.lizard.Template.type == CustomTemplates.vanillaLizard)
                 {
                     self.AddModule(new SuperHearing(self, self.tracker, 250f));
 
@@ -110,7 +124,7 @@ namespace Guide
             private static SoundID VanVoice(On.LizardVoice.orig_GetMyVoiceTrigger orig, LizardVoice self)
             {
                 var res = orig(self);
-                if(self.lizard is Lizard l && l.Template.type == VanillaLizard.vanillaLizard)
+                if(self.lizard is Lizard l && l.Template.type == CustomTemplates.vanillaLizard)
                 {
                     string[] array = new[] { "Green_A", "Eel_B", "Black_A" };
                     List<SoundID> list = new List<SoundID>();
@@ -145,7 +159,7 @@ namespace Guide
             private static void VanCosmetics(On.LizardGraphics.orig_ctor orig, LizardGraphics self, PhysicalObject ow)
             {
                 orig(self, ow);
-                if (self.lizard.Template.type == VanillaLizard.vanillaLizard)
+                if (self.lizard.Template.type == CustomTemplates.vanillaLizard)
                 {
                     var state = Random.state;
                     Random.InitState(self.lizard.abstractCreature.ID.RandomSeed);
@@ -182,7 +196,7 @@ namespace Guide
             {
                 Color res = orig(self, f);
                 
-                if (self.lizard.Template.type == VanillaLizard.vanillaLizard)
+                if (self.lizard.Template.type == CustomTemplates.vanillaLizard)
                 {
                     res = new Color(0.4667f, 0.3333f, 0.2f);
                 }
@@ -194,7 +208,7 @@ namespace Guide
             {
                 Color res = orig(self, timeStacker);
                 
-                if(self.lizard.Template.type == VanillaLizard.vanillaLizard)
+                if(self.lizard.Template.type == CustomTemplates.vanillaLizard)
                 {
                     //
                     if (self.whiteFlicker > 0 && (self.whiteFlicker > 15 || self.everySecondDraw))
@@ -219,7 +233,7 @@ namespace Guide
             private static void VanTailFin(On.LizardCosmetics.TailFin.orig_DrawSprites orig, LizardCosmetics.TailFin self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
             {
                 orig(self, sLeaser, rCam, timeStacker, camPos);
-                if (self.lGraphics.lizard.Template.type == VanillaLizard.vanillaLizard)
+                if (self.lGraphics.lizard.Template.type == CustomTemplates.vanillaLizard)
                 {
                     for (int i = 0; i < 2; i++)
                     {
@@ -237,7 +251,7 @@ namespace Guide
             private static void LurkTracker_Update(On.LizardAI.LurkTracker.orig_Update orig, LizardAI.LurkTracker self)
             {
                 orig(self);
-                if (self.AI.creature.creatureTemplate.type == VanillaLizard.vanillaLizard)
+                if (self.AI.creature.creatureTemplate.type == CustomTemplates.vanillaLizard)
                 {
                     self = new LizardAI.LurkTracker(self.AI, self.lizard);
 
@@ -247,7 +261,7 @@ namespace Guide
         
         private static CreatureTemplate VanBreed(On.LizardBreeds.orig_BreedTemplate_Type_CreatureTemplate_CreatureTemplate_CreatureTemplate_CreatureTemplate orig, CreatureTemplate.Type type, CreatureTemplate lizardAncestor, CreatureTemplate pinkTemplate, CreatureTemplate blueTemplate, CreatureTemplate greenTemplate)
         {
-            if (type == VanillaLizard.vanillaLizard)
+            if (type == CustomTemplates.vanillaLizard)
             {
                 
                 var temp = orig(MoreSlugcats.MoreSlugcatsEnums.CreatureTemplateType.SpitLizard, lizardAncestor, pinkTemplate, blueTemplate, greenTemplate); //Sets up the parameters to use Black Lizard’s parameters as a base.
@@ -311,7 +325,7 @@ namespace Guide
 
         public class VanLizCritob : Critob
     {
-        public VanLizCritob() : base(VanillaLizard.vanillaLizard)
+        public VanLizCritob() : base(CustomTemplates.vanillaLizard)
         {
             Icon = new SimpleIcon("Kill_Spit_Lizard", new Color(0.8f, 0.7f, 0.6f));
             LoadedPerformanceCost = 100f;

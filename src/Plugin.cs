@@ -270,8 +270,8 @@ namespace GuideSlugBase
 
             if (!shownHudHint && self.slugcatStats.name.value == "Guide" && !self.dead && self.room != null && self.room.water && self.abstractCreature.world.game.IsStorySession && self.room.game.cameras[0].hud != null)
             {
-                self.room.game.cameras[0].hud.textPrompt.AddMessage("Hint: water is wet or something", 20, 200, false, false);
-                self.room.game.cameras[0].hud.textPrompt.AddMessage("You can add more parts also", 20, 200, false, false);
+                self.room.game.cameras[0].hud.textPrompt.AddMessage("Water is a friend", 20, 200, false, false);
+                self.room.game.cameras[0].hud.textPrompt.AddMessage("Submerging grants temporary buffs", 20, 200, false, false);
                 shownHudHint = true;
             }
         }
