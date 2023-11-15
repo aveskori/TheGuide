@@ -14,6 +14,9 @@ using DressMySlugcat;
 using MoreSlugcats;
 using Guide;
 using Fisobs.Creatures;
+using Mono.Cecil.Cil;
+using MonoMod.Cil;
+using RWCustom;
 
 namespace GuideSlugBase
 {
@@ -52,11 +55,23 @@ namespace GuideSlugBase
             On.ScavengerAI.CollectScore_PhysicalObject_bool += ScavengerAI_CollectScore_PhysicalObject_bool;
             On.ScavengerAI.DecideBehavior += ScavengerAI_DecideBehavior;
             On.ScavengerAI.SocialEvent += ScavengerAI_SocialEvent; //GUIDE TAKING SCAV ITEMS DOESN'T DECREASE REP
+            
+            //-- Stops the game from lagging when devtools is enabled and there's scavs in the world
+            IL.DenFinder.TryAssigningDen += DenFinder_TryAssigningDen;
         }
 
-        
+        private void DenFinder_TryAssigningDen(ILContext il)
+        {
+            var cursor = new ILCursor(il);
 
-        
+            cursor.GotoNext(MoveType.After, i => i.MatchCallOrCallvirt<RainWorld>("get_ShowLogs"));
+
+            cursor.MoveAfterLabels();
+
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.EmitDelegate((DenFinder self) => self.creature.creatureTemplate.TopAncestor().type != CreatureTemplate.Type.Scavenger);
+            cursor.Emit(OpCodes.And);
+        }
 
         private void Centipede_Shock(On.Centipede.orig_Shock orig, Centipede self, PhysicalObject shockObj)
         {
@@ -108,7 +123,7 @@ namespace GuideSlugBase
             {
                 //if ((self.scavenger.room.game.Players[0].realizedCreature as Player).slugcatStats.name.value == "Guide")
                 Player closeGuide = FindNearbyGuide(self.scavenger.room);
-                if (closeGuide != null)
+                if (closeGuide != null && Custom.Dist(self.scavenger.mainBodyChunk.pos, closeGuide.mainBodyChunk.pos) > 200)
                 {
                     self.SetDestination(closeGuide.abstractCreature.pos); //self.scavenger.room.game.Players[0].pos
                 }
