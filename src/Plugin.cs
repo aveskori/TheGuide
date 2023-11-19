@@ -3,17 +3,12 @@ using System.Linq;
 using System.Collections.Generic;
 using BepInEx;
 using UnityEngine;
-using SlugBase;
-using SlugBase.Features;
-using static SlugBase.Features.FeatureTypes;
 using System.Runtime.CompilerServices;
 using Fisobs.Core;
 using LanternSpearFO;
-using Menu;
 using DressMySlugcat;
 using MoreSlugcats;
 using Guide;
-using Fisobs.Creatures;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using RWCustom;
@@ -25,7 +20,7 @@ namespace GuideSlugBase
     [BepInDependency("slime-cubed.slugbase")]
     [BepInDependency("dressmyslugcat", BepInDependency.DependencyFlags.SoftDependency)]
     
-    [BepInPlugin(MOD_ID, "Guide", "0.3.0")]
+    [BepInPlugin(MOD_ID, "Guide", "0.4.0")]
     class Plugin : BaseUnityPlugin
     {
         private const string MOD_ID = "aveskori.guide";
@@ -40,28 +35,45 @@ namespace GuideSlugBase
             // Custom Hooks -- Slugcat
             Content.Register(new LSpearFisobs());
             Content.Register(new VanLizCritob());
+
             On.Player.Update += Player_Update;
             On.Creature.Grasp.ctor += Grasp_ctor;
-            //GuideGills.Hooks();
             PebblesConversationOverride.Hooks();
             On.JellyFish.Collide += JellyFish_Collide;  //Guide immunity to jellyfish stuns
             On.JellyFish.Update += JellyFish_Update; //AND JELLYFISH TICKLES...
             On.Centipede.Shock += Centipede_Shock;
             On.Player.SpitOutOfShortCut += Player_SpitOutOfShortCut; //HUD HINTS
-            
 
+            //On.AbstractCreature.ctor += BoomScugAbstr;
 
             // Custom Hooks -- Scavenger AI
-            On.ScavengerAI.CollectScore_PhysicalObject_bool += ScavengerAI_CollectScore_PhysicalObject_bool;
-            On.ScavengerAI.DecideBehavior += ScavengerAI_DecideBehavior;
-            On.ScavengerAI.SocialEvent += ScavengerAI_SocialEvent; //GUIDE TAKING SCAV ITEMS DOESN'T DECREASE REP
-            
+            ScavBehaviorTweaks.Hooks();
+
             //-- Stops the game from lagging when devtools is enabled and there's scavs in the world
             IL.DenFinder.TryAssigningDen += DenFinder_TryAssigningDen;
         }
 
+        /*private void BoomScugAbstr(On.AbstractCreature.orig_ctor orig, AbstractCreature self, World world, CreatureTemplate creatureTemplate, Creature realizedCreature, WorldCoordinate pos, EntityID ID)
+        {
+            self = new AbstractCreature(world, creatureTemplate, realizedCreature, pos, ID);
+            self.state = new PlayerNPCState(self, 0);
+            var pl = new Player(self, world);
+
+            pl.npcCharacterStats = new SlugcatStats(MoreSlugcatsEnums.SlugcatStatsName.Artificer, false);
+
+            pl.SlugCatClass = MoreSlugcatsEnums.SlugcatStatsName.Artificer;
+            pl.slugcatStats.name = MoreSlugcatsEnums.SlugcatStatsName.Artificer;
+            pl.playerState.slugcatCharacter = MoreSlugcatsEnums.SlugcatStatsName.Artificer;
+
+            pl.abstractCreature.abstractAI = new SlugNPCAbstractAI(world, pl.abstractCreature);
+            pl.abstractCreature.abstractAI.RealAI = new SlugNPCAI(self, world);
+
+            //if artispawn = true, spawn arti in room UW_A13
+        }*/
+
         private void DenFinder_TryAssigningDen(ILContext il)
         {
+            //dont write to log if devtools enabled
             var cursor = new ILCursor(il);
 
             cursor.GotoNext(MoveType.After, i => i.MatchCallOrCallvirt<RainWorld>("get_ShowLogs"));
@@ -115,112 +127,9 @@ namespace GuideSlugBase
             }
         }
 
-        private void ScavengerAI_DecideBehavior(On.ScavengerAI.orig_DecideBehavior orig, ScavengerAI self)
-        {
-            orig(self);
-            //if no threat detected, if has food item > set destination to player
-            if (self.behavior == ScavengerAI.Behavior.Idle)
-            {
-                //if ((self.scavenger.room.game.Players[0].realizedCreature as Player).slugcatStats.name.value == "Guide")
-                Player closeGuide = FindNearbyGuide(self.scavenger.room);
-                if (closeGuide != null && Custom.Dist(self.scavenger.mainBodyChunk.pos, closeGuide.mainBodyChunk.pos) > 200)
-                {
-                    self.SetDestination(closeGuide.abstractCreature.pos); //self.scavenger.room.game.Players[0].pos
-                }
-            }
-        }
-
-        private void ScavengerAI_SocialEvent(On.ScavengerAI.orig_SocialEvent orig, ScavengerAI self, SocialEventRecognizer.EventID ID, Creature subjectCrit, Creature objectCrit, PhysicalObject involvedItem)
-        {
-            //GUIDE CAN COMMIT CRIMES...
-            if (subjectCrit is Player && (subjectCrit as Player).slugcatStats.name.value == "Guide")
-            {
-                if (ID == SocialEventRecognizer.EventID.Theft
-                    || ID == SocialEventRecognizer.EventID.NonLethalAttackAttempt
-                    || ID == SocialEventRecognizer.EventID.NonLethalAttack
-                    || ID == SocialEventRecognizer.EventID.LethalAttackAttempt)
-                {
-                    return; //JUST PRETEND IT DIDN'T HAPPEN...
-                }
-            }
-            orig(self, ID, subjectCrit, objectCrit, involvedItem);
-        }
-
-        public static Player FindNearbyGuide(Room myRoom)
-        {
-            if (myRoom == null)
-                return null; //WE'RE NOT EVEN IN A ROOM TO CHECK
-
-            for (int i = 0; i < myRoom.game.Players.Count; i++)
-            {
-                if (myRoom.game.Players[i].realizedCreature is Player checkPlayer
-                    && checkPlayer != null && checkPlayer.room != null //&& checkPlayer.room == myRoom //MAKE SURE THEY ARE IN OUR ROOM. or maybe not...
-                    && checkPlayer.slugcatStats.name.value == "Guide"
-                    && !(checkPlayer.dead || checkPlayer.inShortcut) //AND VALID 
-                )
-                {
-                    return checkPlayer; //GUIDE FOUND! RETURN THE REFERENCE
-                }
-            }
-            return null; //NO GUIDE FOUND. RETURN NULL
-        }
-
-        private int ScavengerAI_CollectScore_PhysicalObject_bool(On.ScavengerAI.orig_CollectScore_PhysicalObject_bool orig, ScavengerAI self, PhysicalObject obj, bool weaponFiltered)
-        {
-            if (self.scavenger.room != null && obj != null && FindNearbyGuide(self.scavenger.room) != null)
-            {
-                if (obj is DangleFruit)
-                {
-                    return 2;
-                }
-                if (obj is WaterNut || obj is GooieDuck)
-                {
-                    if (self.scavenger.room.game.IsStorySession && self.scavenger.room.world.region.name == "GW")
-                    {
-                        return 7;
-                    }
-                    else
-                    {
-                        return 3;
-                    }
-                        
-                }
-                if (obj is DandelionPeach)
-                {
-                    if (self.scavenger.room.game.IsStorySession && self.scavenger.room.world.region.name == "SI")
-                    {
-                        return 2;
-                    }
-                    else
-                    {
-                        return 5;
-                    }
-
-                }
-                if (obj is GlowWeed || obj is LillyPuck)
-                {
-                    return 7;
-                }
-                if (obj is LanternSpear)
-                {
-                    return 0;
-                }
-                if (obj is SlimeMold)
-                {
-                    return 5;
-                }
-            }
-            return orig(self, obj, weaponFiltered);
-        }
-
-
-
-
-
-        //tail release and slippery release
         private void Grasp_ctor(On.Creature.Grasp.orig_ctor orig, Creature.Grasp self, Creature grabber, PhysicalObject grabbed, int graspUsed, int chunkGrabbed, Creature.Grasp.Shareability shareability, float dominance, bool pacifying)
         {
-
+            //check if player guide and slippery true, release grasp
             orig(self, grabber, grabbed, graspUsed, chunkGrabbed, shareability, dominance, pacifying);
             if (grabbed is Player player && (grabbed as Player).slugcatStats.name.value == "Guide")
             {
@@ -237,16 +146,10 @@ namespace GuideSlugBase
             }
         }
 
-        //UNUSED?
-        //int rnd = UnityEngine.Random.Range(0, 2);
-        //public bool Pebbles_Guide = true;
-
-
         private void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
         {
             if (self.slugcatStats.name.value == "Guide")
             {
-
                 //when underwater, slippery = true, countdown starts
                 if (self.animation == Player.AnimationIndex.DeepSwim)
                 {
@@ -356,6 +259,9 @@ namespace GuideSlugBase
                 });
             }
         }
+
+ 
+
         // Load any resources, such as sprites or sounds
         private void LoadResources(RainWorld rainWorld)
         {
@@ -377,6 +283,7 @@ public static class GuideStatusClass
         public GuideStatus()
         {
             // Initialize your variables here! (Anything not added here will be null or false or 0 (default values))
+            artiSpawn = false;
         }
     }
 

@@ -18,7 +18,6 @@ namespace Guide
         public static void Hooks()
         {
             On.GhostConversation.AddEvents += GhostOverride;
-            //On.SSOracleBehavior.PebblesConversation.AddEvents += PebblesConvoOverride;
             On.SSOracleBehavior.InitateConversation += SSOracleBehavior_InitateConversation;
         }
 
@@ -59,6 +58,7 @@ namespace Guide
                     self.oracle.room.game.GetStorySession.saveState.miscWorldSaveData.SSaiConversationsHad++;
                     
                     self.action = SSOracleBehavior.Action.ThrowOut_Polite_ThrowOut;
+                    
                     return;
                 }
                 if (self.oracle.room.game.GetStorySession.saveState.miscWorldSaveData.SSaiConversationsHad == 2)
@@ -88,42 +88,6 @@ namespace Guide
             }
             orig(self, convoId, convBehav);
         }
-
-        /*private static void PebblesConvoOverride(On.SSOracleBehavior.PebblesConversation.orig_AddEvents orig, SSOracleBehavior.PebblesConversation self)
-        {
-            
-            if (CustomConversations.TryGet(self.owner.oracle.room.game, out bool custom) && custom)
-            {
-                self.events = new List<Conversation.DialogueEvent>
-                {
-                      new Conversation.TextEvent(self, 0, self.Translate("Is this reaching you?"), 0),
-                      new Conversation.TextEvent(self, 0, self.Translate(". . ."), 5),
-                      
-                      new Conversation.TextEvent(self, 0, self.Translate("Why is it that you creatures insist on breaking into my structure and disrupting my work?"), 0),
-                      new Conversation.TextEvent(self, 0, self.Translate(". . ."), 0),
-                      new Conversation.TextEvent(self, 0, self.Translate("Not that you care, but I just dealt with one of your kind a few cycles ago. Like you, it is stuck in a cycle, a repeating pattern.\nLike you, it cannot leave. There was little I could do for it, just as there is little I can do for you."), 5),
-                      new Conversation.TextEvent(self, 0, self.Translate("Your destiny is intertwined with the Scavenger population, it seems. Bound together like family.\n That is what keeps you trapped here, isn't it?"), 0),
-                      new Conversation.TextEvent(self, 0, self.Translate("While I do not hold them or you in high regards, I acknowledge the connection you share."), 0),
-                      new Conversation.TextEvent(self, 0, self.Translate("The last little beast that came through here was fueled by an insatiable rage burning from within them.\nYou seem to be quite the opposite."), 0),
-                      new Conversation.TextEvent(self, 0, self.Translate("For your safety and the safety of your family,\nI would strongly advise you guide them off of my facility grounds."), 0),
-                      new Conversation.TextEvent(self, 0, self.Translate("The raging beast is explosive and vengeful, and I doubt it will stop until every last Scavenger here is dead."), 0),
-                      new Conversation.TextEvent(self, 0, self.Translate("But we don't truly die here, do we?"), 0),
-                      new Conversation.TextEvent(self, 0, self.Translate(". . ."), 0),
-                      new Conversation.TextEvent(self, 0, self.Translate("I apologize for getting off track, but you look very familiar. As I said, you are not the first little\n beast to wander into my chamber, and I doubt you will be the last."), 5),
-                      new Conversation.TextEvent(self, 0, self.Translate("Many, many cycles ago, two of your kind came to me. A mother and her child. They had your same strange adaptations.\nUnlike you, they were suffering, starving."), 0),
-                      new Conversation.TextEvent(self, 0, self.Translate("I gave them the journey's end they sought: the old path.\nBeing optimistic, I imagine they have made it by now, considering I have not seen them since."), 0),
-                      new Conversation.TextEvent(self, 0, self.Translate("Far to the west and below the earth lie your two options: Guide your new family to a safer home, but leave your kin and ascension behind.\nOr, abandon your new family for your kin, following their footsteps to reunite with them on the other side."), 5),
-                      new Conversation.TextEvent(self, 0, self.Translate("The choice is yours little creature."), 0),
-                      new Conversation.TextEvent(self, 0, self.Translate("Now, leave me to my work."), 0),
-                };
-               
-                
-            }
-           
-           orig(self);
-           
-           
-        }*/
 
         private static void GhostOverride(On.GhostConversation.orig_AddEvents orig, GhostConversation self)
         {
