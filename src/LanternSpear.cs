@@ -29,6 +29,14 @@ namespace LanternSpearFO
             RegisterUnlock(laSpear, parent: MultiplayerUnlocks.SandboxUnlockID.Slugcat, data: 0);
         }
 
+        //IS THIS GOOD ENOUGH?
+        public override AbstractPhysicalObject Parse(World world, EntitySaveData entitySaveData, SandboxUnlock unlock)
+        {
+            var result = new LSpearAbstract(world, entitySaveData.Pos, entitySaveData.ID);
+            return result;
+        }
+
+        /*
         public override AbstractPhysicalObject Parse(World world, EntitySaveData entitySaveData, SandboxUnlock unlock)
         {
             string[] p = entitySaveData.CustomData.Split(';');
@@ -59,35 +67,57 @@ namespace LanternSpearFO
             return result;
 
         }
-
         
+        */
 
         private static readonly LSpearProperties properties = new();
         public override ItemProperties Properties(PhysicalObject forObject)
         {
             return base.Properties(forObject);
         }
+        
     }
 
     //Abstract
     sealed class LSpearAbstract : AbstractSpear
     {
+        //WE PROBABLY DON'T NEED ANY SAVE DATA, AS ALL LSPEARS WILL PROBABLY BE THE SAME
+        /*
         //Sets types to hue, saturation, scale
         public new float hue;
         public float saturation;
         public float scaleX;
         public float scaleY;
         
+        
+
+        public override string ToString()
+        {
+            return this.SaveToString($"{hue};{saturation};{scaleX};{scaleY}");
+        }
+        
+
         //Properties
         public LSpearAbstract(World world, WorldCoordinate pos, EntityID ID) : base(world, null, pos, ID, false)
         {
             scaleX = 1;
             scaleY = 1;
-            saturation = 0.5f;
+            saturation = 1f;
             hue = 1f;
             type = LSpearFisobs.AbstrLaSpear;
         }
+        */
 
+        public override string ToString()
+        {
+            return this.SaveToString();
+        }
+
+        public LSpearAbstract(World world, WorldCoordinate pos, EntityID ID) : base(world, null, pos, ID, false)
+        {
+            //GOOD ENOUGH?...
+            type = LSpearFisobs.AbstrLaSpear;
+        }
 
         //Lets object know when its in the same room as player
         public override void Realize()
@@ -97,14 +127,6 @@ namespace LanternSpearFO
             {
                 realizedObject = new LanternSpear(this, null);
             }
-            
-        }
-
-        
-
-        public override string ToString()
-        {
-            return this.SaveToString($"{hue};{saturation};{scaleX};{scaleY}");
         }
     }
 
@@ -127,7 +149,7 @@ namespace LanternSpearFO
     }
 
     //Sprite
-    sealed class LanternSpear : Spear, IDrawable
+    sealed class LanternSpear : Spear //, IDrawable
     {
         //Lantern Spear Constructor
         public LanternSpear(LSpearAbstract abstr, World world) : base(abstr, world)
@@ -139,6 +161,8 @@ namespace LanternSpearFO
             this.rag = new Vector2[Random.Range(4, Random.Range(4, 10)), 6];
             Random.state = state;
 
+            //THIS STUFF IS ALL INHERITED FROM SPEARS ALREADY
+            /*
             float mass = 40f;
             var positions = new List<Vector2>();
 
@@ -147,10 +171,10 @@ namespace LanternSpearFO
             bodyChunks = new BodyChunk[positions.Count];
 
             //create body chunk (collider)
-            /*for (int i = 0; i < bodyChunks.Length; i++)
+            for (int i = 0; i < bodyChunks.Length; i++)
             {
                 bodyChunks[i] = new BodyChunk(this, i, Vector2.zero, 30f, mass / bodyChunks.Length);
-            }*/
+            }
 
             bodyChunks = new BodyChunk[1];
             bodyChunks[0] = new BodyChunk(this, 0, new Vector2(0f, 0f), 5f, 0.07f);
@@ -169,11 +193,22 @@ namespace LanternSpearFO
             lastPivotAtTip = false;
             stuckBodyPart = -1;
             firstChunk.loudness = 7f;
+            */
+            //LANTERN PARTS
+            this.flicker = new float[2, 3];
+            for (int i = 0; i < this.flicker.GetLength(0); i++)
+            {
+                this.flicker[i, 0] = 1f;
+                this.flicker[i, 1] = 1f;
+                this.flicker[i, 2] = 1f;
+            }
 
-           
         }
         public Vector2[,] rag;
-        
+        public float[,] flicker; //REPLPICATE LANTERN
+        public LightSource lightSource;
+        public Color ragColor; //IN EXPLOSIVESPEAR IT'S CALLED redColor BUT THIS WILL DO
+
         private SharedPhysics.TerrainCollisionData scratchTerrainCollisionData = new SharedPhysics.TerrainCollisionData();
         private float conRad = 7f;
         
@@ -188,9 +223,16 @@ namespace LanternSpearFO
         {
             base.PlaceInRoom(placeRoom);
             this.ResetRag();
-            
-            Vector2 center = placeRoom.MiddleOfTile(abstractPhysicalObject.pos);
-            bodyChunks[0].HardSetPosition(new Vector2(0, 0) * 20f + center);
+
+            //Vector2 center = placeRoom.MiddleOfTile(abstractPhysicalObject.pos); //NO DONT DO THIS
+            //bodyChunks[0].HardSetPosition(new Vector2(0, 0) * 20f + center);
+        }
+
+        //PROBABLY NEED THIS TOO?...
+        public override void NewRoom(Room newRoom)
+        {
+            base.NewRoom(newRoom);
+            this.ResetRag();
         }
 
         public override void Update(bool eu)
@@ -265,6 +307,8 @@ namespace LanternSpearFO
                 }
             }
             //spear update
+            //NONO, WE DON'T NEED TO DO THIS AGAIN. BASE.UPDATE() RUNS ALL THIS
+            /*
             this.lastPivotAtTip = this.pivotAtTip;
             this.pivotAtTip = (base.mode == Weapon.Mode.Thrown || base.mode == Weapon.Mode.StuckInCreature);
             if (this.addPoles && this.room.readyForAI)
@@ -298,50 +342,60 @@ namespace LanternSpearFO
                 this.addPoles = false;
                 this.hasHorizontalBeamState = true;
             }
+            */
+
+
+
+
+
 
             //Lantern Update
 
-            Lantern l = new Lantern(abstractPhysicalObject);
 
-            
-            Debug.Log($"%%%%% LANTERN FOR STATEMENT%%%%%");
-            if (l.lightSource == null)
+            //Lantern l = new Lantern(abstractPhysicalObject);
+
+
+            //Debug.Log($"%%%%% LANTERN FOR STATEMENT%%%%%");
+
+
+            if (this.lightSource == null)
             {
-                l.lightSource = new LightSource(base.bodyChunks[0].pos, false, new Color(1f, 0.2f, 0f), this);
-                l.lightSource.affectedByPaletteDarkness = 0.5f;
-                l.room.AddObject(l.lightSource);
-                Debug.Log($"%%%% LIGHT SOURCE %%%%");
+                this.lightSource = new LightSource(base.bodyChunks[0].pos, false, new Color(1f, 0.2f, 0f), this);
+                this.lightSource.affectedByPaletteDarkness = 0.5f;
+                this.room.AddObject(this.lightSource);
+                //Debug.Log($"%%%% LIGHT SOURCE %%%%");
             }
             else
             {
-                l.lightSource.setPos = new Vector2?(base.bodyChunks[0].pos);
-                l.lightSource.setRad = new float?(250f * l.flicker[0, 0]);
-                l.lightSource.setAlpha = new float?(1f);
-                Debug.Log($"%%%% ELSE 1 %%%%");
-                if (l.lightSource.slatedForDeletetion || l.lightSource.room != l.room)
+                this.lightSource.setPos = new Vector2?(base.bodyChunks[0].pos);
+                this.lightSource.setRad = new float?(250f * this.flicker[0, 0]);
+                this.lightSource.setAlpha = new float?(1f);
+                //Debug.Log($"%%%% ELSE 1 %%%%");
+                if (this.lightSource.slatedForDeletetion || this.lightSource.room != this.room)
                 {
-                    l.lightSource = null;
-                }                
-                Debug.Log($"%%%% ELSE 2 %%%%");
+                    this.lightSource = null;
+                }
+                //Debug.Log($"%%%% ELSE 2 %%%%");
             }
-            for (int i = 0; i < l.flicker.GetLength(0); i++)
+            for (int i = 0; i < this.flicker.GetLength(0); i++)
             {
-                l.flicker[i, 1] = l.flicker[i, 0];
-                l.flicker[i, 0] += Mathf.Pow(Random.value, 3f) * 0.1f * ((Random.value < 0.5f) ? -1f : 1f);
-                l.flicker[i, 0] = Custom.LerpAndTick(l.flicker[i, 0], l.flicker[i, 2], 0.05f, 0.033333335f);
+                this.flicker[i, 1] = this.flicker[i, 0];
+                this.flicker[i, 0] += Mathf.Pow(Random.value, 3f) * 0.1f * ((Random.value < 0.5f) ? -1f : 1f);
+                this.flicker[i, 0] = Custom.LerpAndTick(this.flicker[i, 0], this.flicker[i, 2], 0.05f, 0.033333335f);
                 if (Random.value < 0.2f)
                 {
-                    l.flicker[i, 2] = 1f + Mathf.Pow(Random.value, 3f) * 0.2f * ((Random.value < 0.5f) ? -1f : 1f);
+                    this.flicker[i, 2] = 1f + Mathf.Pow(Random.value, 3f) * 0.2f * ((Random.value < 0.5f) ? -1f : 1f);
                 }
-                l.flicker[i, 2] = Mathf.Lerp(l.flicker[i, 2], 1f, 0.01f);
+                this.flicker[i, 2] = Mathf.Lerp(this.flicker[i, 2], 1f, 0.01f);
             }
-            this.lastRotation = this.rotation;
-            base.firstChunk.collideWithTerrain = (this.grabbedBy.Count == 0);
-            if (this.grabbedBy.Count > 0)
-            {
-                l.rotation = Custom.PerpendicularVector(Custom.DirVec(base.bodyChunks[0].pos, this.grabbedBy[0].grabber.mainBodyChunk.pos));
-                l.rotation.y = -Mathf.Abs(this.rotation.y);
-            }
+            //ROTATION IS HANDLED IN SPEAR.CS DRAWSPRITES()!
+            //this.lastRotation = this.rotation; 
+            //base.firstChunk.collideWithTerrain = (this.grabbedBy.Count == 0); //NOT THIS ONE! I THINK
+            //if (this.grabbedBy.Count > 0)
+            //{
+            //    this.rotation = Custom.PerpendicularVector(Custom.DirVec(base.bodyChunks[0].pos, this.grabbedBy[0].grabber.mainBodyChunk.pos));
+            //    this.rotation.y = -Mathf.Abs(this.rotation.y);
+            //}
 
         }
 
@@ -366,6 +420,21 @@ namespace LanternSpearFO
             }
         }
 
+        //STOLE THIS FROM ELECTRIC SPEARS TO FIND THE TIP EASIER
+        public Vector2 PointAlongSpear(RoomCamera.SpriteLeaser sLeaser, float percent)
+        {
+            float height = sLeaser.sprites[0].element.sourceRect.height;
+            return new Vector2(base.firstChunk.pos.x, base.firstChunk.pos.y) - Custom.DegToVec(sLeaser.sprites[0].rotation) * height * sLeaser.sprites[0].anchorY + Custom.DegToVec(sLeaser.sprites[0].rotation) * height * percent;
+        }
+
+        public Vector2 ZapperAttachPos(float timeStacker, int node)
+        {
+            Vector3 vector = Vector3.Slerp(this.lastRotation, this.rotation, timeStacker);
+            Vector3 vector2 = Vector3.Slerp(this.lastRotation, this.rotation, timeStacker) * (float)node * -4f;
+            return Vector2.Lerp(base.firstChunk.lastPos, base.firstChunk.pos, timeStacker) + new Vector2(vector.x, vector.y) * 30f + new Vector2(vector2.x, vector2.y);
+        }
+
+
         public override void InitiateSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
         {
             
@@ -375,31 +444,55 @@ namespace LanternSpearFO
             }
             sLeaser.sprites = new FSprite[7];
             // Adapted from ExplosiveSpear, makes spear and rag sprites
-            sLeaser.sprites[1] = new FSprite("SmallSpear", true);
+            sLeaser.sprites[1] = new FSprite("SmallSpear", true); //FOR LAYERING
             sLeaser.sprites[0] = new FSprite("SpearRag", true);
             sLeaser.sprites[2] = TriangleMesh.MakeLongMesh(this.rag.GetLength(0), false, true);
             sLeaser.sprites[2].shader = rCam.game.rainWorld.Shaders["JaggedSquare"];
             sLeaser.sprites[2].alpha = rCam.game.SeededRandom(this.abstractPhysicalObject.ID.RandomSeed);
+
             // Added Lantern sprite
             sLeaser.sprites[3] = new FSprite("DangleFruit0A", true);
             sLeaser.sprites[4] = new FSprite("DangleFruit0B", true);
+            for (int i = 3; i < 5; i++)
+            {
+                sLeaser.sprites[i].scaleX = 0.8f;
+                sLeaser.sprites[i].scaleY = 0.9f;
+            }
             sLeaser.sprites[5] = new FSprite("Futile_White");
-            sLeaser.sprites[5].shader = rCam.game.rainWorld.Shaders["LightSource"];
+            sLeaser.sprites[5].shader = rCam.game.rainWorld.Shaders["FlatLightBehindTerrain"];
             sLeaser.sprites[6] = new FSprite("Futile_White");
-            sLeaser.sprites[6].shader = rCam.game.rainWorld.Shaders["FlatLightBehindTerrain"];
+            sLeaser.sprites[6].shader = rCam.game.rainWorld.Shaders["LightSource"];
+
             this.AddToContainer(sLeaser, rCam, null);
-            
         }
+
 
         public override void DrawSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
         {
-            
+            //PART OF BASE DRAWSPRITES THAT IS SPECIFIC TO EXPLOSIVE SPEARS NEEDS TO RUN HERE TOO PROBABLY?
+            Vector2 vector0 = Vector2.Lerp(base.firstChunk.lastPos, base.firstChunk.pos, timeStacker);
+            if (this.vibrate > 0)
+            {
+                vector0 += Custom.DegToVec(Random.value * 360f) * 2f * Random.value;
+            }
+            Vector3 v = Vector3.Slerp(this.lastRotation, this.rotation, timeStacker);
+            //for (int i = 1; i >= 0; i--) //THIS NORMALLY CHECKS FOR EXPLOSIVE OR BUG SPEAR
+            //{
+            sLeaser.sprites[1].x = vector0.x - camPos.x;
+            sLeaser.sprites[1].y = vector0.y - camPos.y;
+            sLeaser.sprites[1].anchorY = Mathf.Lerp(this.lastPivotAtTip ? 0.85f : 0.5f, this.pivotAtTip ? 0.85f : 0.5f, timeStacker);
+            sLeaser.sprites[1].rotation = Custom.AimFromOneVectorToAnother(new Vector2(0f, 0f), v);
+            //}
+
+
             base.DrawSprites(sLeaser, rCam, timeStacker, camPos);
             
-            sLeaser.sprites[0].color = Color.green;
-            sLeaser.sprites[1].color = Color.blue;
-            sLeaser.sprites[2].color = Color.green;
+            
+            sLeaser.sprites[0].color = this.ragColor;
+            //sLeaser.sprites[1].color = Color.blue;
+            sLeaser.sprites[2].color = this.ragColor;
             //spear DrawSprites
+            /*
             if (this.stuckIns != null && this.room != null)
             {
                 if (this.room.game.devToolsActive)
@@ -432,6 +525,31 @@ namespace LanternSpearFO
                 sLeaser.sprites[i].anchorY = Mathf.Lerp(this.lastPivotAtTip ? 0.85f : 0.5f, this.pivotAtTip ? 0.85f : 0.5f, timeStacker);
                 sLeaser.sprites[i].rotation = Custom.AimFromOneVectorToAnother(new Vector2(0f, 0f), v);
             }
+            */
+
+
+            //FORGOT A FEW
+            if (this.blink > 0)
+            {
+                if (this.blink > 1 && Random.value < 0.5f)
+                {
+                    sLeaser.sprites[1].color = new Color(1f, 1f, 1f);
+                }
+                else
+                {
+                    sLeaser.sprites[1].color = this.color;
+                }
+            }
+            else if (sLeaser.sprites[1].color != this.color)
+            {
+                sLeaser.sprites[1].color = this.color;
+            }
+            if (base.mode == Weapon.Mode.Free && base.firstChunk.ContactPoint.y < 0)
+            {
+                sLeaser.sprites[0].anchorY += 0.2f;
+            }
+
+
             //rag drawsprites
             float num = 0f;
             Vector2 a = this.RagAttachPos(timeStacker);
@@ -450,35 +568,46 @@ namespace LanternSpearFO
                 a = vector;
                 num = num2;
             }
+
+
             //lantern drawsprites
-            Lantern l = new Lantern(abstractPhysicalObject);
-            Vector2 vector2 = Vector2.Lerp(l.firstChunk.lastPos, l.firstChunk.pos, timeStacker);
+            //Lantern l = new Lantern(abstractPhysicalObject); //NAH DON'T SPAWN A LANTERN EVERY FRAME
+            //Vector2 vector2 = Vector2.Lerp(l.firstChunk.lastPos, l.firstChunk.pos, timeStacker);
+            //Vector2 vector2 = sLeaser.sprites[0].GetPosition();//a; 
+            Vector2 vector2 = this.PointAlongSpear(sLeaser, 1.1f);
             Vector2 vector3 = Vector3.Slerp(this.lastRotation, this.rotation, timeStacker);
             for (int i = 3; i < 5; i++)
             {
                 sLeaser.sprites[i].x = vector2.x - camPos.x;
                 sLeaser.sprites[i].y = vector2.y - camPos.y;
-                sLeaser.sprites[i].rotation = Custom.VecToDeg(vector2);
+                sLeaser.sprites[i].rotation = Custom.VecToDeg(vector2) + 0.45f;
             }
             sLeaser.sprites[5].x = vector2.x - vector3.x * 3f - camPos.x;
             sLeaser.sprites[5].y = vector2.y - vector3.y * 3f - camPos.y;
-            sLeaser.sprites[5].scale = Mathf.Lerp(l.flicker[0, 1], l.flicker[0, 0], timeStacker) * 2f;
+            sLeaser.sprites[5].scale = Mathf.Lerp(this.flicker[0, 1], this.flicker[0, 0], timeStacker) * 2f;
             sLeaser.sprites[6].x = vector2.x - vector3.x * 3f - camPos.x;
             sLeaser.sprites[6].y = vector2.y - vector3.y * 3f - camPos.y;
-            sLeaser.sprites[6].scale = Mathf.Lerp(l.flicker[1, 1], l.flicker[1, 0], timeStacker) * 200f / 8f;
-            if (base.slatedForDeletetion || l.slatedForDeletetion || this.room != rCam.room)
+            sLeaser.sprites[6].scale = Mathf.Lerp(this.flicker[1, 1], this.flicker[1, 0], timeStacker) * 200f / 8f;
+            if (base.slatedForDeletetion || this.room != rCam.room)
             {
                 sLeaser.CleanSpritesAndRemove();
             }
         }
 
+        
         public override void ApplyPalette(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, RoomPalette palette)
         {
+            base.ApplyPalette(sLeaser, rCam, palette);
+            sLeaser.sprites[1].color = this.color;
+            this.ragColor = Color.Lerp(new Color(0.25f, 1f, 0f), palette.blackColor, 0.1f + 0.8f * palette.darkness);
+
+            //THESE COLORS WILL GET UPDATED ON DRAW
+            //sLeaser.sprites[0].color = new Color(0.25f, 1f, 0f);
+            //sLeaser.sprites[1].color = rCam.currentPalette.blackColor;
+            //sLeaser.sprites[2].color = new Color(0.25f, 1f, 0f);
+
+            //LANTERN PALLET
             
-            
-            sLeaser.sprites[0].color = new Color(0.25f, 1f, 0f);
-            sLeaser.sprites[1].color = rCam.currentPalette.blackColor;
-            sLeaser.sprites[2].color = new Color(0.25f, 1f, 0f);
             sLeaser.sprites[3].color = new Color(1f, 0.2f, 0f);
             sLeaser.sprites[4].color = new Color(1f, 1f, 1f);
             sLeaser.sprites[5].color = Color.Lerp(new Color(1f, 0.2f, 0f), new Color(1f, 1f, 1f), 0.3f);
@@ -486,31 +615,35 @@ namespace LanternSpearFO
             
         }
 
+
         //Add sprite to game's current list of items present on current camera
         public override void AddToContainer(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, FContainer newContainer)
         {
-            int spriteLength = sLeaser.sprites.Length;    //get sLeaser array length 
-            Debug.Log($"~~~~~~SLEASER SPRITES LENGTH: " + spriteLength + " ~~~~~~");     //prints sLeaser array length
-
-            newContainer ??= rCam.ReturnFContainer("Items");
-
-            for (int i = 0; i < spriteLength; i++)
+            //BOTH SPEARS AND LANTERNS RUN THIS, SO IT'S ALL GOOD
+            if (newContainer == null)
             {
-                Debug.Log($"~~~~~SPRITE " + i + " LOADED~~~~~~");     //logs which sprites are being fed through
+                newContainer = rCam.ReturnFContainer("Items");
+            }
+            for (int i = 0; i < sLeaser.sprites.Length; i++)
+            {
                 sLeaser.sprites[i].RemoveFromContainer();
             }
+
+            //CAN I SWAP THE LAYER ORDER THIS WAY? -YES ACTUALLY
             
-            
-            newContainer.AddChild(sLeaser.sprites[0]);
-            newContainer.AddChild(sLeaser.sprites[1]);
-            newContainer.AddChild(sLeaser.sprites[2]);
+            rCam.ReturnFContainer("GrabShaders").AddChild(sLeaser.sprites[5]);
+            rCam.ReturnFContainer("Water").AddChild(sLeaser.sprites[6]);
+
+            //WEAPON.CS ADDS ITEMS IN REVERSE
+            newContainer.AddChild(sLeaser.sprites[2]); //RAG 1
+            newContainer.AddChild(sLeaser.sprites[1]); //SPEAR
+
             newContainer.AddChild(sLeaser.sprites[3]);
             newContainer.AddChild(sLeaser.sprites[4]);
-            rCam.ReturnFContainer("ForegroundLights").AddChild(sLeaser.sprites[5]);
-            rCam.ReturnFContainer("Water").AddChild(sLeaser.sprites[6]);     //line referenced in exlog
-            
-            
+
+            newContainer.AddChild(sLeaser.sprites[0]); //RAG 2
         }
+        
     }
 
     sealed class LSpearProperties : ItemProperties
