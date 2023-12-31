@@ -35,6 +35,7 @@ namespace GuideSlugBase
             // Custom Hooks -- Slugcat
             Content.Register(new LSpearFisobs());
             Content.Register(new VanLizCritob());
+            Content.Register(new ChrLizCritob());
 
             On.Player.Update += Player_Update;
             On.Creature.Grasp.ctor += Grasp_ctor;

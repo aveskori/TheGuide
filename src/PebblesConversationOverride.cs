@@ -32,10 +32,10 @@ namespace Guide
             {
                 if (self.oracle.room.game.GetStorySession.saveState.miscWorldSaveData.SSaiConversationsHad == 1)
                 {
-                    self.action = SSOracleBehavior.Action.General_MarkTalk;
+                    self.action = MoreSlugcatsEnums.SSOracleBehaviorAction.MeetArty_Init;
                     self.dialogBox.NewMessage("Is this reaching you?", 60);
                     self.dialogBox.NewMessage("...", 60);
-                    convBehav.NewAction(SSOracleBehavior.Action.General_MarkTalk, MoreSlugcatsEnums.SSOracleBehaviorAction.MeetArty_Talking);
+                    self.action = MoreSlugcatsEnums.SSOracleBehaviorAction.Pebbles_SlumberParty;
                     
                     self.dialogBox.NewMessage("Why is it that you creatures insist on breaking into my structure and disrupting me?", 120);
                     self.dialogBox.NewMessage("Strange beast. You don't look like a messenger.", 60);

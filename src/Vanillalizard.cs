@@ -14,7 +14,8 @@ namespace Guide
     public static class CustomTemplates
     {
         public static CreatureTemplate.Type vanillaLizard = new(nameof(CustomTemplates), true);
-        public static CreatureTemplate.Type moleMouse = new(nameof(MoleMouse), true);
+        public static CreatureTemplate.Type cherryLizard = new(nameof(CustomTemplates), true);
+        //public static CreatureTemplate.Type moleMouse = new(nameof(MoleMouse), true);
 
         public static void UnregisterValues()
         {
@@ -23,17 +24,23 @@ namespace Guide
                 vanillaLizard.Unregister();
                 vanillaLizard = null;
             }
-            if (moleMouse != null)
+            if (cherryLizard != null)
+            {
+                cherryLizard.Unregister();
+                cherryLizard = null;
+            }
+            /*if (moleMouse != null)
             {
                 moleMouse.Unregister();
                 moleMouse = null;
-            }
+            }*/
         }
     }
     public static class SandboxUnlockID
     {
         public static MultiplayerUnlocks.SandboxUnlockID VLiz = new(nameof(VLiz), true);
-        public static MultiplayerUnlocks.SandboxUnlockID MMouse = new(nameof(MMouse), true);
+        public static MultiplayerUnlocks.SandboxUnlockID ChrLiz = new(nameof(ChrLiz), true);
+        //public static MultiplayerUnlocks.SandboxUnlockID MMouse = new(nameof(MMouse), true);
         public static void UnregisterValues()
         {
             if (VLiz != null)
@@ -41,11 +48,16 @@ namespace Guide
                 VLiz.Unregister();
                 VLiz = null;
             }
-            if (MMouse != null)
+            if (ChrLiz != null)
+            {
+                ChrLiz.Unregister();
+                ChrLiz = null;
+            }
+            /*if (MMouse != null)
             {
                 MMouse.Unregister();
                 MMouse = null;
-            }
+            }*/
         }
     }
 
