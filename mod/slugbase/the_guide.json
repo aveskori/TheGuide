@@ -8,23 +8,23 @@
 		"custom_colors": [
 			{
 				"name": "Body",
-				"story": "FFFFFF",
-				"arena": [ "FFFFFF", "FBC424", "D81E5B", "622774" ]
+				"story": "e8f5ca",
+				"arena": [ "e8f5ca", "FBC424", "D81E5B", "622774" ]
 			},
 			{
 				"name": "Eyes",
 				"story": "02d1d",
-				"arena": [ "111111", "111111", "111111", "FFFFFF" ]
+				"arena": [ "02d1d", "111111", "111111", "FFFFFF" ]
 			},
 			{
 				"name": "Gills",
-				"story": "1b1452",
-				"arena": [ "1b1452", "EF7D04", "ba1212", "131D20" ]
+				"story": "26593c",
+				"arena": [ "26593c", "EF7D04", "ba1212", "131D20" ]
 			},
 			{
-				"name": "Tailspots",
-				"story": "111111",
-				"arena": [ "1b1452", "EF7D04", "ba1212", "131D20" ]
+				"name": "Spots",
+				"story": "60c0bb",
+				"arena": [ "60c0bb", "EF7D04", "ba1212", "131D20" ]
 			}
 		],
 
