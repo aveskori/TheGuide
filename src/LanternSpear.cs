@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
+using Noise;
+using RWCustom;
+using UnityEngine;
 using Fisobs.Core;
 using Fisobs.Items;
 using Fisobs.Properties;
 using Fisobs.Sandbox;
-using UnityEngine;
-using RWCustom;
-
-
+using MoreSlugcats;
 
 namespace LanternSpearFO
 {
@@ -149,7 +149,7 @@ namespace LanternSpearFO
     }
 
     //Sprite
-    sealed class LanternSpear : Spear //, IDrawable
+    sealed class LanternSpear : Spear , IProvideWarmth
     {
         //Lantern Spear Constructor
         public LanternSpear(LSpearAbstract abstr, World world) : base(abstr, world)
@@ -158,7 +158,8 @@ namespace LanternSpearFO
 
             Random.State state = Random.state;
             Random.InitState(abstractPhysicalObject.ID.RandomSeed);
-            this.rag = new Vector2[Random.Range(4, Random.Range(4, 10)), 6];
+            //this.rag = new Vector2[Random.Range(4, Random.Range(4, 10)), 6];
+            this.rag = new Vector2[6, 6]; //WE CAN CHOOSE TO MAKE THE RAG THE SAME LENGTH EACH TIME
             Random.state = state;
 
             //THIS STUFF IS ALL INHERITED FROM SPEARS ALREADY
@@ -215,7 +216,9 @@ namespace LanternSpearFO
 
         private Vector2 RagAttachPos(float timeStacker)
         {
-            return Vector2.Lerp(base.firstChunk.lastPos, base.firstChunk.pos, timeStacker) + Vector3.Slerp(this.lastRotation, this.rotation, timeStacker).ToVector2InPoints() * 15f;
+            //return Vector2.Lerp(base.firstChunk.lastPos, base.firstChunk.pos, timeStacker) + Vector3.Slerp(this.lastRotation, this.rotation, timeStacker) * 15f;
+            Vector3 slerp = Vector3.Slerp(this.lastRotation, this.rotation, timeStacker); //THIS IS DUMB. DNSPY PLEASE DO BETTER
+            return Vector2.Lerp(base.firstChunk.lastPos, base.firstChunk.pos, timeStacker) + new Vector2(slerp.x, slerp.y) * 15f;
         }
         
         //Places object down when spawned
@@ -553,6 +556,8 @@ namespace LanternSpearFO
             //rag drawsprites
             float num = 0f;
             Vector2 a = this.RagAttachPos(timeStacker);
+            Vector2 origRagSpot = a;
+            Vector2 ragSpot = a;
             for (int i = 0; i < this.rag.GetLength(0); i++)
             {
                 float f = (float)i / (float)(this.rag.GetLength(0) - 1);
@@ -567,6 +572,8 @@ namespace LanternSpearFO
                 (sLeaser.sprites[2] as TriangleMesh).MoveVertice(i * 4 + 3, vector + normalized * d + a2 * num2 - camPos);
                 a = vector;
                 num = num2;
+                if (i == 1)
+                    ragSpot = a;
             }
 
 
@@ -574,7 +581,9 @@ namespace LanternSpearFO
             //Lantern l = new Lantern(abstractPhysicalObject); //NAH DON'T SPAWN A LANTERN EVERY FRAME
             //Vector2 vector2 = Vector2.Lerp(l.firstChunk.lastPos, l.firstChunk.pos, timeStacker);
             //Vector2 vector2 = sLeaser.sprites[0].GetPosition();//a; 
-            Vector2 vector2 = this.PointAlongSpear(sLeaser, 1.1f);
+            //Vector2 vector2 = this.PointAlongSpear(sLeaser, 1.1f);
+            //Vector2 vector2 = ragSpot;
+            Vector2 vector2 = Vector2.Lerp(origRagSpot, ragSpot, 0.5f);
             Vector2 vector3 = Vector3.Slerp(this.lastRotation, this.rotation, timeStacker);
             for (int i = 3; i < 5; i++)
             {
@@ -635,15 +644,45 @@ namespace LanternSpearFO
             rCam.ReturnFContainer("Water").AddChild(sLeaser.sprites[6]);
 
             //WEAPON.CS ADDS ITEMS IN REVERSE
+            newContainer.AddChild(sLeaser.sprites[3]); //LANTERN SPRITE 1
+            newContainer.AddChild(sLeaser.sprites[4]); //LANTERN SPRITE 2
+
             newContainer.AddChild(sLeaser.sprites[2]); //RAG 1
             newContainer.AddChild(sLeaser.sprites[1]); //SPEAR
 
-            newContainer.AddChild(sLeaser.sprites[3]);
-            newContainer.AddChild(sLeaser.sprites[4]);
-
             newContainer.AddChild(sLeaser.sprites[0]); //RAG 2
         }
-        
+
+
+        //LANTERN WARMTH STUFF
+        float IProvideWarmth.warmth
+        {
+            get
+            {
+                return RainWorldGame.DefaultHeatSourceWarmth;
+            }
+        }
+
+        Room IProvideWarmth.loadedRoom
+        {
+            get
+            {
+                return this.room;
+            }
+        }
+
+        Vector2 IProvideWarmth.Position()
+        {
+            return base.firstChunk.pos;
+        }
+
+        float IProvideWarmth.range
+        {
+            get
+            {
+                return 350f;
+            }
+        }
     }
 
     sealed class LSpearProperties : ItemProperties
