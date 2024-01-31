@@ -8,7 +8,7 @@ using RWCustom;
 using MoreSlugcats;
 using On.MoreSlugcats;
 
-namespace Guide
+namespace Guide.Creatures
 {
     public class CherryHooks
     {
@@ -21,8 +21,8 @@ namespace Guide
             On.LizardGraphics.ctor += CherryCosmetics;
             On.LizardVoice.GetMyVoiceTrigger += CherryVoice;
             On.LizardGraphics.ApplyPalette += CherryApplySprites;
-            
-            
+
+
         }
 
 
@@ -82,23 +82,23 @@ namespace Guide
 
                 num = self.AddCosmetic(num, new LizardCosmetics.JumpRings(self, num));
                 num = self.AddCosmetic(num, new LizardCosmetics.LongShoulderScales(self, num));
-                if (Random.value < 0.4f) 
+                if (Random.value < 0.4f)
                 {
                     var e = new LizardCosmetics.SpineSpikes(self, num);
-                    
+
                     num = self.AddCosmetic(num, e);
                 }
-                if(Random.value < 0.2f)
+                if (Random.value < 0.2f)
                 {
                     var e = new LizardCosmetics.LongHeadScales(self, num);
                     e.colored = true;
-                    
+
                     num = self.AddCosmetic(num, e);
                 }
                 if (Random.value < 0.8f)
                 {
                     var e = new LizardCosmetics.BumpHawk(self, num);
-                    
+
                     e.numberOfSprites = e.bumps * 2;
                     num = self.AddCosmetic(num, e);
                 }
@@ -132,7 +132,7 @@ namespace Guide
                 float num = 1f - Mathf.Pow(0.5f + 0.5f * Mathf.Sin(Mathf.Lerp(self.lastBlink, self.blink, timeStacker) * 2f * 3.1415927f), 1.5f + self.lizard.AI.excitement * 1.5f);
                 if (self.headColorSetter != 0f)
                 {
-                    num = Mathf.Lerp(num, (self.headColorSetter > 0f) ? 1f : 0f, Mathf.Abs(self.headColorSetter));
+                    num = Mathf.Lerp(num, self.headColorSetter > 0f ? 1f : 0f, Mathf.Abs(self.headColorSetter));
                 }
                 if (self.flicker > 10)
                 {
@@ -154,7 +154,7 @@ namespace Guide
                     int num = i * self.bumps;
                     for (int j = self.startSprite; j < self.startSprite + self.bumps; j++)
                     {
-                        float f = Mathf.Lerp(0.05f, self.spineLength / self.lGraphics.BodyAndTailLength, Mathf.InverseLerp((float)self.startSprite, (float)(self.startSprite + self.bumps - 1), (float)j));
+                        float f = Mathf.Lerp(0.05f, self.spineLength / self.lGraphics.BodyAndTailLength, Mathf.InverseLerp(self.startSprite, self.startSprite + self.bumps - 1, j));
                         sLeaser.sprites[j + num].color = self.lGraphics.BodyColor(f);
                     }
 
@@ -168,7 +168,7 @@ namespace Guide
             {
 
                 var temp = orig(MoreSlugcats.MoreSlugcatsEnums.CreatureTemplateType.ZoopLizard, lizardAncestor, pinkTemplate, blueTemplate, greenTemplate); //Sets up the parameters to use Black Lizard’s parameters as a base.
-                var breedparams = (temp.breedParameters as LizardBreedParams);
+                var breedparams = temp.breedParameters as LizardBreedParams;
                 temp.type = type; //set the type to our creature’s type
                 temp.name = "Cherry Lizard";
                 breedparams.tailSegments = Random.Range(10, 15);
@@ -193,7 +193,7 @@ namespace Guide
                 breedparams.terrainSpeeds[2] = new(1f, 1f, 1f, 1f);
                 breedparams.terrainSpeeds[3] = new(1f, 1f, 1f, 1f);
                 breedparams.swimSpeed = 0.8f;
-                
+
                 breedparams.loungeDelay = 10;
                 breedparams.loungeDistance = 1500;
                 breedparams.loungeSpeed = 1.5f;
@@ -253,7 +253,7 @@ namespace Guide
 
         public override IEnumerable<string> WorldFileAliases()
         {
-            return new[] { "CherryL" }; 
+            return new[] { "CherryL" };
         }
 
         public override IEnumerable<RoomAttractivenessPanel.Category> DevtoolsRoomAttraction() => new[] { RoomAttractivenessPanel.Category.Lizards, RoomAttractivenessPanel.Category.LikesWater };
@@ -334,5 +334,5 @@ namespace Guide
         }
     }
 
-    
+
 }

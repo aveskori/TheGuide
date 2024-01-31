@@ -8,17 +8,17 @@ using RWCustom;
 
 
 
-namespace LanternSpearFO
+namespace Guide.Objects
 {
     sealed class LSpearFisobs : Fisob
     {
         public static readonly AbstractPhysicalObject.AbstractObjectType AbstrLaSpear = new("AbstrLaSpear", true);
-       
+
         public static readonly MultiplayerUnlocks.SandboxUnlockID laSpear = new("LanternSpear", true);
         public static readonly PlacedObject.MultiplayerItemData.Type GuideSpear = new("GuideSpear", true);
 
-        
-        
+
+
 
         public LSpearFisobs() : base(AbstrLaSpear)
         {
@@ -75,7 +75,7 @@ namespace LanternSpearFO
         {
             return base.Properties(forObject);
         }
-        
+
     }
 
     //Abstract
@@ -140,7 +140,7 @@ namespace LanternSpearFO
 
         public override Color SpriteColor(int data)
         {
-            return RWCustom.Custom.HSL2RGB(data / 1000f, 0.65f, 0.4f);
+            return Custom.HSL2RGB(data / 1000f, 0.65f, 0.4f);
         }
         public override string SpriteName(int data)
         {
@@ -154,11 +154,11 @@ namespace LanternSpearFO
         //Lantern Spear Constructor
         public LanternSpear(LSpearAbstract abstr, World world) : base(abstr, world)
         {
-            
+
 
             Random.State state = Random.state;
             Random.InitState(abstractPhysicalObject.ID.RandomSeed);
-            this.rag = new Vector2[Random.Range(4, Random.Range(4, 10)), 6];
+            rag = new Vector2[Random.Range(4, Random.Range(4, 10)), 6];
             Random.state = state;
 
             //THIS STUFF IS ALL INHERITED FROM SPEARS ALREADY
@@ -195,12 +195,12 @@ namespace LanternSpearFO
             firstChunk.loudness = 7f;
             */
             //LANTERN PARTS
-            this.flicker = new float[2, 3];
-            for (int i = 0; i < this.flicker.GetLength(0); i++)
+            flicker = new float[2, 3];
+            for (int i = 0; i < flicker.GetLength(0); i++)
             {
-                this.flicker[i, 0] = 1f;
-                this.flicker[i, 1] = 1f;
-                this.flicker[i, 2] = 1f;
+                flicker[i, 0] = 1f;
+                flicker[i, 1] = 1f;
+                flicker[i, 2] = 1f;
             }
 
         }
@@ -211,18 +211,18 @@ namespace LanternSpearFO
 
         private SharedPhysics.TerrainCollisionData scratchTerrainCollisionData = new SharedPhysics.TerrainCollisionData();
         private float conRad = 7f;
-        
+
 
         private Vector2 RagAttachPos(float timeStacker)
         {
-            return Vector2.Lerp(base.firstChunk.lastPos, base.firstChunk.pos, timeStacker) + Vector3.Slerp(this.lastRotation, this.rotation, timeStacker).ToVector2InPoints() * 15f;
+            return Vector2.Lerp(firstChunk.lastPos, firstChunk.pos, timeStacker) + Vector3.Slerp(lastRotation, rotation, timeStacker).ToVector2InPoints() * 15f;
         }
-        
+
         //Places object down when spawned
         public override void PlaceInRoom(Room placeRoom)
         {
             base.PlaceInRoom(placeRoom);
-            this.ResetRag();
+            ResetRag();
 
             //Vector2 center = placeRoom.MiddleOfTile(abstractPhysicalObject.pos); //NO DONT DO THIS
             //bodyChunks[0].HardSetPosition(new Vector2(0, 0) * 20f + center);
@@ -232,78 +232,78 @@ namespace LanternSpearFO
         public override void NewRoom(Room newRoom)
         {
             base.NewRoom(newRoom);
-            this.ResetRag();
+            ResetRag();
         }
 
         public override void Update(bool eu)
         {
             //ExplosiveSpear rag code adapted
             base.Update(eu);
-            for (int i = 0; i < this.rag.GetLength(0); i++)
+            for (int i = 0; i < rag.GetLength(0); i++)
             {
-                float t = (float)i / (float)(this.rag.GetLength(0) - 1);
-                this.rag[i, 1] = this.rag[i, 0];
-                this.rag[i, 0] += this.rag[i, 2];
-                this.rag[i, 2] -= this.rotation * Mathf.InverseLerp(1f, 0f, (float)i) * 0.8f;
-                this.rag[i, 4] = this.rag[i, 3];
-                this.rag[i, 3] = (this.rag[i, 3] + this.rag[i, 5] * Custom.LerpMap(Vector2.Distance(this.rag[i, 0], this.rag[i, 1]), 1f, 18f, 0.05f, 0.3f)).normalized;
-                this.rag[i, 5] = (this.rag[i, 5] + Custom.RNV() * Random.value * Mathf.Pow(Mathf.InverseLerp(1f, 18f, Vector2.Distance(this.rag[i, 0], this.rag[i, 1])), 0.3f)).normalized;
-                if (this.room.PointSubmerged(this.rag[i, 0]))
+                float t = i / (float)(rag.GetLength(0) - 1);
+                rag[i, 1] = rag[i, 0];
+                rag[i, 0] += rag[i, 2];
+                rag[i, 2] -= rotation * Mathf.InverseLerp(1f, 0f, i) * 0.8f;
+                rag[i, 4] = rag[i, 3];
+                rag[i, 3] = (rag[i, 3] + rag[i, 5] * Custom.LerpMap(Vector2.Distance(rag[i, 0], rag[i, 1]), 1f, 18f, 0.05f, 0.3f)).normalized;
+                rag[i, 5] = (rag[i, 5] + Custom.RNV() * Random.value * Mathf.Pow(Mathf.InverseLerp(1f, 18f, Vector2.Distance(rag[i, 0], rag[i, 1])), 0.3f)).normalized;
+                if (room.PointSubmerged(rag[i, 0]))
                 {
-                    this.rag[i, 2] *= Custom.LerpMap(this.rag[i, 2].magnitude, 1f, 10f, 1f, 0.5f, Mathf.Lerp(1.4f, 0.4f, t));
-                    this.rag[i, 2].y += 0.05f;
-                    this.rag[i, 2] += Custom.RNV() * 0.1f;
+                    rag[i, 2] *= Custom.LerpMap(rag[i, 2].magnitude, 1f, 10f, 1f, 0.5f, Mathf.Lerp(1.4f, 0.4f, t));
+                    rag[i, 2].y += 0.05f;
+                    rag[i, 2] += Custom.RNV() * 0.1f;
                 }
                 else
                 {
-                    this.rag[i, 2] *= Custom.LerpMap(Vector2.Distance(this.rag[i, 0], this.rag[i, 1]), 1f, 6f, 0.999f, 0.7f, Mathf.Lerp(1.5f, 0.5f, t));
-                    this.rag[i, 2].y -= this.room.gravity * Custom.LerpMap(Vector2.Distance(this.rag[i, 0], this.rag[i, 1]), 1f, 6f, 0.6f, 0f);
-                    if (i % 3 == 2 || i == this.rag.GetLength(0) - 1)
+                    rag[i, 2] *= Custom.LerpMap(Vector2.Distance(rag[i, 0], rag[i, 1]), 1f, 6f, 0.999f, 0.7f, Mathf.Lerp(1.5f, 0.5f, t));
+                    rag[i, 2].y -= room.gravity * Custom.LerpMap(Vector2.Distance(rag[i, 0], rag[i, 1]), 1f, 6f, 0.6f, 0f);
+                    if (i % 3 == 2 || i == rag.GetLength(0) - 1)
                     {
-                        SharedPhysics.TerrainCollisionData terrainCollisionData = this.scratchTerrainCollisionData.Set(this.rag[i, 0], this.rag[i, 1], this.rag[i, 2], 1f, new IntVector2(0, 0), false);
-                        terrainCollisionData = SharedPhysics.HorizontalCollision(this.room, terrainCollisionData);
-                        terrainCollisionData = SharedPhysics.VerticalCollision(this.room, terrainCollisionData);
-                        terrainCollisionData = SharedPhysics.SlopesVertically(this.room, terrainCollisionData);
-                        this.rag[i, 0] = terrainCollisionData.pos;
-                        this.rag[i, 2] = terrainCollisionData.vel;
+                        SharedPhysics.TerrainCollisionData terrainCollisionData = scratchTerrainCollisionData.Set(rag[i, 0], rag[i, 1], rag[i, 2], 1f, new IntVector2(0, 0), false);
+                        terrainCollisionData = SharedPhysics.HorizontalCollision(room, terrainCollisionData);
+                        terrainCollisionData = SharedPhysics.VerticalCollision(room, terrainCollisionData);
+                        terrainCollisionData = SharedPhysics.SlopesVertically(room, terrainCollisionData);
+                        rag[i, 0] = terrainCollisionData.pos;
+                        rag[i, 2] = terrainCollisionData.vel;
                         if (terrainCollisionData.contactPoint.x != 0)
                         {
-                            this.rag[i, 2].y *= 0.6f;
+                            rag[i, 2].y *= 0.6f;
                         }
                         if (terrainCollisionData.contactPoint.y != 0)
                         {
-                            this.rag[i, 2].x *= 0.6f;
+                            rag[i, 2].x *= 0.6f;
                         }
                     }
                 }
             }
-            for (int j = 0; j < this.rag.GetLength(0); j++)
+            for (int j = 0; j < rag.GetLength(0); j++)
             {
                 if (j > 0)
                 {
-                    Vector2 normalized = (this.rag[j, 0] - this.rag[j - 1, 0]).normalized;
-                    float num = Vector2.Distance(this.rag[j, 0], this.rag[j - 1, 0]);
-                    float d = (num > this.conRad) ? 0.5f : 0.25f;
-                    this.rag[j, 0] += normalized * (this.conRad - num) * d;
-                    this.rag[j, 2] += normalized * (this.conRad - num) * d;
-                    this.rag[j - 1, 0] -= normalized * (this.conRad - num) * d;
-                    this.rag[j - 1, 2] -= normalized * (this.conRad - num) * d;
+                    Vector2 normalized = (rag[j, 0] - rag[j - 1, 0]).normalized;
+                    float num = Vector2.Distance(rag[j, 0], rag[j - 1, 0]);
+                    float d = num > conRad ? 0.5f : 0.25f;
+                    rag[j, 0] += normalized * (conRad - num) * d;
+                    rag[j, 2] += normalized * (conRad - num) * d;
+                    rag[j - 1, 0] -= normalized * (conRad - num) * d;
+                    rag[j - 1, 2] -= normalized * (conRad - num) * d;
                     if (j > 1)
                     {
-                        normalized = (this.rag[j, 0] - this.rag[j - 2, 0]).normalized;
-                        this.rag[j, 2] += normalized * 0.2f;
-                        this.rag[j - 2, 2] -= normalized * 0.2f;
+                        normalized = (rag[j, 0] - rag[j - 2, 0]).normalized;
+                        rag[j, 2] += normalized * 0.2f;
+                        rag[j - 2, 2] -= normalized * 0.2f;
                     }
-                    if (j < this.rag.GetLength(0) - 1)
+                    if (j < rag.GetLength(0) - 1)
                     {
-                        this.rag[j, 3] = Vector3.Slerp(this.rag[j, 3], (this.rag[j - 1, 3] * 2f + this.rag[j + 1, 3]) / 3f, 0.1f);
-                        this.rag[j, 5] = Vector3.Slerp(this.rag[j, 5], (this.rag[j - 1, 5] * 2f + this.rag[j + 1, 5]) / 3f, Custom.LerpMap(Vector2.Distance(this.rag[j, 1], this.rag[j, 0]), 1f, 8f, 0.05f, 0.5f));
+                        rag[j, 3] = Vector3.Slerp(rag[j, 3], (rag[j - 1, 3] * 2f + rag[j + 1, 3]) / 3f, 0.1f);
+                        rag[j, 5] = Vector3.Slerp(rag[j, 5], (rag[j - 1, 5] * 2f + rag[j + 1, 5]) / 3f, Custom.LerpMap(Vector2.Distance(rag[j, 1], rag[j, 0]), 1f, 8f, 0.05f, 0.5f));
                     }
                 }
                 else
                 {
-                    this.rag[j, 0] = this.RagAttachPos(1f);
-                    this.rag[j, 2] *= 0f;
+                    rag[j, 0] = RagAttachPos(1f);
+                    rag[j, 2] *= 0f;
                 }
             }
             //spear update
@@ -358,35 +358,35 @@ namespace LanternSpearFO
             //Debug.Log($"%%%%% LANTERN FOR STATEMENT%%%%%");
 
 
-            if (this.lightSource == null)
+            if (lightSource == null)
             {
-                this.lightSource = new LightSource(base.bodyChunks[0].pos, false, new Color(1f, 0.2f, 0f), this);
-                this.lightSource.affectedByPaletteDarkness = 0.5f;
-                this.room.AddObject(this.lightSource);
+                lightSource = new LightSource(bodyChunks[0].pos, false, new Color(1f, 0.2f, 0f), this);
+                lightSource.affectedByPaletteDarkness = 0.5f;
+                room.AddObject(lightSource);
                 //Debug.Log($"%%%% LIGHT SOURCE %%%%");
             }
             else
             {
-                this.lightSource.setPos = new Vector2?(base.bodyChunks[0].pos);
-                this.lightSource.setRad = new float?(250f * this.flicker[0, 0]);
-                this.lightSource.setAlpha = new float?(1f);
+                lightSource.setPos = new Vector2?(bodyChunks[0].pos);
+                lightSource.setRad = new float?(250f * flicker[0, 0]);
+                lightSource.setAlpha = new float?(1f);
                 //Debug.Log($"%%%% ELSE 1 %%%%");
-                if (this.lightSource.slatedForDeletetion || this.lightSource.room != this.room)
+                if (lightSource.slatedForDeletetion || lightSource.room != room)
                 {
-                    this.lightSource = null;
+                    lightSource = null;
                 }
                 //Debug.Log($"%%%% ELSE 2 %%%%");
             }
-            for (int i = 0; i < this.flicker.GetLength(0); i++)
+            for (int i = 0; i < flicker.GetLength(0); i++)
             {
-                this.flicker[i, 1] = this.flicker[i, 0];
-                this.flicker[i, 0] += Mathf.Pow(Random.value, 3f) * 0.1f * ((Random.value < 0.5f) ? -1f : 1f);
-                this.flicker[i, 0] = Custom.LerpAndTick(this.flicker[i, 0], this.flicker[i, 2], 0.05f, 0.033333335f);
+                flicker[i, 1] = flicker[i, 0];
+                flicker[i, 0] += Mathf.Pow(Random.value, 3f) * 0.1f * (Random.value < 0.5f ? -1f : 1f);
+                flicker[i, 0] = Custom.LerpAndTick(flicker[i, 0], flicker[i, 2], 0.05f, 0.033333335f);
                 if (Random.value < 0.2f)
                 {
-                    this.flicker[i, 2] = 1f + Mathf.Pow(Random.value, 3f) * 0.2f * ((Random.value < 0.5f) ? -1f : 1f);
+                    flicker[i, 2] = 1f + Mathf.Pow(Random.value, 3f) * 0.2f * (Random.value < 0.5f ? -1f : 1f);
                 }
-                this.flicker[i, 2] = Mathf.Lerp(this.flicker[i, 2], 1f, 0.01f);
+                flicker[i, 2] = Mathf.Lerp(flicker[i, 2], 1f, 0.01f);
             }
             //ROTATION IS HANDLED IN SPEAR.CS DRAWSPRITES()!
             //this.lastRotation = this.rotation; 
@@ -411,12 +411,12 @@ namespace LanternSpearFO
         //Resets rag pos
         public void ResetRag()
         {
-            Vector2 vector = this.RagAttachPos(1f);
-            for (int i = 0; i < this.rag.GetLength(0); i++)
+            Vector2 vector = RagAttachPos(1f);
+            for (int i = 0; i < rag.GetLength(0); i++)
             {
-                this.rag[i, 0] = vector;
-                this.rag[i, 1] = vector;
-                this.rag[i, 2] *= 0f;
+                rag[i, 0] = vector;
+                rag[i, 1] = vector;
+                rag[i, 2] *= 0f;
             }
         }
 
@@ -424,31 +424,31 @@ namespace LanternSpearFO
         public Vector2 PointAlongSpear(RoomCamera.SpriteLeaser sLeaser, float percent)
         {
             float height = sLeaser.sprites[0].element.sourceRect.height;
-            return new Vector2(base.firstChunk.pos.x, base.firstChunk.pos.y) - Custom.DegToVec(sLeaser.sprites[0].rotation) * height * sLeaser.sprites[0].anchorY + Custom.DegToVec(sLeaser.sprites[0].rotation) * height * percent;
+            return new Vector2(firstChunk.pos.x, firstChunk.pos.y) - Custom.DegToVec(sLeaser.sprites[0].rotation) * height * sLeaser.sprites[0].anchorY + Custom.DegToVec(sLeaser.sprites[0].rotation) * height * percent;
         }
 
         public Vector2 ZapperAttachPos(float timeStacker, int node)
         {
-            Vector3 vector = Vector3.Slerp(this.lastRotation, this.rotation, timeStacker);
-            Vector3 vector2 = Vector3.Slerp(this.lastRotation, this.rotation, timeStacker) * (float)node * -4f;
-            return Vector2.Lerp(base.firstChunk.lastPos, base.firstChunk.pos, timeStacker) + new Vector2(vector.x, vector.y) * 30f + new Vector2(vector2.x, vector2.y);
+            Vector3 vector = Vector3.Slerp(lastRotation, rotation, timeStacker);
+            Vector3 vector2 = Vector3.Slerp(lastRotation, rotation, timeStacker) * node * -4f;
+            return Vector2.Lerp(firstChunk.lastPos, firstChunk.pos, timeStacker) + new Vector2(vector.x, vector.y) * 30f + new Vector2(vector2.x, vector2.y);
         }
 
 
         public override void InitiateSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
         {
-            
-            if (this.stuckIns != null)
+
+            if (stuckIns != null)
             {
-                rCam.ReturnFContainer("HUD").AddChild(this.stuckIns.label);
+                rCam.ReturnFContainer("HUD").AddChild(stuckIns.label);
             }
             sLeaser.sprites = new FSprite[7];
             // Adapted from ExplosiveSpear, makes spear and rag sprites
             sLeaser.sprites[1] = new FSprite("SmallSpear", true); //FOR LAYERING
             sLeaser.sprites[0] = new FSprite("SpearRag", true);
-            sLeaser.sprites[2] = TriangleMesh.MakeLongMesh(this.rag.GetLength(0), false, true);
+            sLeaser.sprites[2] = TriangleMesh.MakeLongMesh(rag.GetLength(0), false, true);
             sLeaser.sprites[2].shader = rCam.game.rainWorld.Shaders["JaggedSquare"];
-            sLeaser.sprites[2].alpha = rCam.game.SeededRandom(this.abstractPhysicalObject.ID.RandomSeed);
+            sLeaser.sprites[2].alpha = rCam.game.SeededRandom(abstractPhysicalObject.ID.RandomSeed);
 
             // Added Lantern sprite
             sLeaser.sprites[3] = new FSprite("DangleFruit0A", true);
@@ -463,34 +463,34 @@ namespace LanternSpearFO
             sLeaser.sprites[6] = new FSprite("Futile_White");
             sLeaser.sprites[6].shader = rCam.game.rainWorld.Shaders["LightSource"];
 
-            this.AddToContainer(sLeaser, rCam, null);
+            AddToContainer(sLeaser, rCam, null);
         }
 
 
         public override void DrawSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
         {
             //PART OF BASE DRAWSPRITES THAT IS SPECIFIC TO EXPLOSIVE SPEARS NEEDS TO RUN HERE TOO PROBABLY?
-            Vector2 vector0 = Vector2.Lerp(base.firstChunk.lastPos, base.firstChunk.pos, timeStacker);
-            if (this.vibrate > 0)
+            Vector2 vector0 = Vector2.Lerp(firstChunk.lastPos, firstChunk.pos, timeStacker);
+            if (vibrate > 0)
             {
                 vector0 += Custom.DegToVec(Random.value * 360f) * 2f * Random.value;
             }
-            Vector3 v = Vector3.Slerp(this.lastRotation, this.rotation, timeStacker);
+            Vector3 v = Vector3.Slerp(lastRotation, rotation, timeStacker);
             //for (int i = 1; i >= 0; i--) //THIS NORMALLY CHECKS FOR EXPLOSIVE OR BUG SPEAR
             //{
             sLeaser.sprites[1].x = vector0.x - camPos.x;
             sLeaser.sprites[1].y = vector0.y - camPos.y;
-            sLeaser.sprites[1].anchorY = Mathf.Lerp(this.lastPivotAtTip ? 0.85f : 0.5f, this.pivotAtTip ? 0.85f : 0.5f, timeStacker);
+            sLeaser.sprites[1].anchorY = Mathf.Lerp(lastPivotAtTip ? 0.85f : 0.5f, pivotAtTip ? 0.85f : 0.5f, timeStacker);
             sLeaser.sprites[1].rotation = Custom.AimFromOneVectorToAnother(new Vector2(0f, 0f), v);
             //}
 
 
             base.DrawSprites(sLeaser, rCam, timeStacker, camPos);
-            
-            
-            sLeaser.sprites[0].color = this.ragColor;
+
+
+            sLeaser.sprites[0].color = ragColor;
             //sLeaser.sprites[1].color = Color.blue;
-            sLeaser.sprites[2].color = this.ragColor;
+            sLeaser.sprites[2].color = ragColor;
             //spear DrawSprites
             /*
             if (this.stuckIns != null && this.room != null)
@@ -529,22 +529,22 @@ namespace LanternSpearFO
 
 
             //FORGOT A FEW
-            if (this.blink > 0)
+            if (blink > 0)
             {
-                if (this.blink > 1 && Random.value < 0.5f)
+                if (blink > 1 && Random.value < 0.5f)
                 {
                     sLeaser.sprites[1].color = new Color(1f, 1f, 1f);
                 }
                 else
                 {
-                    sLeaser.sprites[1].color = this.color;
+                    sLeaser.sprites[1].color = color;
                 }
             }
-            else if (sLeaser.sprites[1].color != this.color)
+            else if (sLeaser.sprites[1].color != color)
             {
-                sLeaser.sprites[1].color = this.color;
+                sLeaser.sprites[1].color = color;
             }
-            if (base.mode == Weapon.Mode.Free && base.firstChunk.ContactPoint.y < 0)
+            if (mode == Mode.Free && firstChunk.ContactPoint.y < 0)
             {
                 sLeaser.sprites[0].anchorY += 0.2f;
             }
@@ -552,12 +552,12 @@ namespace LanternSpearFO
 
             //rag drawsprites
             float num = 0f;
-            Vector2 a = this.RagAttachPos(timeStacker);
-            for (int i = 0; i < this.rag.GetLength(0); i++)
+            Vector2 a = RagAttachPos(timeStacker);
+            for (int i = 0; i < rag.GetLength(0); i++)
             {
-                float f = (float)i / (float)(this.rag.GetLength(0) - 1);
-                Vector2 vector = Vector2.Lerp(this.rag[i, 1], this.rag[i, 0], timeStacker);
-                float num2 = (2f + 2f * Mathf.Sin(Mathf.Pow(f, 2f) * 3.1415927f)) * Vector3.Slerp(this.rag[i, 4], this.rag[i, 3], timeStacker).x;
+                float f = i / (float)(rag.GetLength(0) - 1);
+                Vector2 vector = Vector2.Lerp(rag[i, 1], rag[i, 0], timeStacker);
+                float num2 = (2f + 2f * Mathf.Sin(Mathf.Pow(f, 2f) * 3.1415927f)) * Vector3.Slerp(rag[i, 4], rag[i, 3], timeStacker).x;
                 Vector2 normalized = (a - vector).normalized;
                 Vector2 a2 = Custom.PerpendicularVector(normalized);
                 float d = Vector2.Distance(a, vector) / 5f;
@@ -574,8 +574,8 @@ namespace LanternSpearFO
             //Lantern l = new Lantern(abstractPhysicalObject); //NAH DON'T SPAWN A LANTERN EVERY FRAME
             //Vector2 vector2 = Vector2.Lerp(l.firstChunk.lastPos, l.firstChunk.pos, timeStacker);
             //Vector2 vector2 = sLeaser.sprites[0].GetPosition();//a; 
-            Vector2 vector2 = this.PointAlongSpear(sLeaser, 1.1f);
-            Vector2 vector3 = Vector3.Slerp(this.lastRotation, this.rotation, timeStacker);
+            Vector2 vector2 = PointAlongSpear(sLeaser, 1.1f);
+            Vector2 vector3 = Vector3.Slerp(lastRotation, rotation, timeStacker);
             for (int i = 3; i < 5; i++)
             {
                 sLeaser.sprites[i].x = vector2.x - camPos.x;
@@ -584,22 +584,22 @@ namespace LanternSpearFO
             }
             sLeaser.sprites[5].x = vector2.x - vector3.x * 3f - camPos.x;
             sLeaser.sprites[5].y = vector2.y - vector3.y * 3f - camPos.y;
-            sLeaser.sprites[5].scale = Mathf.Lerp(this.flicker[0, 1], this.flicker[0, 0], timeStacker) * 2f;
+            sLeaser.sprites[5].scale = Mathf.Lerp(flicker[0, 1], flicker[0, 0], timeStacker) * 2f;
             sLeaser.sprites[6].x = vector2.x - vector3.x * 3f - camPos.x;
             sLeaser.sprites[6].y = vector2.y - vector3.y * 3f - camPos.y;
-            sLeaser.sprites[6].scale = Mathf.Lerp(this.flicker[1, 1], this.flicker[1, 0], timeStacker) * 200f / 8f;
-            if (base.slatedForDeletetion || this.room != rCam.room)
+            sLeaser.sprites[6].scale = Mathf.Lerp(flicker[1, 1], flicker[1, 0], timeStacker) * 200f / 8f;
+            if (slatedForDeletetion || room != rCam.room)
             {
                 sLeaser.CleanSpritesAndRemove();
             }
         }
 
-        
+
         public override void ApplyPalette(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, RoomPalette palette)
         {
             base.ApplyPalette(sLeaser, rCam, palette);
-            sLeaser.sprites[1].color = this.color;
-            this.ragColor = Color.Lerp(new Color(0.25f, 1f, 0f), palette.blackColor, 0.1f + 0.8f * palette.darkness);
+            sLeaser.sprites[1].color = color;
+            ragColor = Color.Lerp(new Color(0.25f, 1f, 0f), palette.blackColor, 0.1f + 0.8f * palette.darkness);
 
             //THESE COLORS WILL GET UPDATED ON DRAW
             //sLeaser.sprites[0].color = new Color(0.25f, 1f, 0f);
@@ -607,12 +607,12 @@ namespace LanternSpearFO
             //sLeaser.sprites[2].color = new Color(0.25f, 1f, 0f);
 
             //LANTERN PALLET
-            
+
             sLeaser.sprites[3].color = new Color(1f, 0.2f, 0f);
             sLeaser.sprites[4].color = new Color(1f, 1f, 1f);
             sLeaser.sprites[5].color = Color.Lerp(new Color(1f, 0.2f, 0f), new Color(1f, 1f, 1f), 0.3f);
             sLeaser.sprites[6].color = new Color(1f, 0.4f, 0.3f);
-            
+
         }
 
 
@@ -630,7 +630,7 @@ namespace LanternSpearFO
             }
 
             //CAN I SWAP THE LAYER ORDER THIS WAY? -YES ACTUALLY
-            
+
             rCam.ReturnFContainer("GrabShaders").AddChild(sLeaser.sprites[5]);
             rCam.ReturnFContainer("Water").AddChild(sLeaser.sprites[6]);
 
@@ -643,7 +643,7 @@ namespace LanternSpearFO
 
             newContainer.AddChild(sLeaser.sprites[0]); //RAG 2
         }
-        
+
     }
 
     sealed class LSpearProperties : ItemProperties
@@ -651,7 +651,7 @@ namespace LanternSpearFO
         public override void Throwable(Player player, ref bool throwable)
         => throwable = false;
 
-        public override void Grabability (Player player, ref Player.ObjectGrabability grabability)
+        public override void Grabability(Player player, ref Player.ObjectGrabability grabability)
         {
             //Player can only grab one Lspear at a time
             grabability = Player.ObjectGrabability.OneHand;

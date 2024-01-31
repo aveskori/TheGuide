@@ -8,14 +8,14 @@ using RWCustom;
 using MoreSlugcats;
 using On.MoreSlugcats;
 
-namespace Guide
+namespace Guide.Creatures
 {
 
     public static class CustomTemplates
     {
         public static CreatureTemplate.Type vanillaLizard = new(nameof(CustomTemplates), true);
         public static CreatureTemplate.Type cherryLizard = new(nameof(CustomTemplates), true);
-        //public static CreatureTemplate.Type moleMouse = new(nameof(MoleMouse), true);
+        public static CreatureTemplate.Type moleMouse = new(nameof(CustomTemplates), true);
 
         public static void UnregisterValues()
         {
@@ -29,18 +29,18 @@ namespace Guide
                 cherryLizard.Unregister();
                 cherryLizard = null;
             }
-            /*if (moleMouse != null)
+            if (moleMouse != null)
             {
                 moleMouse.Unregister();
                 moleMouse = null;
-            }*/
+            }
         }
     }
     public static class SandboxUnlockID
     {
         public static MultiplayerUnlocks.SandboxUnlockID VLiz = new(nameof(VLiz), true);
         public static MultiplayerUnlocks.SandboxUnlockID ChrLiz = new(nameof(ChrLiz), true);
-        //public static MultiplayerUnlocks.SandboxUnlockID MMouse = new(nameof(MMouse), true);
+        public static MultiplayerUnlocks.SandboxUnlockID MMouse = new(nameof(MMouse), true);
         public static void UnregisterValues()
         {
             if (VLiz != null)
@@ -53,35 +53,35 @@ namespace Guide
                 ChrLiz.Unregister();
                 ChrLiz = null;
             }
-            /*if (MMouse != null)
+            if (MMouse != null)
             {
                 MMouse.Unregister();
                 MMouse = null;
-            }*/
+            }
         }
     }
 
-        //sandbox setup
-        
-        public class VanHooks
+    //sandbox setup
+
+    public class VanHooks
+    {
+        public static void Hooks()
         {
-            public static void Hooks()
-            {
-                On.LizardBreeds.BreedTemplate_Type_CreatureTemplate_CreatureTemplate_CreatureTemplate_CreatureTemplate += VanBreed;
-                On.LizardAI.LurkTracker.Update += LurkTracker_Update;
-                On.LizardCosmetics.TailFin.DrawSprites += VanTailFin;
-                On.LizardGraphics.HeadColor += VanHeadColor;
-                On.LizardGraphics.BodyColor += VanBodyColor;
-                On.LizardGraphics.ctor += VanCosmetics;
-                On.LizardVoice.GetMyVoiceTrigger += VanVoice;
-                On.LizardAI.ctor += VanSpit;
-                On.LizardAI.Update += VnSpitFix;
-                //On.LizardAI.ctor += AbLeap;
-                On.LizardAI.AggressiveBehavior += VnSpitAggressive;
-                On.LizardGraphics.ApplyPalette += VanApplySprites;
-                
-            
-            }
+            On.LizardBreeds.BreedTemplate_Type_CreatureTemplate_CreatureTemplate_CreatureTemplate_CreatureTemplate += VanBreed;
+            On.LizardAI.LurkTracker.Update += LurkTracker_Update;
+            On.LizardCosmetics.TailFin.DrawSprites += VanTailFin;
+            On.LizardGraphics.HeadColor += VanHeadColor;
+            On.LizardGraphics.BodyColor += VanBodyColor;
+            On.LizardGraphics.ctor += VanCosmetics;
+            On.LizardVoice.GetMyVoiceTrigger += VanVoice;
+            On.LizardAI.ctor += VanSpit;
+            On.LizardAI.Update += VnSpitFix;
+            //On.LizardAI.ctor += AbLeap;
+            On.LizardAI.AggressiveBehavior += VnSpitAggressive;
+            On.LizardGraphics.ApplyPalette += VanApplySprites;
+
+
+        }
 
         private static void VanApplySprites(On.LizardGraphics.orig_ApplyPalette orig, LizardGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, RoomPalette palette)
         {
@@ -101,183 +101,183 @@ namespace Guide
 
             }
         }*/
-            private static void VnSpitAggressive(On.LizardAI.orig_AggressiveBehavior orig, LizardAI self, Tracker.CreatureRepresentation target, float tongueChance)
+        private static void VnSpitAggressive(On.LizardAI.orig_AggressiveBehavior orig, LizardAI self, Tracker.CreatureRepresentation target, float tongueChance)
+        {
+            orig(self, target, tongueChance);
+            if (self.lizard.Template.type == CustomTemplates.vanillaLizard && target.VisualContact)
             {
-                orig(self, target, tongueChance);
-                if (self.lizard.Template.type == CustomTemplates.vanillaLizard && target.VisualContact)
-                {
-                    self.lizard.JawOpen = Mathf.Clamp(self.lizard.JawOpen + 0.1f, 0f, 1f);
-                }
+                self.lizard.JawOpen = Mathf.Clamp(self.lizard.JawOpen + 0.1f, 0f, 1f);
+            }
+        }
+
+        private static void VnSpitFix(On.LizardAI.orig_Update orig, LizardAI self)
+        {
+            orig(self);
+            if (self.lizard.Template.type == CustomTemplates.vanillaLizard && self.redSpitAI.spitting)
+            {
+                self.lizard.EnterAnimation(Lizard.Animation.Spit, false);
+            }
+        }
+
+        private static void VanSpit(On.LizardAI.orig_ctor orig, LizardAI self, AbstractCreature creature, World world)
+        {
+            orig(self, creature, world);
+
+            if (self.lizard.Template.type == CustomTemplates.vanillaLizard)
+            {
+                self.AddModule(new SuperHearing(self, self.tracker, 250f));
+
+                self.redSpitAI = new LizardAI.LizardSpitTracker(self);
+                self.AddModule(self.redSpitAI);
             }
 
-            private static void VnSpitFix(On.LizardAI.orig_Update orig, LizardAI self)
+        }
+
+        private static SoundID VanVoice(On.LizardVoice.orig_GetMyVoiceTrigger orig, LizardVoice self)
+        {
+            var res = orig(self);
+            if (self.lizard is Lizard l && l.Template.type == CustomTemplates.vanillaLizard)
             {
-                orig(self);
-                if (self.lizard.Template.type == CustomTemplates.vanillaLizard && self.redSpitAI.spitting)
+                string[] array = new[] { "Green_A", "Eel_B", "Black_A" };
+                List<SoundID> list = new List<SoundID>();
+                for (int i = 0; i < array.Length; i++)
                 {
-                    self.lizard.EnterAnimation(Lizard.Animation.Spit, false);
-                }
-            }
-
-            private static void VanSpit(On.LizardAI.orig_ctor orig, LizardAI self, AbstractCreature creature, World world)
-            {
-                orig(self, creature, world);
-
-                if (self.lizard.Template.type == CustomTemplates.vanillaLizard)
-                {
-                    self.AddModule(new SuperHearing(self, self.tracker, 250f));
-
-                    self.redSpitAI = new LizardAI.LizardSpitTracker(self);
-                    self.AddModule(self.redSpitAI);
-                }
-
-            }
-
-            private static SoundID VanVoice(On.LizardVoice.orig_GetMyVoiceTrigger orig, LizardVoice self)
-            {
-                var res = orig(self);
-                if(self.lizard is Lizard l && l.Template.type == CustomTemplates.vanillaLizard)
-                {
-                    string[] array = new[] { "Green_A", "Eel_B", "Black_A" };
-                    List<SoundID> list = new List<SoundID>();
-                    for (int i = 0; i < array.Length; i++)
+                    SoundID soundID = SoundID.None;
+                    string text = "Lizard_Voice_" + array[i];
+                    if (ExtEnum<SoundID>.values.entries.Contains(text))
                     {
-                        SoundID soundID = SoundID.None;
-                        string text = "Lizard_Voice_" + array[i];
-                        if (ExtEnum<SoundID>.values.entries.Contains(text))
-                        {
-                            soundID = new SoundID(text, false);
-                        }
-                        if (soundID != SoundID.None && soundID.Index != -1 && self.lizard.abstractCreature.world.game.soundLoader.workingTriggers[soundID.Index])
-                        {
-                            list.Add(soundID);
-                        }
+                        soundID = new SoundID(text, false);
                     }
-                    if (list.Count == 0)
+                    if (soundID != SoundID.None && soundID.Index != -1 && self.lizard.abstractCreature.world.game.soundLoader.workingTriggers[soundID.Index])
                     {
-                        res = SoundID.None;
-                    }
-                    else
-                    {
-                        res = list[Random.Range(0, list.Count)];
-                    }
-
-                }
-
-                return res;
-            }
-            
-
-            private static void VanCosmetics(On.LizardGraphics.orig_ctor orig, LizardGraphics self, PhysicalObject ow)
-            {
-                orig(self, ow);
-                if (self.lizard.Template.type == CustomTemplates.vanillaLizard)
-                {
-                    var state = Random.state;
-                    Random.InitState(self.lizard.abstractCreature.ID.RandomSeed);
-                    var num = self.startOfExtraSprites + self.extraSprites;
-                    //self.ivarBodyColor = new Color(1f, 1f, 0.98f);
-                    
-                    
-                    num = self.AddCosmetic(num, new LizardCosmetics.Whiskers(self, num));
-                    if(Random.value < 0.4f)
-                    {
-                        var e = new LizardCosmetics.TailGeckoScales(self, num);
-                        num = self.AddCosmetic(num, e);
-                    }
-                    /*if(Random.value < 0.2f)
-                    {
-                        var e = new LizardCosmetics.LongBodyScales(self, num);
-                        e.colored = true;
-                        
-                        num = self.AddCosmetic(num, e);
-                    }*/
-                    if(Random.value < 0.8f)
-                    {
-                        var e = new LizardCosmetics.TailFin(self, num);
-                        e.colored = false;
-                        e.numberOfSprites = e.bumps * 2;
-                        num = self.AddCosmetic(num, e);
-                    }
-                    Random.state = state;
-                }
-                
-            }
-
-            private static Color VanBodyColor(On.LizardGraphics.orig_BodyColor orig, LizardGraphics self, float f)
-            {
-                Color res = orig(self, f);
-                
-                if (self.lizard.Template.type == CustomTemplates.vanillaLizard)
-                {
-                    res = new Color(0.4667f, 0.3333f, 0.2f);
-                }
-                return res;
-
-            }
-
-            private static Color VanHeadColor(On.LizardGraphics.orig_HeadColor orig, LizardGraphics self, float timeStacker)
-            {
-                Color res = orig(self, timeStacker);
-                
-                if(self.lizard.Template.type == CustomTemplates.vanillaLizard)
-                {
-                    //
-                    if (self.whiteFlicker > 0 && (self.whiteFlicker > 15 || self.everySecondDraw))
-                    {
-                        return new Color();
-                    }
-                    float num = 1f - Mathf.Pow(0.5f + 0.5f * Mathf.Sin(Mathf.Lerp(self.lastBlink, self.blink, timeStacker) * 2f * 3.1415927f), 1.5f + self.lizard.AI.excitement * 1.5f);
-                    if (self.headColorSetter != 0f)
-                    {
-                        num = Mathf.Lerp(num, (self.headColorSetter > 0f) ? 1f : 0f, Mathf.Abs(self.headColorSetter));
-                    }
-                    if (self.flicker > 10)
-                    {
-                        num = self.flickerColor;
-                    }
-                    num = Mathf.Lerp(num, Mathf.Pow(Mathf.Max(0f, Mathf.Lerp(self.lastVoiceVisualization, self.voiceVisualization, timeStacker)), 0.75f), Mathf.Lerp(self.lastVoiceVisualizationIntensity, self.voiceVisualizationIntensity, timeStacker));
-                    
-                }
-                return res;
-            }
-
-            private static void VanTailFin(On.LizardCosmetics.TailFin.orig_DrawSprites orig, LizardCosmetics.TailFin self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
-            {
-                orig(self, sLeaser, rCam, timeStacker, camPos);
-                if (self.lGraphics.lizard.Template.type == CustomTemplates.vanillaLizard)
-                {
-                    for (int i = 0; i < 2; i++)
-                    {
-                        int num = i * self.bumps;
-                        for (int j = self.startSprite; j < self.startSprite + self.bumps; j++)
-                        {
-                            float f = Mathf.Lerp(0.05f, self.spineLength / self.lGraphics.BodyAndTailLength, Mathf.InverseLerp((float)self.startSprite, (float)(self.startSprite + self.bumps - 1), (float)j));
-                            sLeaser.sprites[j + num].color = self.lGraphics.BodyColor(f);
-                        }
-
+                        list.Add(soundID);
                     }
                 }
-            }
-
-            private static void LurkTracker_Update(On.LizardAI.LurkTracker.orig_Update orig, LizardAI.LurkTracker self)
-            {
-                orig(self);
-                if (self.AI.creature.creatureTemplate.type == CustomTemplates.vanillaLizard)
+                if (list.Count == 0)
                 {
-                    self = new LizardAI.LurkTracker(self.AI, self.lizard);
-
+                    res = SoundID.None;
+                }
+                else
+                {
+                    res = list[Random.Range(0, list.Count)];
                 }
 
             }
-        
+
+            return res;
+        }
+
+
+        private static void VanCosmetics(On.LizardGraphics.orig_ctor orig, LizardGraphics self, PhysicalObject ow)
+        {
+            orig(self, ow);
+            if (self.lizard.Template.type == CustomTemplates.vanillaLizard)
+            {
+                var state = Random.state;
+                Random.InitState(self.lizard.abstractCreature.ID.RandomSeed);
+                var num = self.startOfExtraSprites + self.extraSprites;
+                //self.ivarBodyColor = new Color(1f, 1f, 0.98f);
+
+
+                num = self.AddCosmetic(num, new LizardCosmetics.Whiskers(self, num));
+                if (Random.value < 0.4f)
+                {
+                    var e = new LizardCosmetics.TailGeckoScales(self, num);
+                    num = self.AddCosmetic(num, e);
+                }
+                /*if(Random.value < 0.2f)
+                {
+                    var e = new LizardCosmetics.LongBodyScales(self, num);
+                    e.colored = true;
+
+                    num = self.AddCosmetic(num, e);
+                }*/
+                if (Random.value < 0.8f)
+                {
+                    var e = new LizardCosmetics.TailFin(self, num);
+                    e.colored = false;
+                    e.numberOfSprites = e.bumps * 2;
+                    num = self.AddCosmetic(num, e);
+                }
+                Random.state = state;
+            }
+
+        }
+
+        private static Color VanBodyColor(On.LizardGraphics.orig_BodyColor orig, LizardGraphics self, float f)
+        {
+            Color res = orig(self, f);
+
+            if (self.lizard.Template.type == CustomTemplates.vanillaLizard)
+            {
+                res = new Color(0.4667f, 0.3333f, 0.2f);
+            }
+            return res;
+
+        }
+
+        private static Color VanHeadColor(On.LizardGraphics.orig_HeadColor orig, LizardGraphics self, float timeStacker)
+        {
+            Color res = orig(self, timeStacker);
+
+            if (self.lizard.Template.type == CustomTemplates.vanillaLizard)
+            {
+                //
+                if (self.whiteFlicker > 0 && (self.whiteFlicker > 15 || self.everySecondDraw))
+                {
+                    return new Color();
+                }
+                float num = 1f - Mathf.Pow(0.5f + 0.5f * Mathf.Sin(Mathf.Lerp(self.lastBlink, self.blink, timeStacker) * 2f * 3.1415927f), 1.5f + self.lizard.AI.excitement * 1.5f);
+                if (self.headColorSetter != 0f)
+                {
+                    num = Mathf.Lerp(num, self.headColorSetter > 0f ? 1f : 0f, Mathf.Abs(self.headColorSetter));
+                }
+                if (self.flicker > 10)
+                {
+                    num = self.flickerColor;
+                }
+                num = Mathf.Lerp(num, Mathf.Pow(Mathf.Max(0f, Mathf.Lerp(self.lastVoiceVisualization, self.voiceVisualization, timeStacker)), 0.75f), Mathf.Lerp(self.lastVoiceVisualizationIntensity, self.voiceVisualizationIntensity, timeStacker));
+
+            }
+            return res;
+        }
+
+        private static void VanTailFin(On.LizardCosmetics.TailFin.orig_DrawSprites orig, LizardCosmetics.TailFin self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
+        {
+            orig(self, sLeaser, rCam, timeStacker, camPos);
+            if (self.lGraphics.lizard.Template.type == CustomTemplates.vanillaLizard)
+            {
+                for (int i = 0; i < 2; i++)
+                {
+                    int num = i * self.bumps;
+                    for (int j = self.startSprite; j < self.startSprite + self.bumps; j++)
+                    {
+                        float f = Mathf.Lerp(0.05f, self.spineLength / self.lGraphics.BodyAndTailLength, Mathf.InverseLerp(self.startSprite, self.startSprite + self.bumps - 1, j));
+                        sLeaser.sprites[j + num].color = self.lGraphics.BodyColor(f);
+                    }
+
+                }
+            }
+        }
+
+        private static void LurkTracker_Update(On.LizardAI.LurkTracker.orig_Update orig, LizardAI.LurkTracker self)
+        {
+            orig(self);
+            if (self.AI.creature.creatureTemplate.type == CustomTemplates.vanillaLizard)
+            {
+                self = new LizardAI.LurkTracker(self.AI, self.lizard);
+
+            }
+
+        }
+
         private static CreatureTemplate VanBreed(On.LizardBreeds.orig_BreedTemplate_Type_CreatureTemplate_CreatureTemplate_CreatureTemplate_CreatureTemplate orig, CreatureTemplate.Type type, CreatureTemplate lizardAncestor, CreatureTemplate pinkTemplate, CreatureTemplate blueTemplate, CreatureTemplate greenTemplate)
         {
             if (type == CustomTemplates.vanillaLizard)
             {
-                
+
                 var temp = orig(MoreSlugcats.MoreSlugcatsEnums.CreatureTemplateType.SpitLizard, lizardAncestor, pinkTemplate, blueTemplate, greenTemplate); //Sets up the parameters to use Black Lizard’s parameters as a base.
-                var breedparams = (temp.breedParameters as LizardBreedParams);
+                var breedparams = temp.breedParameters as LizardBreedParams;
                 temp.type = type; //set the type to our creature’s type
                 temp.name = "Vanilla Lizard";
                 breedparams.tailSegments = Random.Range(3, 5);
@@ -302,7 +302,7 @@ namespace Guide
                 breedparams.terrainSpeeds[2] = new(1f, 1f, 1f, 1f);
                 breedparams.terrainSpeeds[3] = new(1f, 1f, 1f, 1f);
                 breedparams.swimSpeed = 1.2f;
-                
+
                 breedparams.loungeDelay = 10;
                 breedparams.loungeDistance = 1500;
                 breedparams.loungeSpeed = 1.5f;
@@ -313,7 +313,7 @@ namespace Guide
                 breedparams.stepLength = 1.5f;
                 breedparams.danger = 0.8f;
                 breedparams.bodyMass = 1.5f;
-                breedparams.headSize = 1.02f;                
+                breedparams.headSize = 1.02f;
                 breedparams.bodySizeFac = 1.02f;
                 breedparams.bodyLengthFac = 1.3f;
                 breedparams.bodyStiffnes = 1f;
@@ -335,7 +335,7 @@ namespace Guide
         }
     }
 
-        public class VanLizCritob : Critob
+    public class VanLizCritob : Critob
     {
         public VanLizCritob() : base(CustomTemplates.vanillaLizard)
         {
@@ -395,9 +395,9 @@ namespace Guide
             s.Rivals(CreatureTemplate.Type.LizardTemplate, 0.02f);
 
             s.PlaysWith(MoreSlugcats.MoreSlugcatsEnums.CreatureTemplateType.SpitLizard, 1f);
-            
+
             s.IsInPack(MoreSlugcats.MoreSlugcatsEnums.CreatureTemplateType.SpitLizard, 1f);
-            
+
 
             s.Antagonizes(CreatureTemplate.Type.BigNeedleWorm, 1f);
 
@@ -442,15 +442,15 @@ namespace Guide
             s.EatenBy(CreatureTemplate.Type.PoleMimic, 0.5f);
             s.EatenBy(MoreSlugcats.MoreSlugcatsEnums.CreatureTemplateType.ScavengerElite, 0.5f);
             s.EatenBy(MoreSlugcats.MoreSlugcatsEnums.CreatureTemplateType.MirosVulture, 1f);
-            
+
         }
     }
-        
+
 }
 
-        
 
-        
-        
-    
+
+
+
+
 

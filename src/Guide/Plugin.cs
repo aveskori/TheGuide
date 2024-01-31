@@ -1,23 +1,25 @@
 ﻿using System;
 using System.Linq;
-using System.Collections.Generic;
 using BepInEx;
 using UnityEngine;
 using System.Runtime.CompilerServices;
+
 using Fisobs.Core;
-using LanternSpearFO;
-using MoreSlugcats;
-using Guide;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using RWCustom;
+
 using SlugBase.DataTypes;
+using Guide.WorldChanges;
+using Guide.Creatures;
+using Guide.Objects;
+
 
 namespace GuideSlugBase
 {
     [BepInDependency("slime-cubed.slugbase")]
     
-    [BepInPlugin(MOD_ID, "Guide", "0.4.0")]
+    [BepInPlugin(MOD_ID, "Guide", "0.5.0")]
     class Plugin : BaseUnityPlugin
     {
         private const string MOD_ID = "aveskori.guide";
@@ -33,6 +35,8 @@ namespace GuideSlugBase
             Content.Register(new LSpearFisobs());
             Content.Register(new VanLizCritob());
             Content.Register(new ChrLizCritob());
+            Content.Register(new molemousecritob());
+            Content.Register(new CloversFisobs());
 
             On.Player.Update += Player_Update;
             On.Creature.Grasp.ctor += Grasp_ctor;
@@ -41,6 +45,7 @@ namespace GuideSlugBase
             On.JellyFish.Update += JellyFish_Update; //AND JELLYFISH TICKLES...
             On.Centipede.Shock += Centipede_Shock;
             On.Player.SpitOutOfShortCut += Player_SpitOutOfShortCut; //HUD HINTS
+            On.RegionGate.customKarmaGateRequirements += GuideGateFix;
 
             //On.AbstractCreature.ctor += BoomScugAbstr;
 
@@ -49,6 +54,26 @@ namespace GuideSlugBase
 
             //-- Stops the game from lagging when devtools is enabled and there's scavs in the world
             IL.DenFinder.TryAssigningDen += DenFinder_TryAssigningDen;
+        }
+
+        private void GuideGateFix(On.RegionGate.orig_customKarmaGateRequirements orig, RegionGate self)
+        {
+            orig(self);
+            GuideStatusClass.GuideStatus guide = null;
+            if (ModManager.MSC && self.room.abstractRoom.name == "GATE_UW_LC" && guide.SpearKey)
+            {
+                int num;
+                if (int.TryParse(self.karmaRequirements[0].value, out num))
+                {
+                    self.karmaRequirements[0] = RegionGate.GateRequirement.OneKarma;
+                }
+                int num2;
+                if (int.TryParse(self.karmaRequirements[1].value, out num2))
+                {
+                    self.karmaRequirements[1] = RegionGate.GateRequirement.OneKarma;
+                }
+            }
+            
         }
 
         private static bool IsInit;
@@ -399,49 +424,7 @@ namespace GuideSlugBase
             }
         }
 
-        /*
-        public void SetupDMSSprites()
-        {
-            //-- The ID of the spritesheet we will be using as the default sprites for our slugcat
-            var sheetID = "aveskori.guide";
-
-            //-- Each player slot (0, 1, 2, 3) can be customized individually
-            for (int i = 0; i < 4; i++)
-            {
-                SpriteDefinitions.AddSlugcatDefault(new Customization()
-                {
-                    //-- Make sure to use the same ID as the one used for our slugcat
-                    Slugcat = "Guide",
-                    PlayerNumber = i,
-                    CustomSprites = new List<CustomSprite>
-                    {
-                        //-- You can customize which spritesheet and color each body part will use
-                        new CustomSprite() { Sprite = "HEAD", SpriteSheetID = sheetID, Color = Color.white },
-                        new CustomSprite() { Sprite = "FACE", SpriteSheetID = sheetID, Color = Color.white },
-                        new CustomSprite() { Sprite = "GILLS", SpriteSheetID = sheetID, Color = Color.white },
-                        new CustomSprite() { Sprite = "BODY", SpriteSheetID = sheetID, Color = Color.white },
-                        new CustomSprite() { Sprite = "ARMS", SpriteSheetID = sheetID, Color = Color.white },
-                        new CustomSprite() { Sprite = "HIPS", SpriteSheetID = sheetID, Color = Color.white },
-                        new CustomSprite() { Sprite = "LEGS", SpriteSheetID = sheetID, Color = Color.white },
-                        new CustomSprite() { Sprite = "HIPSRIGHT", SpriteSheetID = sheetID, Color = Color.white },
-                        new CustomSprite() { Sprite = "HIPSLEFT", SpriteSheetID = sheetID, Color = Color.white },
-                        new CustomSprite() { Sprite = "TAIL", SpriteSheetID = sheetID, Color = Color.white},
-                        new CustomSprite() { Sprite = "TAILSPOTS", SpriteSheetID = sheetID, Color = Color.white}
-                    },
-
-                    //-- Customizing the tail size and color is also supported, values should be set between 0 and 1
-                    CustomTail = new CustomTail()
-                    {
-
-                        Length = 4f,
-                        Wideness = 1.5f,
-                        Roundness = 0.9f
-
-                    }
-                });
-            }
-        }
-        */
+        
 
         // Load any resources, such as sprites or sounds
         private void LoadResources(RainWorld rainWorld)
@@ -469,6 +452,7 @@ public static class GuideStatusClass
         public int slipperyTime;
         public bool slippery;
         public bool artiSpawn;
+        public bool SpearKey;
 
         public readonly bool IsGuide;
         public readonly Player player;
@@ -493,6 +477,7 @@ public static class GuideStatusClass
 
             this.player = player;
             artiSpawn = false;
+            SpearKey = false;
         }
 
         public void SetupColors()

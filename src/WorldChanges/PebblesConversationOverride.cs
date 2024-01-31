@@ -9,7 +9,7 @@ using static SlugBase.Features.FeatureTypes;
 using MoreSlugcats;
 using RWCustom;
 
-namespace Guide
+namespace Guide.WorldChanges
 {
     static class PebblesConversationOverride
     {
@@ -17,12 +17,13 @@ namespace Guide
         public static readonly Conversation.ID GuidePebblesConvo = new Conversation.ID("GuidePebblesConvo", true);
         public static void Hooks()
         {
-            On.GhostConversation.AddEvents += GhostOverride;
+
             On.SSOracleBehavior.InitateConversation += SSOracleBehavior_InitateConversation;
         }
 
         private static void SSOracleBehavior_InitateConversation(On.SSOracleBehavior.orig_InitateConversation orig, SSOracleBehavior self, Conversation.ID convoId, SSOracleBehavior.ConversationBehavior convBehav)
         {
+            GuideStatusClass.GuideStatus guide = null;
             if (self.oracle.room.game.Players[0].realizedCreature is Player player && player.slugcatStats.name.value != "Guide")
             {
                 orig(self, convoId, convBehav);
@@ -36,7 +37,7 @@ namespace Guide
                     self.dialogBox.NewMessage("Is this reaching you?", 60);
                     self.dialogBox.NewMessage("...", 60);
                     self.action = MoreSlugcatsEnums.SSOracleBehaviorAction.Pebbles_SlumberParty;
-                    
+
                     self.dialogBox.NewMessage("Why is it that you creatures insist on breaking into my structure and disrupting me?", 120);
                     self.dialogBox.NewMessage("Strange beast. You don't look like a messenger.", 60);
                     self.dialogBox.NewMessage("You have a deep connection to the scavenger population, it seems.", 60);
@@ -56,9 +57,9 @@ namespace Guide
                     self.dialogBox.NewMessage("Best of luck.", 60);
                     self.dialogBox.NewMessage("Now leave.", 60);
                     self.oracle.room.game.GetStorySession.saveState.miscWorldSaveData.SSaiConversationsHad++;
-                    
+
                     self.action = SSOracleBehavior.Action.ThrowOut_Polite_ThrowOut;
-                    
+                    guide.SpearKey = true; //Lantern Spear gate key active
                     return;
                 }
                 if (self.oracle.room.game.GetStorySession.saveState.miscWorldSaveData.SSaiConversationsHad == 2)
@@ -84,14 +85,11 @@ namespace Guide
                     self.action = SSOracleBehavior.Action.ThrowOut_Polite_ThrowOut;
                     return;
                 }
-                
+
             }
             orig(self, convoId, convBehav);
         }
 
-        private static void GhostOverride(On.GhostConversation.orig_AddEvents orig, GhostConversation self)
-        {
-            
-        }
+
     }
 }
