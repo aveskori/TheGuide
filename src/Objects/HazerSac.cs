@@ -216,7 +216,7 @@ namespace Guide.Objects
             foreach (FSprite fsprite in sLeaser.sprites)
                 newContainer.AddChild(fsprite);
 
-            Debug.Log("%%%% ADD TO CONTAINER");
+            Debug.Log("%%%%% ADD TO CONTAINER");
         }
 
     }
