@@ -1,0 +1,45 @@
+
+Palette: 2
+batDepleteCyclesMin: 2
+batDepleteCyclesMax: 7
+batDepleteCyclesMaxIfLessThanTwoLeft: 3
+batDepleteCyclesMaxIfLessThanFiveLeft: 4
+overseersSpawnChance: 0.4
+overseersMin: 0
+overseersMax: 4
+playerGuideOverseerSpawnChance: 0.2
+Room Setting Templates: Outside, Inside
+Subregion: Sky Islands
+Subregion: Communications Array
+Room_Attr: SI_A07: RedCentipede-Avoid,
+Room_Attr: SI_A06: KingVulture-Avoid,RedCentipede-Avoid,
+Room_Attr: SI_B04: KingVulture-Forbidden,RedCentipede-Avoid,
+Room_Attr: SI_B02: KingVulture-Forbidden,RedCentipede-Avoid,
+Room_Attr: SI_C07: CyanLizard-Stay,KingVulture-Forbidden,RedCentipede-Avoid,
+Room_Attr: SI_C02: CyanLizard-Like,KingVulture-Forbidden,SmallNeedleWorm-Stay,BigNeedleWorm-Stay,
+Room_Attr: SI_C01: YellowLizard-Stay,CyanLizard-Stay,KingVulture-Forbidden,RedCentipede-Avoid,
+Room_Attr: SI_C04: Vulture-Avoid,KingVulture-Forbidden,RedCentipede-Avoid,
+Room_Attr: SI_D01: Vulture-Avoid,KingVulture-Forbidden,RedCentipede-Avoid,SmallNeedleWorm-Forbidden,BigNeedleWorm-Forbidden,
+Room_Attr: SI_C03: KingVulture-Forbidden,RedCentipede-Avoid,
+Room_Attr: SI_B01: KingVulture-Forbidden,RedCentipede-Avoid,
+Room_Attr: SI_A20: DropBug-Like,
+Room_Attr: SI_D03: Vulture-Avoid,KingVulture-Forbidden,RedCentipede-Avoid,
+Room_Attr: SI_A17: CyanLizard-Avoid,DropBug-Like,SmallNeedleWorm-Avoid,BigNeedleWorm-Avoid,
+Room_Attr: SI_A18: CyanLizard-Avoid,DropBug-Like,SmallNeedleWorm-Forbidden,BigNeedleWorm-Forbidden,
+Room_Attr: SI_C05: CyanLizard-Forbidden,KingVulture-Forbidden,
+Room_Attr: SI_A28: CyanLizard-Forbidden,DropBug-Like,SmallNeedleWorm-Forbidden,BigNeedleWorm-Forbidden,
+Room_Attr: SI_A27: CyanLizard-Forbidden,KingVulture-Forbidden,RedCentipede-Like,DropBug-Like,SmallNeedleWorm-Forbidden,BigNeedleWorm-Forbidden,
+Room_Attr: SI_C06: CyanLizard-Forbidden,KingVulture-Forbidden,RedCentipede-Like,DropBug-Like,SmallNeedleWorm-Forbidden,BigNeedleWorm-Forbidden,
+Room_Attr: SI_B10: CyanLizard-Forbidden,KingVulture-Forbidden,RedCentipede-Like,DropBug-Like,SmallNeedleWorm-Forbidden,BigNeedleWorm-Forbidden,
+Room_Attr: SI_B09: KingVulture-Forbidden,RedCentipede-Avoid,SmallNeedleWorm-Like,BigNeedleWorm-Like,
+Room_Attr: SI_A02: KingVulture-Forbidden,RedCentipede-Avoid,SmallNeedleWorm-Like,BigNeedleWorm-Like,
+Room_Attr: SI_A23: KingVulture-Forbidden,RedCentipede-Avoid,
+Room_Attr: SI_C08: KingVulture-Forbidden,RedCentipede-Avoid,
+Room_Attr: SI_D05: CyanLizard-Forbidden,KingVulture-Forbidden,RedCentipede-Avoid,
+Room_Attr: SI_B11: CyanLizard-Forbidden,KingVulture-Forbidden,RedCentipede-Avoid,
+Room_Attr: SI_D06: YellowLizard-Stay,CyanLizard-Forbidden,KingVulture-Forbidden,RedCentipede-Like,DropBug-Like,SmallNeedleWorm-Forbidden,BigNeedleWorm-Forbidden,
+Room_Attr: SI_B12: KingVulture-Forbidden,RedCentipede-Avoid,SmallNeedleWorm-Stay,BigNeedleWorm-Stay,
+Room_Attr: SI_B03: KingVulture-Forbidden,RedCentipede-Avoid,SmallNeedleWorm-Stay,BigNeedleWorm-Stay,
+Room_Attr: SI_C09: KingVulture-Forbidden,RedCentipede-Avoid,
+Room_Attr: SI_D07: KingVulture-Forbidden,RedCentipede-Avoid,
+Room_Attr: SI_B13: KingVulture-Forbidden,RedCentipede-Avoid,
