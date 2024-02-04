@@ -8,7 +8,7 @@ using Fisobs.Properties;
 using Fisobs.Sandbox;
 using MoreSlugcats;
 
-namespace LanternSpearFO
+namespace Guide.Objects
 {
     sealed class LSpearFisobs : Fisob
     {

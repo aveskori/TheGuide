@@ -31,13 +31,16 @@ namespace GuideSlugBase
             On.RainWorld.OnModsInit += Extras.WrapInit(LoadResources);
             On.RainWorld.OnModsInit += RainWorld_OnModsInit;
             
-            // Custom Hooks -- Slugcat
-            Content.Register(new LSpearFisobs());
+            // Critobs
             Content.Register(new VanLizCritob());
             Content.Register(new ChrLizCritob());
             Content.Register(new molemousecritob());
-            Content.Register(new CloversFisobs());
+            // Fisobs
+            //Content.Register(new CloversFisobs());
+            Content.Register(new HazerSacFisobs());
+            Content.Register(new LSpearFisobs());
 
+            // Slugcat Hooks
             On.Player.Update += Player_Update;
             On.Creature.Grasp.ctor += Grasp_ctor;
             PebblesConversationOverride.Hooks();
@@ -46,8 +49,6 @@ namespace GuideSlugBase
             On.Centipede.Shock += Centipede_Shock;
             On.Player.SpitOutOfShortCut += Player_SpitOutOfShortCut; //HUD HINTS
             On.RegionGate.customKarmaGateRequirements += GuideGateFix;
-
-            //On.AbstractCreature.ctor += BoomScugAbstr;
 
             // Custom Hooks -- Scavenger AI
             ScavBehaviorTweaks.Hooks();
@@ -283,23 +284,6 @@ namespace GuideSlugBase
             }
         }
 
-        /*private void BoomScugAbstr(On.AbstractCreature.orig_ctor orig, AbstractCreature self, World world, CreatureTemplate creatureTemplate, Creature realizedCreature, WorldCoordinate pos, EntityID ID)
-        {
-            self = new AbstractCreature(world, creatureTemplate, realizedCreature, pos, ID);
-            self.state = new PlayerNPCState(self, 0);
-            var pl = new Player(self, world);
-
-            pl.npcCharacterStats = new SlugcatStats(MoreSlugcatsEnums.SlugcatStatsName.Artificer, false);
-
-            pl.SlugCatClass = MoreSlugcatsEnums.SlugcatStatsName.Artificer;
-            pl.slugcatStats.name = MoreSlugcatsEnums.SlugcatStatsName.Artificer;
-            pl.playerState.slugcatCharacter = MoreSlugcatsEnums.SlugcatStatsName.Artificer;
-
-            pl.abstractCreature.abstractAI = new SlugNPCAbstractAI(world, pl.abstractCreature);
-            pl.abstractCreature.abstractAI.RealAI = new SlugNPCAI(self, world);
-
-            //if artispawn = true, spawn arti in room UW_A13
-        }*/
 
         private void DenFinder_TryAssigningDen(ILContext il)
         {
