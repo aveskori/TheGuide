@@ -33,12 +33,17 @@ namespace GuideSlugBase
             
             // Critobs
             Content.Register(new VanLizCritob());
+            VanHooks.Hooks();
             Content.Register(new ChrLizCritob());
+            CherryHooks.Hooks();
             Content.Register(new molemousecritob());
+            
             // Fisobs
             //Content.Register(new CloversFisobs());
             Content.Register(new HazerSacFisobs());
+            HazerSac.Hooks();
             Content.Register(new LSpearFisobs());
+            
 
             // Slugcat Hooks
             On.Player.Update += Player_Update;

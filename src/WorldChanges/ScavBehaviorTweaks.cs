@@ -3,6 +3,7 @@ using UnityEngine;
 using MoreSlugcats;
 using RWCustom;
 using Guide.Objects;
+using System.Linq;
 
 namespace Guide.WorldChanges
 {
@@ -21,8 +22,64 @@ namespace Guide.WorldChanges
             On.ScavengerAI.CollectScore_PhysicalObject_bool += ScavengerAI_CollectScore_PhysicalObject_bool;
             On.ScavengerAI.DecideBehavior += ScavengerAI_FollowGuide;
             On.ScavengerAI.SocialEvent += ScavengerAI_SocialEvent; //GUIDE TAKING SCAV ITEMS DOESN'T DECREASE REP
+            On.ScavengerAI.DecideBehavior += ScavengerAI_FeedGuide;
             //On.ScavengerAI.DecideBehavior += LanternSpearControl;
             //On.ScavengerAI.ViolenceTypeAgainstCreature += LanternSpear_TargetCreature;
+        }
+
+        private static void ScavengerAI_FeedGuide(On.ScavengerAI.orig_DecideBehavior orig, ScavengerAI self)
+        {
+            //cycle through scavenger grasps, array[i], check if item i is a plant, if so, move to front
+            Player guide = FindNearbyGuide(self.scavenger.room);
+           
+            if(self.scavenger.grasps.Any(x => x?.grabbed is IPlayerEdible) && guide != null)
+            {
+                var itemFind = self.scavenger.grasps.IndexOf(self.scavenger.grasps.First(x => x?.grabbed is IPlayerEdible));
+                var item = self.scavenger.grasps[itemFind].grabbed;
+
+                
+                if (self.behavior == ScavengerAI.Behavior.Idle && guide.slugcatStats.malnourished || guide.CurrentFood < guide.slugcatStats.foodToHibernate && self.scavenger.animation != null)
+                {  //move food item to front of inv, find guide, FEED
+
+                    self.scavenger.MoveItemBetweenGrasps(item, itemFind, 0);
+                    Debug.Log("step 1");
+                    self.SetDestination(guide.abstractCreature.pos);
+                    if (Custom.Dist(self.scavenger.mainBodyChunk.pos, guide.mainBodyChunk.pos) < 20)
+                    {
+                        Debug.Log("step 2");
+                        self.scavenger.animation.id = Scavenger.ScavengerAnimation.ID.GeneralPoint;
+                        Debug.Log("step 3");
+                        self.scavenger.room.PlaySound(SoundID.Slugcat_Swallow_Item, guide.bodyChunks[0]);
+                        item.Destroy();
+                        guide.AddFood(1);
+                    }
+                    
+
+                    /*if (guide.eatCounter < 1)
+                    {
+                        guide.eatCounter = 15;
+                        PhysicalObject guideItem = guide.grasps[1]?.grabbed;
+                        bool regrab = false;
+                        if ((item as IPlayerEdible).BitesLeft == 1 && guideItem != null)
+                            regrab = true;
+                        if ((item as IPlayerEdible).BitesLeft == 1 && guide.SessionRecord != null)
+                            guide.SessionRecord.AddEat(item);
+                        if (item is Creature)
+                            (item as Creature).SetKillTag(guide.abstractCreature);
+                        //if (guide.graphicsModule != null) //SKIP THIS ACTUALLY IT'S FOR HAND MOVEMENT
+                        //(guide.graphicsModule as PlayerGraphics).BiteFly(i);
+                        // (item as IPlayerEdible).BitByPlayer(guide.grasps[i], eu);
+                        bool eu = false; // ???
+                        (item as IPlayerEdible).BitByPlayer(guide.grasps[1], eu);
+                        if (regrab)
+                            guide.SlugcatGrab(guideItem, 1);
+                    }*/              
+                }
+                
+            }
+            return;
+           
+            
         }
 
         /*private static ScavengerAI.ViolenceType LanternSpear_TargetCreature(On.ScavengerAI.orig_ViolenceTypeAgainstCreature orig, ScavengerAI self, Tracker.CreatureRepresentation critRep)
@@ -146,7 +203,7 @@ namespace Guide.WorldChanges
                     }
 
                 }
-                if (obj is GlowWeed || obj is LillyPuck || obj is SeedCob || obj is Hazer)
+                if (obj is GlowWeed || obj is LillyPuck || obj is SeedCob || obj is HazerSac)
                 {
                     return 7;
                 }
@@ -158,7 +215,7 @@ namespace Guide.WorldChanges
                 {
                     return 5;
                 }
-                if (obj is EggBugEgg)
+                if (obj is EggBugEgg || obj is Hazer)
                 {
                     return 4;
                 }

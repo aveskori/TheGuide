@@ -24,6 +24,7 @@ namespace Guide.Objects
         public override AbstractPhysicalObject Parse(World world, EntitySaveData saveData, SandboxUnlock? unlock)
         {
            
+            
             string[] p = saveData.CustomData.Split(';');
 
             if (p.Length < 5)
@@ -112,17 +113,52 @@ namespace Guide.Objects
         }
     }
 
-    public class HazerSac : PhysicalObject, IDrawable
+    public class HazerSac : DartMaggot
     {
-        private int meshSegs = 9;
-        public Vector2[,] body;
-        public float darkness;
-        public float lastDarkness;
 
+        
+        public static void Hooks()
+        {
+            
+            On.DartMaggot.ApplyPalette += HazerSac_ApplyPalette;
+            On.DartMaggot.NormalUpdate += HazerSac_NormalUpdateFix;
+        }
+
+        private static void HazerSac_NormalUpdateFix(On.DartMaggot.orig_NormalUpdate orig, DartMaggot self)
+        {
+            
+            if(self is HazerSac)
+            {
+                self.age = 0f;
+            }
+            orig(self);
+        }
+
+        
+
+        private static void HazerSac_ApplyPalette(On.DartMaggot.orig_ApplyPalette orig, DartMaggot self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, RoomPalette palette)
+        {
+            Color inkColor = new Color(0.147f, 0.015f, 0.259f);
+            orig(self, sLeaser, rCam, palette);
+            if(self is HazerSac)
+            {
+                for (int i = 0; i < sLeaser.sprites.Length; i++)
+                {
+                    for(int j = 0; j < (sLeaser.sprites[i] as TriangleMesh).verticeColors.Length; j++)
+                    {
+                        (sLeaser.sprites[i] as TriangleMesh).verticeColors[j] = inkColor;
+                    }
+                }
+            }
+                       
+        }
+
+       
 
         public HazerSac(HazerSacAbstract abstr) : base(abstr)
         {
-            float mass = 10f;
+            
+            /*float mass = 10f;
             var positions = new List<Vector2>();
 
             positions.Add(Vector2.zero);
@@ -132,18 +168,18 @@ namespace Guide.Objects
             bodyChunks[0] = new BodyChunk(this, 0, Vector2.zero, 3f, mass / bodyChunks.Length);
 
 
-            airFriction = 0.999f;
-            gravity = 0.7f;
-            bounce = 0.3f;
-            surfaceFriction = 1f;
-            collisionLayer = 1;
-            waterFriction = 0.92f;
-            buoyancy = 0.99f;
-            GoThroughFloors = false;
+            airFriction = base.airFriction;
+            gravity = base.gravity;
+            bounce = base.bounce;
+            surfaceFriction = base.surfaceFriction;
+            collisionLayer = base.collisionLayer;
+            waterFriction = base.waterFriction;
+            buoyancy = base.buoyancy;
+            GoThroughFloors = base.GoThroughFloors;*/
 
         }
 
-        public override void Update(bool eu)
+        /*public override void Update(bool eu)
         {
             base.Update(eu);
             if (grabbedBy.Count == 0)
@@ -165,12 +201,13 @@ namespace Guide.Objects
 
             if (speed > 10)
             {
-                room.PlaySound(SoundID.Spear_Fragment_Bounce, bodyChunks[chunk].pos, 0.35f, 2f);
+                room.PlaySound(SoundID.Dart_Maggot_Bounce_Off_Wall, bodyChunks[chunk].pos, 0.35f, 2f);
             }
         }
 
-        public void InitiateSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
+        public new void InitiateSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
         {
+            base.InitiateSprites(sLeaser, rCam);
             sLeaser.sprites = new FSprite[2];
             sLeaser.sprites[0] = TriangleMesh.MakeLongMesh(this.meshSegs, false, true);
             sLeaser.sprites[1] = TriangleMesh.MakeLongMesh(this.meshSegs - 3, false, true);
@@ -178,46 +215,18 @@ namespace Guide.Objects
             Debug.Log("%%%% INIT SPRITES");
         }
 
-        public void DrawSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
+
+
+        public new void AddToContainer(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, FContainer? newContainer)
         {
-            Vector2 lastSegmentPos = bodyChunks[0].pos;
-            float lastRad = bodyChunks[0].rad;
-            for (int i = 0; i < bodyChunks.Length; i++)
-            {
-                Vector2 segmentDrawPos = Vector2.Lerp(bodyChunks[i].lastPos, bodyChunks[i].pos, timeStacker);
-                Vector2 dir = (segmentDrawPos - lastSegmentPos).normalized;
-                Vector2 perpendicular = Custom.PerpendicularVector(dir);
-
-                float dist = Vector2.Distance(segmentDrawPos, lastSegmentPos) / 5f;
-
-                (sLeaser.sprites[0] as TriangleMesh).MoveVertice(i * 4, (lastSegmentPos - (perpendicular * (lastRad + bodyChunks[i].rad) * 0.5f) + (dir * dist)) - camPos);
-                (sLeaser.sprites[0] as TriangleMesh).MoveVertice((i * 4) + 1, (lastSegmentPos - (perpendicular * (lastRad + bodyChunks[i].rad) * 0.5f) + (dir * dist)) - camPos);
-
-                lastRad = bodyChunks[i].rad;
-                lastSegmentPos = segmentDrawPos;
-            }
-            Debug.Log("%%%% DRAW SPRITES");
-            if (slatedForDeletetion || room != rCam.room)
-                sLeaser.CleanSpritesAndRemove();
-        }
-
-        public void ApplyPalette(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, RoomPalette palette)
-        {
-            Color color = new Color(0.121f, 0.035f, 0.271f);
-            foreach (var sprite in sLeaser.sprites)
-                sprite.color = color;
-            Debug.Log("%%%% APPLY PALETTE");
-        }
-
-        public void AddToContainer(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, FContainer? newContainer)
-        {
+            /*base.AddToContainer(sLeaser, rCam, newContainer);
             newContainer ??= rCam.ReturnFContainer("Items");
 
             foreach (FSprite fsprite in sLeaser.sprites)
                 newContainer.AddChild(fsprite);
 
             Debug.Log("%%%%% ADD TO CONTAINER");
-        }
+        }*/
 
     }
 
