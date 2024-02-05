@@ -23,35 +23,64 @@ namespace Guide.WorldChanges
             On.ScavengerAI.DecideBehavior += ScavengerAI_FollowGuide;
             On.ScavengerAI.SocialEvent += ScavengerAI_SocialEvent; //GUIDE TAKING SCAV ITEMS DOESN'T DECREASE REP
             On.ScavengerAI.DecideBehavior += ScavengerAI_FeedGuide;
+            On.Spear.HitSomething += Spear_DontHitScavs;
+           
             //On.ScavengerAI.DecideBehavior += LanternSpearControl;
             //On.ScavengerAI.ViolenceTypeAgainstCreature += LanternSpear_TargetCreature;
         }
 
+        private static bool Spear_DontHitScavs(On.Spear.orig_HitSomething orig, Spear self, SharedPhysics.CollisionResult result, bool eu)
+        {
+            
+            Player guide = FindNearbyGuide(self.room);
+            if (self.thrownBy != null && self.thrownBy == guide && result.obj is Scavenger)
+            {
+                return false;
+            }
+            else
+            {
+                orig(self, result, eu);
+                return eu;
+            }
+        }
+
         private static void ScavengerAI_FeedGuide(On.ScavengerAI.orig_DecideBehavior orig, ScavengerAI self)
         {
-            //cycle through scavenger grasps, array[i], check if item i is a plant, if so, move to front
+            
             Player guide = FindNearbyGuide(self.scavenger.room);
+            
            
-            if(self.scavenger.grasps.Any(x => x?.grabbed is IPlayerEdible) && guide != null)
+            if(self.scavenger.grasps.Any(x => x?.grabbed is IPlayerEdible) && guide != null) //if any items in inv are edible, and if guide != null
             {
-                var itemFind = self.scavenger.grasps.IndexOf(self.scavenger.grasps.First(x => x?.grabbed is IPlayerEdible));
-                var item = self.scavenger.grasps[itemFind].grabbed;
+                var itemFind = self.scavenger.grasps.IndexOf(self.scavenger.grasps.First(x => x?.grabbed is IPlayerEdible)); //find edible item index
+                var item = self.scavenger.grasps[itemFind].grabbed; //find index value
 
                 
-                if (self.behavior == ScavengerAI.Behavior.Idle && guide.slugcatStats.malnourished || guide.CurrentFood < guide.slugcatStats.foodToHibernate && self.scavenger.animation != null)
-                {  //move food item to front of inv, find guide, FEED
+                if (self.behavior == ScavengerAI.Behavior.Idle && guide.CurrentFood < guide.slugcatStats.foodToHibernate && self.scavenger.animation != null)
+                {  //If idle and (guide malnourished OR food below hib req) and animation is not null
 
-                    self.scavenger.MoveItemBetweenGrasps(item, itemFind, 0);
+                    if (self.scavenger.grasps[0]?.grabbed is not IPlayerEdible) //if item in slot 1 
+                    {
+                        self.scavenger.MoveItemBetweenGrasps(item, itemFind, 0);
+                        return;
+                    }
+                    
                     Debug.Log("step 1");
                     self.SetDestination(guide.abstractCreature.pos);
-                    if (Custom.Dist(self.scavenger.mainBodyChunk.pos, guide.mainBodyChunk.pos) < 20)
+
+                    if (Custom.Dist(self.scavenger.mainBodyChunk.pos, guide.mainBodyChunk.pos) < 20 && self.scavenger.grasps[0]?.grabbed is IPlayerEdible)
                     {
                         Debug.Log("step 2");
-                        self.scavenger.animation.id = Scavenger.ScavengerAnimation.ID.GeneralPoint;
+                        Limb myHand = (self.scavenger.graphicsModule as ScavengerGraphics).hands[0];
+                        myHand.mode = Limb.Mode.HuntAbsolutePosition;
+                        myHand.absoluteHuntPos = guide.bodyChunks[0].pos;
+                        myHand.pos = guide.bodyChunks[0].pos;
+
                         Debug.Log("step 3");
                         self.scavenger.room.PlaySound(SoundID.Slugcat_Swallow_Item, guide.bodyChunks[0]);
                         item.Destroy();
                         guide.AddFood(1);
+                        return;
                     }
                     
 
@@ -149,6 +178,8 @@ namespace Guide.WorldChanges
 
             }
         }*/
+
+
 
         public static Player FindNearbyGuide(Room myRoom)
         {

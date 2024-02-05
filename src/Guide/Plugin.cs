@@ -57,10 +57,13 @@ namespace GuideSlugBase
 
             // Custom Hooks -- Scavenger AI
             ScavBehaviorTweaks.Hooks();
+            
 
             //-- Stops the game from lagging when devtools is enabled and there's scavs in the world
             IL.DenFinder.TryAssigningDen += DenFinder_TryAssigningDen;
         }
+
+        
 
         private void GuideGateFix(On.RegionGate.orig_customKarmaGateRequirements orig, RegionGate self)
         {
