@@ -13,6 +13,7 @@ using SlugBase.DataTypes;
 using Guide.WorldChanges;
 using Guide.Creatures;
 using Guide.Objects;
+using Guide.Guide;
 
 
 namespace GuideSlugBase
@@ -54,6 +55,7 @@ namespace GuideSlugBase
             On.Centipede.Shock += Centipede_Shock;
             On.Player.SpitOutOfShortCut += Player_SpitOutOfShortCut; //HUD HINTS
             On.RegionGate.customKarmaGateRequirements += GuideGateFix;
+            GuideCrafts.Hooks();
 
             // Custom Hooks -- Scavenger AI
             ScavBehaviorTweaks.Hooks();
@@ -397,6 +399,16 @@ namespace GuideSlugBase
                 }
 
             }
+
+
+            if (self.GetCat().harvestCounter < 40 && self.input[0].pckp && self.input[0].y > 0)
+            {
+                self.GetCat().harvestCounter++;
+            }
+            else if (self.GetCat().harvestCounter > 0)
+            {
+                self.GetCat().harvestCounter--;
+            }
             orig(self, eu);
         }
 
@@ -446,6 +458,9 @@ public static class GuideStatusClass
         public bool artiSpawn;
         public bool SpearKey;
 
+        public bool IsHarvested;
+        public int harvestCounter;
+
         public readonly bool IsGuide;
         public readonly Player player;
 
@@ -470,6 +485,7 @@ public static class GuideStatusClass
             this.player = player;
             artiSpawn = false;
             SpearKey = false;
+            harvestCounter = 0;
         }
 
         public void SetupColors()
@@ -485,10 +501,12 @@ public static class GuideStatusClass
 
     // This part lets you access the stored stuff by simply doing "self.GetCat()" in Plugin.cs or everywhere else!
     private static readonly ConditionalWeakTable<Player, GuideStatus> CWT = new();
+    private static readonly ConditionalWeakTable<AbstractCreature, GuideStatus> ObjCWT = new();
     public static GuideStatus GetCat(this Player player) => CWT.GetValue(player, _ => new(player));
     
     public static bool IsGuide(this Player player, out GuideStatus guide) => (guide = player.GetCat()).IsGuide;
     public static bool IsGuide(this PlayerGraphics pg, out GuideStatus guide) => IsGuide(pg.player, out guide);
+
 
     public static void Follow(this FSprite sprite, FSprite originalSprite)
     {
