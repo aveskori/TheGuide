@@ -44,6 +44,7 @@ namespace GuideSlugBase
             Content.Register(new HazerSacFisobs());
             HazerSac.Hooks();
             Content.Register(new LSpearFisobs());
+            Content.Register(new CentiShellFisobs());
             
 
             // Slugcat Hooks
@@ -52,10 +53,12 @@ namespace GuideSlugBase
             PebblesConversationOverride.Hooks();
             On.JellyFish.Collide += JellyFish_Collide;  //Guide immunity to jellyfish stuns
             On.JellyFish.Update += JellyFish_Update; //AND JELLYFISH TICKLES...
-            On.Centipede.Shock += Centipede_Shock;
+            On.Centipede.Shock += Centipede_Shock; // if slippery, immune to centishocks
             On.Player.SpitOutOfShortCut += Player_SpitOutOfShortCut; //HUD HINTS
             On.RegionGate.customKarmaGateRequirements += GuideGateFix;
             GuideCrafts.Hooks();
+            On.Player.GrabUpdate += BubbleFruitPop; //slippery ability causes bubblefruit to pop
+;
 
             // Custom Hooks -- Scavenger AI
             ScavBehaviorTweaks.Hooks();
@@ -65,7 +68,30 @@ namespace GuideSlugBase
             IL.DenFinder.TryAssigningDen += DenFinder_TryAssigningDen;
         }
 
-        
+        private void BubbleFruitPop(On.Player.orig_GrabUpdate orig, Player self, bool eu)
+        {
+            orig(self, eu);
+            
+            if (self.GetCat().IsGuide && self.GetCat().slippery
+                && ScavBehaviorTweaks.FindNearbyGuide(self.room) != null)  //Player is guide, guide is slippery, guide is not null
+            {
+                for(int i = 0; i < 2; i++)
+                {
+                    if (self.grasps[i] != null && self.grasps[i].grabbed is WaterNut) //grasps arent null, grasp is waternut
+                    {
+
+                        (self.grasps[i].grabbed as WaterNut).swellCounter--;
+                        if ((self.grasps[i].grabbed as WaterNut).swellCounter < 1)
+                        {
+                            (self.grasps[i].grabbed as WaterNut).Swell();
+                        }
+                        return;
+                    }
+                    return;
+                }
+            }
+            return;
+        }
 
         private void GuideGateFix(On.RegionGate.orig_customKarmaGateRequirements orig, RegionGate self)
         {
@@ -447,6 +473,54 @@ namespace GuideSlugBase
     }
 }
 
+public static class CritStatusClass
+{
+    public class CritStatus
+    {
+        public bool isHarvested;
+        public int harvestCount;
+        //centipedes
+        public bool isRed;
+        public bool isYellow;
+        public bool isGreen;
+        public bool isBlue;
+
+        public CritStatus(Creature crit)
+        {
+            
+            CreatureTemplate.Type t = null;
+            if (crit != null)
+            {
+                if(t == CreatureTemplate.Type.RedCentipede)
+                {
+                    isRed = true;
+                    return;
+                }
+                if(t == CreatureTemplate.Type.Centipede)
+                {
+                    isYellow = true;
+                    return;
+                }
+                if(t == CreatureTemplate.Type.Centiwing)
+                {
+                    isGreen = true;
+                    return;
+                }
+                if(t == MoreSlugcats.MoreSlugcatsEnums.CreatureTemplateType.AquaCenti)
+                {
+                    isBlue = true;
+                    return;
+                }
+            }
+
+        }
+    }
+    private static readonly ConditionalWeakTable<Creature, CritStatus> CritCWT = new();
+    public static CritStatus GetCrit(this Creature crit) => CritCWT.GetValue(crit, _ => new(crit));
+
+
+}
+
 public static class GuideStatusClass
 {
     public class GuideStatus
@@ -501,9 +575,7 @@ public static class GuideStatusClass
 
     // This part lets you access the stored stuff by simply doing "self.GetCat()" in Plugin.cs or everywhere else!
     private static readonly ConditionalWeakTable<Player, GuideStatus> CWT = new();
-    private static readonly ConditionalWeakTable<AbstractCreature, GuideStatus> ObjCWT = new();
     public static GuideStatus GetCat(this Player player) => CWT.GetValue(player, _ => new(player));
-    
     public static bool IsGuide(this Player player, out GuideStatus guide) => (guide = player.GetCat()).IsGuide;
     public static bool IsGuide(this PlayerGraphics pg, out GuideStatus guide) => IsGuide(pg.player, out guide);
 

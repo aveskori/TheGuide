@@ -45,16 +45,18 @@ namespace Guide.Guide
             {
                 if(self.GetCat().harvestCounter > 0)
                 {
+
                     Limb myHand = (self.graphicsModule as PlayerGraphics).hands[0];
                     myHand.mode = Limb.Mode.HuntAbsolutePosition;
                     myHand.absoluteHuntPos = self.bodyChunks[0].pos;
                 }
-                for (int i = 0; i < 3; i++) //loop check each grasp
+                for (int i = 0; i < 2; i++) //loop check each grasp
                 {
                     PhysicalObject item = self.grasps[i]?.grabbed; //item = each object grabbed
 
-                    if (item != null && self.GetCat().harvestCounter == 40) // if one grasp isnt null ADD INPUT CHECK HERE
+                    if (item != null && self.GetCat().harvestCounter == 40 && !(item as Creature).GetCrit().isHarvested)
                     {
+
                         if(item is Hazer && !(item as Hazer).dead)
                         {
                             (item as Hazer).inkLeft = 0;
@@ -65,10 +67,37 @@ namespace Guide.Guide
                             AbstractPhysicalObject hazerSac = new HazerSacAbstract(self.room.world, self.abstractCreature.pos, self.room.game.GetNewID());
                             self.room.abstractRoom.AddEntity(hazerSac);
                             hazerSac.RealizeInRoom();
+                            (item as Creature).GetCrit().isHarvested = true;
+
                             //apo realize
                             return;
                         }
+
+                        if(item is Centipede && (item as Centipede).dead && (item as Creature).GetCrit().harvestCount < 3)
+                        {
+
+
+                            self.room.PlaySound(SoundID.Tentacle_Plant_Grab_Slugcat, self.mainBodyChunk);
+
+                            AbstractPhysicalObject centiShell = new CentiShellAbstract(self.room.world, self.abstractCreature.pos, self.room.game.GetNewID())
+                            {
+                                hue = ((item as Centipede).graphicsModule as CentipedeGraphics).hue,
+                                saturation = ((item as Centipede).graphicsModule as CentipedeGraphics).saturation
+                            };
+
+                            self.room.abstractRoom.AddEntity(centiShell);
+                            centiShell.RealizeInRoom();
+
+                            (item as Creature).GetCrit().harvestCount++;
+                            if((item as Creature).GetCrit().harvestCount == 3)
+                            {
+                                (item as Creature).GetCrit().isHarvested = true;
+                            }
+                            return;
+                        }
+
                     }
+                    return;
                     
                 }
             }
