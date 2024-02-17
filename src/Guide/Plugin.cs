@@ -44,8 +44,8 @@ namespace GuideSlugBase
             Content.Register(new HazerSacFisobs());
             HazerSac.Hooks();
             Content.Register(new LSpearFisobs());
+            Content.Register(new SCloverFisobs());
             Content.Register(new CentiShellFisobs());
-            
 
             // Slugcat Hooks
             On.Player.Update += Player_Update;
