@@ -1,0 +1,4 @@
+[MERGE]
+Template: NONE
+FadePalette: 25, 0, 0, 0, 0
+[ENDMERGE]
