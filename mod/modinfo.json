@@ -1,11 +1,11 @@
 ﻿{
 	"id": "aveskori.guide",
 	"name": "The Guide",
-	"version": "0.3.0",
+	"version": "0.4.0",
 	"authors": "AvesKori",
 	"description": "[Beta] A Mod that adds the Guide to the game. Campaign planned out. <LINE>Some custom features implemented. Requires DMS, SlugBase, and Fisobs!",
-	"requirements": [ "dressmyslugcat", "slime-cubed.slugbase", "fisobs", "moreslugcats" ],
-	"requirements_names": [ "SlugBase 2.0", "Fisobs", "DMS", "More Slugcats Expansion" ],
+	"requirements": [ "slime-cubed.slugbase", "fisobs", "moreslugcats" ],
+	"requirements_names": [ "SlugBase 2.0", "Fisobs", "More Slugcats Expansion" ],
 	"checksum_override_version": false
 }
 
