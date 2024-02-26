@@ -1,0 +1,20 @@
+Template: NONE
+CeilingDrips: 0.7282609
+WaveSpeed: 0.6086956
+WaveLength: 1
+WaveAmplitude: 0.02173913
+SecondWaveLength: 0.8369565
+SecondWaveAmplitude: 1
+Clouds: 0.6413044
+Grime: 0.6630435
+BkgDroneVolume: 0.1695653
+BkgDroneNoThreatVolume: 0.8152174
+WaterReflectionAlpha: 0
+Palette: 9
+EffectColorA: 9
+EffectColorB: 10
+Effects: Fog-0.25-20-20, DirtyWater-0.1413043-25-70, SkyBloom-0.04347826-40-129, Flies-0-251-195, TinyDragonFly-0-220-139, WaterGlowworm-0.3695652-277-69, WaterViscosity-0.09782609-278-20, 
+PlacedObjects: LightSource><1447.928><300.8413><0.4130435~EffectColor1~-442~-165~50~86.60254~1~0~Fade~0~0, LightSource><1731.811><344.4338><0.423913~EffectColor2~-501~63~50~86.60254~1~0~Fade~0~0, LightSource><999.7915><371.0544><0.4347826~EffectColor2~649~-294~50~86.60254~1~0~Fade~0~0, LightSource><310.9023><2041.37><0.2608696~EffectColor1~-713~-354~50~86.60254~1~0~Fade~0~0, LightSource><253.0501><462.9929><0.3586957~EffectColor1~-602~-503~50~86.60254~1~0~Fade~0~0, LightSource><635.4658><518.053><0.3478261~EffectColor2~-587~-401~50~86.60254~1~0~Fade~0~0, LightSource><621.3151><1159.689><0.2065217~EffectColor2~-867~-344~-395~69.60254~1~0~Fade~0~0, LightSource><1334.196><1900.211><0.5~Environment~-713~-309~50~86.60254~1~0~None~0~0, LightSource><1779.592><2076.373><0.423913~Environment~-743~-313~45~27.60254~1~0~None~0~0, 
+AmbientSounds: OMNI><AM_IND-DeepHum.ogg><143.8907><516.4175><0.3152174><0.5695652, 
+FadePalette: 2, 0.3695652, 0.3695652, 0.3695652, 0.3695652, 0.3695652
+WetTerrain: OFF
