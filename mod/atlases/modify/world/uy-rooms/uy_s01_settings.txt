@@ -1,5 +1,0 @@
-[FIND]LightSource><167.1973><568.467><0.2934783~EffectColor1~-2~-247~105~-68.39746~1~0~Flash~0.1413043~0, 
-[REPLACE]
-[MERGE]
-PlacedObjects: LightSource><167.1973><568.467><0.2934783~EffectColor1~-2~-247~105~-68.39746~1~0~Flash~0.01086957~0, LightSource><543.597><506.8251><0.1521739~Environment~-168~-24~50~86.60254~1~0~None~0~0, 
-[ENDMERGE]
