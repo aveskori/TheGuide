@@ -9,22 +9,32 @@
 			{
 				"name": "Body",
 				"story": "e8f5ca",
-				"arena": [ "e8f5ca", "FBC424", "D81E5B", "622774" ]
+				"arena": [ "e8f5ca", "e2d3a4", "dbd9fb", "040d22" ]
 			},
 			{
 				"name": "Eyes",
 				"story": "02d1d",
-				"arena": [ "02d1d", "111111", "111111", "FFFFFF" ]
+				"arena": [ "030303", "030303", "030303", "FFFFFF" ]
 			},
 			{
 				"name": "Gills",
 				"story": "26593c",
-				"arena": [ "26593c", "EF7D04", "ba1212", "131D20" ]
+				"arena": [ "26593c", "e19436", "7f67d8", "f0edd4" ]
 			},
 			{
 				"name": "Spots",
 				"story": "60c0bb",
-				"arena": [ "60c0bb", "EF7D04", "ba1212", "131D20" ]
+				"arena": [ "60c0bb", "bf7c53", "9d86de", "1b2d57" ]
+			},
+			{
+				"name": "Blush",
+				"story": "60c0bb",
+				"arena": [ "60c0bb", "bf7c53", "9d86de", "1b2d57" ]
+			},
+			{
+				"name": "Tassels",
+				"story": "12a23e",
+				"arena": [ "12a23e", "e19436", "7f67d8", "f0edd4" ]
 			}
 		],
 
@@ -63,7 +73,7 @@
 		"food_min": 5,
 		"food_max": 8,
 
-		"start_room": "SI_S07",
+		"start_room": "SI_S08",
 		"select_menu_scene": "Slugcat_Guide",
 		"select_menu_scene_ascended": "Ghost_Guide",
 		"sleep_scene": "Sleep_Guide",
