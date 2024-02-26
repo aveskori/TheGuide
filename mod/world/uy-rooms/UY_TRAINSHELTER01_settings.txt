@@ -1,0 +1,12 @@
+Template: NONE
+RainIntensity: 0.253267
+RumbleIntensity: 0.3140478
+Clouds: 0.8260869
+Grime: 0.5
+WaterReflectionAlpha: 0.4963896
+Palette: 10
+EffectColorA: 13
+EffectColorB: 10
+Effects: Dustpuffs-0.01086957-26-127, 
+PlacedObjects: LightFixture><330.3893><478.0834><RedLight~17.32051~-10~21, LightFixture><549.949><477.9799><RedLight~17.32051~-10~51, MultiplayerItem><421.6852><334.8256><GuideSpear~17.32051~-10~1, 
+FadePalette: 9, 0.326087

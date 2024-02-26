@@ -1,0 +1,8 @@
+Template: NONE
+Clouds: 0.9008149
+Palette: 9
+EffectColorA: 13
+EffectColorB: 10
+Effects: RockFlea-0.1000905-20-20, Darkness-0.5108696-26-109, 
+PlacedObjects: LanternOnStick><834.0931><355.2472><58.08337~-115.4667, LanternOnStick><716.8127><308.1475><79.33337~-106.9333, LightSource><402.8713><360.3456><0.1453804~EffectColor1~0~100~50~86.60254~1~0~None~0~0, LightSource><671.8373><376.0402><0.1376807~EffectColor1~0~100~-85.29169~129.2691~1~0~None~0~0, LightSource><924.2306><362.6172><0.1299823~EffectColor1~0~100~93.91675~-112.5086~1~0~None~0~0, LightSource><553.9277><340.4668><0.07608695~EffectColor1~-170~97.15555~50~86.60254~1~0~None~0~0, TradeOutpost><-112.2389><149.2042><0~100, TradeOutpost><654.1238><237.6181><-191.25~1.155518, LanternOnStick><230.5506><288.1544><-62.33334~-84.17778, 
+FadePalette: 2, 0.326087

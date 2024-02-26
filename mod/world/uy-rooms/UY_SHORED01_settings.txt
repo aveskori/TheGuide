@@ -1,0 +1,15 @@
+Template: NONE
+CeilingDrips: 0.8152174
+WaveSpeed: 0.4891304
+WaveLength: 0.7391304
+WaveAmplitude: 0.04347826
+SecondWaveLength: 0.06884036
+SecondWaveAmplitude: 0.2391304
+Clouds: 0.8913044
+WaterReflectionAlpha: 0.6195652
+Palette: 9
+EffectColorA: 13
+EffectColorB: 10
+Effects: SkyDandelions-0.0326087-20-20, SkyBloom-0.5652174-23-75, Fog-0.5434783-19-126, Moth-0.6630435-269-169, WaterGlowworm-0.3478261-269-116, TinyDragonFly-0.2608696-271-67, 
+PlacedObjects: LightSource><2472.167><330.0932><0.1857233~EffectColor2~-305~-297~-460~-21.39746~1~0~None~0~0, BlinkingFlower><2691.629><567.7104><, BlinkingFlower><2700.09><597.7988><, BlinkingFlower><2414.094><570.0912><, LanternOnStick><1055.55><792.9965><64~-171, LanternOnStick><938.0525><683.9687><58~-152, LanternOnStick><1004.309><677.6913><13~-141, BlinkingFlower><456.179><665.0892><, BlinkingFlower><231.6173><778.162><, BlinkingFlower><567.8848><716.1483><, LightBeam><383.0741><1277.905><-110~477~21~499~280~14~-316~-148~0.09565204~0~0~1~None~0~0, LightBeam><781.9182><1225.892><-243~532~-51~524~300~33~-357~-93~0.5521738~0~0~1~None~0~0, LightBeam><1107.799><1070.026><-150~513~10~543~190~41~-72~-226~0.5086962~0~0~1~None~0~0, LightBeam><2310.42><963.8173><-528~682~-261~678~325~7~672~-241.9785~0.1282607~0~0~1~None~0~0, LightBeam><2670.7><1101.239><-326~564~-104~533~422~17~229~-220~0.08478247~0~0~1~None~0~0, Vine><2949.65><1383.379><-533~64, Vine><2338.057><1393.95><-376~134, SeedCob><2724.932><507.1977><18~69.99945~7~10, DeadSeedCob><2794.085><536.9858><, DeadSeedCob><2650.857><527.6122><, HangingPearls><2170.436><793.3228><, 
+FadePalette: 2, 0.3586957, 0.3695652, 0.3804348, 0.3804348, 0.3804348, 0.3913043
