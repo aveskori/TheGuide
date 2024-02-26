@@ -31,6 +31,7 @@ namespace GuideSlugBase
         {
             On.RainWorld.OnModsInit += Extras.WrapInit(LoadResources);
             On.RainWorld.OnModsInit += RainWorld_OnModsInit;
+            On.RainWorld.PostModsInit += RainWorld_PostModsInit;
             
             // Critobs
             Content.Register(new VanLizCritob());
@@ -38,6 +39,7 @@ namespace GuideSlugBase
             Content.Register(new ChrLizCritob());
             CherryHooks.Hooks();
             Content.Register(new molemousecritob());
+            //Content.Register(new ScrufflingCritob());
             
             // Fisobs
             //Content.Register(new CloversFisobs());
@@ -47,6 +49,7 @@ namespace GuideSlugBase
             Content.Register(new SCloverFisobs());
             Content.Register(new CentiShellFisobs());
 
+
             // Slugcat Hooks
             On.Player.Update += Player_Update;
             On.Creature.Grasp.ctor += Grasp_ctor;
@@ -55,7 +58,7 @@ namespace GuideSlugBase
             On.JellyFish.Update += JellyFish_Update; //AND JELLYFISH TICKLES...
             On.Centipede.Shock += Centipede_Shock; // if slippery, immune to centishocks
             On.Player.SpitOutOfShortCut += Player_SpitOutOfShortCut; //HUD HINTS
-            On.RegionGate.customKarmaGateRequirements += GuideGateFix;
+            //On.RegionGate.customKarmaGateRequirements += GuideGateFix;
             GuideCrafts.Hooks();
             On.Player.GrabUpdate += BubbleFruitPop; //slippery ability causes bubblefruit to pop
 ;
@@ -68,7 +71,33 @@ namespace GuideSlugBase
             IL.DenFinder.TryAssigningDen += DenFinder_TryAssigningDen;
         }
 
-        private void BubbleFruitPop(On.Player.orig_GrabUpdate orig, Player self, bool eu)
+        private bool RotundWorld; //are we rotund??
+        private bool _postModsInit;
+        private void RainWorld_PostModsInit(On.RainWorld.orig_PostModsInit orig, RainWorld self)
+        {
+            orig(self);
+            if (_postModsInit) return;
+
+            try
+            {
+                _postModsInit = true;
+                if (ModManager.ActiveMods.Any(x => x.id == "willowwisp.bellyplus"))
+                {
+                    RotundWorld = true;
+                    Logger.LogInfo("We gettin ROTUND (also HIII person reading these logs!!!!)");
+                }
+                else
+                {
+                    RotundWorld = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex);
+            }
+        }
+
+        private void BubbleFruitPop(On.Player.orig_GrabUpdate orig, Player self, bool eu) //certified nut sweller
         {
             orig(self, eu);
             
@@ -93,7 +122,9 @@ namespace GuideSlugBase
             return;
         }
 
-        private void GuideGateFix(On.RegionGate.orig_customKarmaGateRequirements orig, RegionGate self)
+        //HHH DOESNT WORK YET
+        //(Visiting FP with a LanternSpear ticks SpearKey to true, Guide gains access to LC)
+        /*private void GuideGateFix(On.RegionGate.orig_customKarmaGateRequirements orig, RegionGate self)
         {
             orig(self);
             GuideStatusClass.GuideStatus guide = null;
@@ -111,7 +142,7 @@ namespace GuideSlugBase
                 }
             }
             
-        }
+        }*/
 
         private static bool IsInit;
         private void RainWorld_OnModsInit(On.RainWorld.orig_OnModsInit orig, RainWorld self)
@@ -178,9 +209,9 @@ namespace GuideSlugBase
             orig(self, sLeaser, rCam);
             if (!isGuide) return;
             
-            if (sLeaser.sprites[2] is TriangleMesh tail)
+            /*if (sLeaser.sprites[2] is TriangleMesh tail)
             {
-                tail.element = Futile.atlasManager.GetElementWithName(SpritePrefix + "TailTexture");
+                //tail.element = Futile.atlasManager.GetElementWithName(SpritePrefix + "TailTexture");
                 for (var i = tail.vertices.Length - 1; i >= 0; i--)
                 {
                     var perc = i / 2 / (float)(tail.vertices.Length / 2);
@@ -199,7 +230,7 @@ namespace GuideSlugBase
 
                     tail.UVvertices[i] = uv;
                 }
-            }
+            }*/
 
             guide.BodySpotsSprite = sLeaser.sprites.Length;
             guide.HipsSpotsSprite = sLeaser.sprites.Length + 1;
@@ -207,13 +238,27 @@ namespace GuideSlugBase
             guide.HeadGillsSprite = sLeaser.sprites.Length + 3;
             guide.FaceBlushSprite = sLeaser.sprites.Length + 4;
 
-            Array.Resize(ref sLeaser.sprites, sLeaser.sprites.Length + 5);
+            guide.TasselSpriteA[0] = sLeaser.sprites.Length + 5;
+            guide.TasselSpriteA[1] = sLeaser.sprites.Length + 6;
+            guide.TasselSpriteA[2] = sLeaser.sprites.Length + 7;
+            guide.TasselSpriteA[3] = sLeaser.sprites.Length + 8;
+            guide.TasselSpriteA[4] = sLeaser.sprites.Length + 9;
+
+            Array.Resize(ref sLeaser.sprites, sLeaser.sprites.Length + 5 + 5); //Adds spots to sprite array, add five more for the danglefruit sptire
 
             sLeaser.sprites[guide.BodySpotsSprite] = new FSprite("pixel");
             sLeaser.sprites[guide.HipsSpotsSprite] = new FSprite("pixel");
             sLeaser.sprites[guide.LegsSpotsSprite] = new FSprite("pixel");
             sLeaser.sprites[guide.HeadGillsSprite] = new FSprite("pixel");
             sLeaser.sprites[guide.FaceBlushSprite] = new FSprite("pixel");
+
+            for(int i = 0; i < 5; i++)
+            {
+                sLeaser.sprites[guide.TasselSpriteA[i]] = new FSprite("DangleFruit0A"); //adds 0, 1, 2, 3, 4
+            }
+            
+            
+            
             
             guide.SetupColors();
 
@@ -242,14 +287,33 @@ namespace GuideSlugBase
             
             newContatiner.AddChild(sLeaser.sprites[guide.FaceBlushSprite]);
             sLeaser.sprites[guide.FaceBlushSprite].MoveInFrontOfOtherNode(sLeaser.sprites[9]);
+
+            for(int i = 0; i < 5; i++)
+            {
+                newContatiner.AddChild(sLeaser.sprites[guide.TasselSpriteA[i]]);
+                sLeaser.sprites[guide.TasselSpriteA[i]].MoveInFrontOfOtherNode(sLeaser.sprites[2]);
+            }
+
+            
+
         }
 
         private const string SpritePrefix = "GuideSprites_";
         private void PlayerGraphics_DrawSprites(On.PlayerGraphics.orig_DrawSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
         {
             orig(self, sLeaser, rCam, timeStacker, camPos);
-            if (!self.IsGuide(out var guide)) return;
+
             
+
+            if (!self.IsGuide(out var guide)) return;
+
+            sLeaser.sprites[1].scaleX += 0.15f;
+            for(int j = 0; j < 5; j++)
+            {
+                sLeaser.sprites[guide.TasselSpriteA[j]].scale = 0.5f;
+            }
+            
+
             sLeaser.sprites[guide.BodySpotsSprite].Follow(sLeaser.sprites[0]);
             sLeaser.sprites[guide.BodySpotsSprite].color = guide.SpotsColor;
             
@@ -263,7 +327,31 @@ namespace GuideSlugBase
             sLeaser.sprites[guide.HeadGillsSprite].color = guide.GillsColor;
 
             sLeaser.sprites[guide.FaceBlushSprite].Follow(sLeaser.sprites[9]);
-            sLeaser.sprites[guide.FaceBlushSprite].color = guide.EyesColor;
+            sLeaser.sprites[guide.FaceBlushSprite].color = guide.SpotsColor;
+
+            
+
+            for(int i = 0; i < 5; i++)
+            {
+                sLeaser.sprites[guide.TasselSpriteA[i]].color = guide.TasselAColor;
+            }
+
+            for(var i = 0; i < 3; i++)
+            {
+                var offset = Custom.PerpendicularVector(Custom.DirVec(self.tail[i].pos, self.tail[i+1].pos)) * (self.tail[i].rad * 0.8f);
+                offset.y = Mathf.Abs(offset.y);
+
+                sLeaser.sprites[guide.TasselSpriteA[i]].SetPosition((self.tail[i].pos + self.tail[i+1].pos) / 2 - camPos + offset);
+            }
+
+            
+            /*sLeaser.sprites[guide.TasselSpriteA[1]].SetPosition((self.tail[1].pos + self.tail[2].pos) / 2 - camPos + Custom.PerpendicularVector(Custom.DirVec(self.tail[1].pos, self.tail[2].pos)) * 9);
+            sLeaser.sprites[guide.TasselSpriteA[2]].SetPosition((self.tail[2].pos + self.tail[3].pos) / 2 - camPos + Custom.PerpendicularVector(Custom.DirVec(self.tail[2].pos, self.tail[3].pos)) * 9);*/
+            sLeaser.sprites[guide.TasselSpriteA[3]].SetPosition(self.tail[1].pos - camPos);
+            sLeaser.sprites[guide.TasselSpriteA[4]].SetPosition(self.tail[2].pos - camPos);
+
+
+
 
             sLeaser.sprites[guide.BodySpotsSprite].element = Futile.atlasManager.GetElementWithName(SpritePrefix + "Spots_BodyA");
             if (Futile.atlasManager._allElementsByName.TryGetValue(SpritePrefix + "Spots_" + sLeaser.sprites[4].element.name, out var element))
@@ -398,13 +486,26 @@ namespace GuideSlugBase
 
         private void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
         {
-            if (self.slugcatStats.name.value == "Guide")
+            bool sFlag = false;
+            if (self.GetCat().IsGuide)
             {
                 //when underwater, slippery = true, countdown starts
                 if (self.animation == Player.AnimationIndex.DeepSwim)
                 {
-                    self.room.PlaySound(SoundID.Big_Spider_Spit, 0f, 0.50f, 1f);
-                    self.GetCat().slipperyTime = 40 * 30;
+                    if (!sFlag)
+                    {
+                        self.room.PlaySound(SoundID.Red_Lizard_Spit_Hit_Player, 0f, 0.50f, 1f);
+                        sFlag = true;
+                    }
+                    
+                    if(self.FoodInStomach < self.slugcatStats.foodToHibernate) //if food in stomach is less than food to hibernate (Update = 40 fps, SlipperyTime = update rate * seconds
+                    {
+                        self.GetCat().slipperyTime = 40 * 30;
+                    }
+                    else
+                    {
+                        self.GetCat().slipperyTime = 40 * 60;
+                    }
                     self.GetCat().slippery = true;
                     self.slugcatStats.runspeedFac = 1.5f;
                     self.slugcatStats.corridorClimbSpeedFac = 1.6f;
@@ -415,10 +516,16 @@ namespace GuideSlugBase
                 if (self.GetCat().slipperyTime > 0)
                 {
                     self.GetCat().slipperyTime--;
+                    if (!RotundWorld) // check rotund world
+                    {
+                        Vector2 pos = self.bodyChunks[1].pos + new Vector2(Mathf.Lerp(-9f, 9f, UnityEngine.Random.value), 9f + Mathf.Lerp(-2f, 2f, UnityEngine.Random.value));
+                        self.room.AddObject(new WaterDrip(pos, new Vector2(0, 1), false));
+                    }                   
                 }
                 else
                 {
                     self.GetCat().slippery = false;
+                    sFlag = false;
                     self.slugcatStats.runspeedFac = 1f;
                     self.slugcatStats.corridorClimbSpeedFac = 1f;
                     self.slugcatStats.poleClimbSpeedFac = 1f;
@@ -460,6 +567,7 @@ namespace GuideSlugBase
         private void LoadResources(RainWorld rainWorld)
         {
             Futile.atlasManager.LoadImage("atlases/icon_LanternSpear");
+            Futile.atlasManager.LoadImage("atlases/icon_clover");
             Futile.atlasManager.LoadAtlas("guidesprites/body-spots");
             Futile.atlasManager.LoadAtlas("guidesprites/face-blush");
             Futile.atlasManager.LoadAtlas("guidesprites/head");
@@ -473,47 +581,55 @@ namespace GuideSlugBase
     }
 }
 
+public static class ScavSatusClass
+{
+    public class ScavStatus
+    {
+        public bool isBaby;
+        public bool isWarden;
+
+        public int kingMask;
+        public int glyphMark;
+
+        public ScavStatus(Scavenger scav)
+        {
+            UnityEngine.Random.seed = scav.abstractCreature.ID.RandomSeed;
+            if (UnityEngine.Random.value < 0.2f)
+            {
+                this.isBaby = true;
+            }
+            if(!isBaby && UnityEngine.Random.value < 0.1f)
+            {
+                this.isWarden = true;
+                
+            }
+        }
+    }
+
+    private static readonly ConditionalWeakTable<Scavenger, ScavStatus> ScavCWT = new();
+    public static ScavStatus GetScav(this Scavenger scav) => ScavCWT.GetValue(scav, _ => new(scav));
+
+}
+
 public static class CritStatusClass
 {
     public class CritStatus
     {
         public bool isHarvested;
         public int harvestCount;
-        //centipedes
-        public bool isRed;
-        public bool isYellow;
-        public bool isGreen;
-        public bool isBlue;
+
+        public bool havenScav;
+        
 
         public CritStatus(Creature crit)
         {
             
-            CreatureTemplate.Type t = null;
-            if (crit != null)
-            {
-                if(t == CreatureTemplate.Type.RedCentipede)
-                {
-                    isRed = true;
-                    return;
-                }
-                if(t == CreatureTemplate.Type.Centipede)
-                {
-                    isYellow = true;
-                    return;
-                }
-                if(t == CreatureTemplate.Type.Centiwing)
-                {
-                    isGreen = true;
-                    return;
-                }
-                if(t == MoreSlugcats.MoreSlugcatsEnums.CreatureTemplateType.AquaCenti)
-                {
-                    isBlue = true;
-                    return;
-                }
-            }
+            
+            
 
         }
+
+        
     }
     private static readonly ConditionalWeakTable<Creature, CritStatus> CritCWT = new();
     public static CritStatus GetCrit(this Creature crit) => CritCWT.GetValue(crit, _ => new(crit));
@@ -544,11 +660,14 @@ public static class GuideStatusClass
         public int LegsSpotsSprite;
         public int HeadGillsSprite;
         public int FaceBlushSprite;
+        public int[] TasselSpriteA = new int[5];
+        public int[] TasselSpriteB;
 
         public Color BodyColor;
         public Color EyesColor;
         public Color GillsColor;
         public Color SpotsColor;
+        public Color TasselAColor;
 
         public GuideStatus(Player player)
         {
@@ -560,6 +679,7 @@ public static class GuideStatusClass
             artiSpawn = false;
             SpearKey = false;
             harvestCounter = 0;
+            
         }
 
         public void SetupColors()
@@ -570,6 +690,7 @@ public static class GuideStatusClass
             EyesColor = new PlayerColor("Eyes").GetColor(pg) ?? Custom.hexToColor("00271f");
             GillsColor = new PlayerColor("Gills").GetColor(pg) ?? Custom.hexToColor("26593c");
             SpotsColor = new PlayerColor("Spots").GetColor(pg) ?? Custom.hexToColor("60c0bb");
+            TasselAColor = new PlayerColor("Tassels").GetColor(pg) ?? Custom.hexToColor("12a23e");
         }
     }
 

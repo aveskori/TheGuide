@@ -5,6 +5,7 @@ using Fisobs.Core;
 using Fisobs.Items;
 using Fisobs.Properties;
 using Fisobs.Sandbox;
+using System;
 
 namespace Guide.Objects
 {
@@ -12,7 +13,7 @@ namespace Guide.Objects
     {
         public static readonly AbstractPhysicalObject.AbstractObjectType AbstrSClover = new("AbstrSClover", true);
 
-        public static readonly MultiplayerUnlocks.SandboxUnlockID laSpear = new("SlimeClover", true);
+        public static readonly MultiplayerUnlocks.SandboxUnlockID sClover = new("SlimeClover", true);
         //public static readonly PlacedObject.MultiplayerItemData.Type GuideSpear = new("GuideSpear", true);
 
 
@@ -20,7 +21,7 @@ namespace Guide.Objects
         {
             Icon = new SCloverIcon();
             SandboxPerformanceCost = new(linear: 0.2f, 0f);
-            RegisterUnlock(laSpear, parent: MultiplayerUnlocks.SandboxUnlockID.Slugcat, data: 0);
+            RegisterUnlock(sClover, parent: MultiplayerUnlocks.SandboxUnlockID.Slugcat, data: 0);
         }
 
 
@@ -140,7 +141,7 @@ namespace Guide.Objects
         }
         public override string SpriteName(int data)
         {
-            return "atlases/icon_LanternSpear";
+            return "atlases/icon_clover";
         }
     }
 
@@ -161,12 +162,12 @@ namespace Guide.Objects
             collisionLayer = 1;
             waterFriction = 0.95f;
             buoyancy = 1.1f;
-
+            puffCount = Mathf.Max(5, (int)(UnityEngine.Random.value * 8));
 
             //DO WE ACTUALLY NEED THIS?
-            Random.State state = Random.state;
-            Random.InitState(abstractPhysicalObject.ID.RandomSeed);
-            Random.state = state;
+            UnityEngine.Random.State state = UnityEngine.Random.state;
+            UnityEngine.Random.InitState(abstractPhysicalObject.ID.RandomSeed);
+            UnityEngine.Random.state = state;
         }
 
         public AbstractConsumable AbstrConsumable;
@@ -174,12 +175,15 @@ namespace Guide.Objects
         public Vector2 lastRotation;
         public Vector2? stuckPos;
         public Vector2? gravitateToPos;
+        private float swayer;
+        private int puffCount;
 
 
 
         public override void Update(bool eu)
         {
             base.Update(eu);
+            swayer += base.firstChunk.vel.magnitude / 3f;
             lastRotation = rotation;
             if (grabbedBy.Count > 0)
             {
@@ -253,14 +257,19 @@ namespace Guide.Objects
             //this.ResetSlime();
         }
 
-
+        
         public void InitiateSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam) //override
         {
             //POPCORN VERSION
-            sLeaser.sprites = new FSprite[3];
+            sLeaser.sprites = new FSprite[3 + puffCount];
             sLeaser.sprites[0] = new FSprite("JetFishEyeA", true);
             sLeaser.sprites[1] = new FSprite("JetFishEyeA", true);
             sLeaser.sprites[2] = new FSprite("tinyStar", true);
+            for (int i = 0; i < puffCount; i++)
+            {
+                sLeaser.sprites[3 + i] = new FSprite("SkyDandelion", true);
+                sLeaser.sprites[3 + i].scale = 0.9f + Mathf.Sin((float)(this.AbstrConsumable.ID.number + i * puffCount)) / 10f;
+            }
 
             AddToContainer(sLeaser, rCam, null);
         }
@@ -279,6 +288,18 @@ namespace Guide.Objects
             sLeaser.sprites[2].x = vector.x - camPos.x;
             sLeaser.sprites[2].y = vector.y - camPos.y;
 
+            //funny puffs
+            float num = 8f + Mathf.Sin((float)AbstrConsumable.ID.RandomSeed);
+            for (int i = 0; i < puffCount; i++)
+            {
+                float num2 = Mathf.Lerp(90f, 170f, (float)(puffCount - 1) / 8f);
+                float num3 = 0f - num2 / 2f;
+                Vector2 vector3 = Custom.RotateAroundOrigo(vector2, num3 + num2 * ((float)i / (float)(puffCount - 1)));
+                sLeaser.sprites[3 + i].rotation = Custom.VecToDeg(vector2);
+                float num4 = num * sLeaser.sprites[2 + i].scale + 0.2f * Mathf.Sin(swayer + (float)(i * puffCount));
+                sLeaser.sprites[3 + i].x = vector.x + vector3.x * num4 - camPos.x;
+                sLeaser.sprites[3 + i].y = vector.y + vector3.y * num4 - camPos.y;
+            }
             if (slatedForDeletetion || room != rCam.room)
             {
                 sLeaser.CleanSpritesAndRemove();
@@ -290,8 +311,12 @@ namespace Guide.Objects
         {
             Color color = Color.Lerp(new Color(0.9f, 0.83f, 0.5f), palette.blackColor, 0.18f + 0.7f * rCam.PaletteDarkness());
             sLeaser.sprites[0].color = color;
-            sLeaser.sprites[1].color = color + new Color(0.3f, 0.3f, 0.3f) * Mathf.Lerp(1f, 0.15f, rCam.PaletteDarkness());
-            sLeaser.sprites[2].color = Color.Lerp(new Color(1f, 0f, 0f), palette.blackColor, 0.3f);
+            sLeaser.sprites[1].color = color + new Color((41 / 255), (99 / 255), (67 / 255)) * Mathf.Lerp(1f, 0.15f, rCam.PaletteDarkness());
+            sLeaser.sprites[2].color = Color.Lerp(new Color((137 / 255), (238 / 255), (232 / 255)), palette.blackColor, 0.3f);
+            for(int i = 0; i < puffCount; i++)
+            {
+                sLeaser.sprites[3 + i].color = Color.Lerp(new Color((229 / 255), (137 / 255), (238 / 255)), new Color((137 / 255), (209 / 255), (238 / 255)), 0.3f);
+            }
         }
 
 

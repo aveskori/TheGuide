@@ -4,6 +4,7 @@ using MoreSlugcats;
 using RWCustom;
 using Guide.Objects;
 using System.Linq;
+using ScavengerCosmetic;
 
 namespace Guide.WorldChanges
 {
@@ -23,32 +24,202 @@ namespace Guide.WorldChanges
             On.ScavengerAI.DecideBehavior += ScavengerAI_FollowGuide;
             On.ScavengerAI.SocialEvent += ScavengerAI_SocialEvent; //GUIDE TAKING SCAV ITEMS DOESN'T DECREASE REP
             On.ScavengerAI.DecideBehavior += ScavengerAI_FeedGuide;
-            On.Spear.HitSomething += Spear_DontHitScavs;
+            On.Weapon.HitThisObject += Weapon_HitThisObject;
+
+            //BABIES
+            On.Scavenger.ctor += Scruffling_ctor;
+            On.ScavengerGraphics.InitiateSprites += ScavengerGraphics_InitiateSprites;
+            On.ScavengerGraphics.Update += ScavengerGraphics_Update;
+            On.ScavengerGraphics.DrawSprites += ScavengerGraphics_DrawSprites;
+            //On.Scavenger.Update += PiggyBack;
+            On.ScavengerGraphics.ScavengerHand.ctor += ScavengerHand_ctor;
+            On.ScavengerGraphics.ScavengerLeg.ctor += ScavengerLeg_ctor;
+            //On.ScavengerGraphics.AddToContainer += ScavengerGraphics_AddToContainer;
+            
+            
+            
            
             //On.ScavengerAI.DecideBehavior += LanternSpearControl;
             //On.ScavengerAI.ViolenceTypeAgainstCreature += LanternSpear_TargetCreature;
         }
 
-        private static bool Spear_DontHitScavs(On.Spear.orig_HitSomething orig, Spear self, SharedPhysics.CollisionResult result, bool eu)
+        /*private static void ScavengerGraphics_AddToContainer(On.ScavengerGraphics.orig_AddToContainer orig, ScavengerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, FContainer newContatiner)
         {
+            orig(self, sLeaser, rCam, newContatiner);
+            if (!self.scavenger.GetScav().isWarden) return;
+
             
-            Player guide = FindNearbyGuide(self.room);
-            if (self.thrownBy != null && self.thrownBy == guide && result.obj is Scavenger)
+            newContatiner ??= rCam.ReturnFContainer("Midground");
+
+            newContatiner.AddChild(sLeaser.sprites[self.scavenger.GetScav().kingMask]);
+            sLeaser.sprites[self.scavenger.GetScav().kingMask].MoveInFrontOfOtherNode(sLeaser.sprites[1]);
+
+            newContatiner.AddChild(sLeaser.sprites[self.scavenger.GetScav().glyphMark]);
+            sLeaser.sprites[self.scavenger.GetScav().glyphMark].MoveInFrontOfOtherNode(sLeaser.sprites[1]);
+        }*/
+
+        private static bool Weapon_HitThisObject(On.Weapon.orig_HitThisObject orig, Weapon self, PhysicalObject obj)
+        {            
+            if( self != null && obj != null &&
+                (self.thrownBy is Scavenger && obj is Player && (obj as Player).GetCat().IsGuide) ||    //if scavs throw spear at guide
+                (self.thrownBy is Player) && obj is Scavenger && (self.thrownBy as Player).GetCat().IsGuide)   //or if guide throw spear at scav
             {
                 return false;
             }
-            else
+            return orig(self, obj);
+        }
+
+        
+
+        private static void ScavengerLeg_ctor(On.ScavengerGraphics.ScavengerLeg.orig_ctor orig, ScavengerGraphics.ScavengerLeg self, ScavengerGraphics owner, int num, int firstSprite)
+        {
+            orig(self, owner, num, firstSprite);
+            if (self.scavenger.GetScav().isBaby)
             {
-                orig(self, result, eu);
-                return eu;
+                self.legLength = 0.5f;
+            }
+            if (self.scavenger.GetScav().isWarden)
+            {
+                self.legLength = 1.5f;
             }
         }
+
+        private static void ScavengerHand_ctor(On.ScavengerGraphics.ScavengerHand.orig_ctor orig, ScavengerGraphics.ScavengerHand self, ScavengerGraphics owner, int num, int firstSprite)
+        {
+            orig(self, owner, num, firstSprite);
+            if (self.scavenger.GetScav().isBaby)
+            {
+                self.armLength = 0.3f;
+                
+            }
+        }
+
+        private static void ScavengerGraphics_DrawSprites(On.ScavengerGraphics.orig_DrawSprites orig, ScavengerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
+        {
+            orig(self, sLeaser, rCam, timeStacker, camPos);
+            if (self.scavenger.GetScav().isBaby)
+            {
+                for (int j = 0; j < 2; j++)
+                {
+                    sLeaser.sprites[self.EyeSprite(j, 0)].scaleX *= 2f;
+                    
+                }
+            }
+            if (self.scavenger.GetScav().isWarden)
+            {
+                for(int j = 0;j < 2; j++)
+                {
+                    sLeaser.sprites[self.EyeSprite(j, 0)].scaleY *= 0.8f;
+                }
+
+                /*sLeaser.sprites[self.scavenger.GetScav().kingMask].Follow(sLeaser.sprites[1]);
+                sLeaser.sprites[self.scavenger.GetScav().glyphMark].Follow(sLeaser.sprites[2]);*/
+            }
+        }
+
+        private static void ScavengerGraphics_Update(On.ScavengerGraphics.orig_Update orig, ScavengerGraphics self)
+        {
+            orig(self);
+            if (self.scavenger.GetScav().isBaby)
+            {
+                self.spineLengths[0] *= 0.5f;
+            }
+
+            
+            Player guide = FindNearbyGuide(self.scavenger.room);
+
+            if (guide != null && !guide.inShortcut && guide.GetCat().IsGuide &&
+                self.scavenger.GetScav().isBaby && Custom.Dist(self.scavenger.mainBodyChunk.pos, guide.mainBodyChunk.pos) < 20)
+            {
+                Limb myHand = self.hands[0];
+                Limb yourHand = (guide.graphicsModule as PlayerGraphics).hands[1];
+                yourHand.absoluteHuntPos = new Vector2(guide.mainBodyChunk.pos.x + 10, guide.mainBodyChunk.pos.y);
+                myHand.mode = Limb.Mode.HuntAbsolutePosition;
+                myHand.absoluteHuntPos = yourHand.absoluteHuntPos;
+                myHand.huntSpeed = 0.5f;
+                myHand.pos = yourHand.pos;
+                
+            }
+        }
+
+        private static void ScavengerGraphics_InitiateSprites(On.ScavengerGraphics.orig_InitiateSprites orig, ScavengerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
+        {
+            orig(self, sLeaser, rCam);
+            if (self.scavenger.GetScav().isBaby)
+            {
+                float mySize = 0.5f;
+                sLeaser.sprites[self.ChestSprite].scaleX *= 1f;
+                sLeaser.sprites[self.ChestSprite].scaleY *= 0.9f;
+                sLeaser.sprites[self.HipSprite].scale *= mySize;
+                sLeaser.sprites[self.HeadSprite].scale *= mySize;
+                
+                
+            }
+            if (self.scavenger.GetScav().isWarden)
+            {
+                float mySize = 1.5f;
+                sLeaser.sprites[self.ChestSprite].scaleX *= 1f;
+                sLeaser.sprites[self.ChestSprite].scaleY *= 0.9f;
+                sLeaser.sprites[self.HipSprite].scale *= mySize;
+                sLeaser.sprites[self.HeadSprite].scale *= mySize;
+
+                /*Array.Resize(ref sLeaser.sprites, sLeaser.sprites.Length + 2);
+
+                self.scavenger.GetScav().kingMask = sLeaser.sprites.Length;
+                self.scavenger.GetScav().glyphMark = sLeaser.sprites.Length + 1;
+
+                sLeaser.sprites[self.scavenger.GetScav().kingMask] = self
+                sLeaser.sprites[self.scavenger.GetScav().glyphMark] = new FSprite("TinyGlyph1");*/
+            }
+        }
+
+        private static void Scruffling_ctor(On.Scavenger.orig_ctor orig, Scavenger self, AbstractCreature abstractCreature, World world)
+        {
+            
+            orig(self, abstractCreature, world);
+            if (self.GetScav().isBaby)
+            {
+                float mySize = 0.4f;
+                self.bodyChunks[0].rad *= mySize;
+                self.bodyChunks[1].rad *= mySize;
+                self.bodyChunks[2].rad *= mySize;
+                self.bodyChunkConnections[0].distance *= mySize;
+                self.bodyChunkConnections[1].distance *= mySize;
+                self.LoseAllGrasps();
+
+                self.lungs *= mySize;
+                self.blockingSkill = 0f;
+                self.dodgeSkill = 0f;
+                self.meleeSkill = 0f;
+                self.reactionSkill = 0f;
+
+            }
+
+            if (self.GetScav().isWarden)
+            {
+                float mySize = 1.5f;
+                self.bodyChunks[0].rad *= mySize;
+                self.bodyChunks[1].rad *= mySize;
+                self.bodyChunks[2].rad *= mySize;
+                self.bodyChunkConnections[0].distance *= mySize;
+                self.bodyChunkConnections[1].distance *= mySize;
+                self.LoseAllGrasps();
+
+                self.lungs *= mySize;
+                self.blockingSkill = 1f;
+                self.dodgeSkill = 1f;
+                self.meleeSkill = 1f;
+                self.reactionSkill = 1f;
+            }
+        }
+
+        
 
         private static void ScavengerAI_FeedGuide(On.ScavengerAI.orig_DecideBehavior orig, ScavengerAI self)
         {
             
             Player guide = FindNearbyGuide(self.scavenger.room);
-            
+            if(self.scavenger.GetScav().isBaby) { return; }
            
             if(self.scavenger.grasps.Any(x => x?.grabbed is IPlayerEdible) && guide != null) //if any items in inv are edible, and if guide != null
             {
@@ -203,8 +374,13 @@ namespace Guide.WorldChanges
         private static int ScavengerAI_CollectScore_PhysicalObject_bool(On.ScavengerAI.orig_CollectScore_PhysicalObject_bool orig, ScavengerAI self, PhysicalObject obj, bool weaponFiltered)
         { //Custom Collect scores for extra items, plant consumables. Scavs will take and forage for these
             string regionName = self.scavenger.room.world.region.name;
+            
             if (self.scavenger.room != null && obj != null && FindNearbyGuide(self.scavenger.room) != null)
             {
+                if (self.scavenger.GetScav().isBaby)
+                {
+                    return 0;
+                }
                 if (obj is DangleFruit)
                 {
                     return 2;
