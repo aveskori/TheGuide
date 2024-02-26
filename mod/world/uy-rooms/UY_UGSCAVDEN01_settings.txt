@@ -1,9 +1,0 @@
-Template: NONE
-CeilingDrips: 0.6413044
-Grime: 0.6847826
-Palette: 9
-EffectColorA: 14
-EffectColorB: 10
-Effects: Darkness-0.1413043-20-20, 
-PlacedObjects: TradeOutpost><603.6485><276.134><-224~-8, LanternOnStick><551.1785><383.3132><20~126, LightBeam><686.8885><252.8943><-84~243~10~235~223~1~-504~-1~0.4543477~0~0~0~None~0~0, LightBeam><418.9382><244.8688><-35~235~111~259~243~9~-401~-163.2044~0.845652~0~0~1~None~0~0, 
-FadePalette: 2, 0.2717391

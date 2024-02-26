@@ -1,8 +1,0 @@
-Template: NONE
-CeilingDrips: 0.6630435
-Palette: 9
-EffectColorA: 14
-EffectColorB: 11
-Effects: Darkness-0.2065217-20-20, 
-PlacedObjects: LightBeam><456.6006><305.9229><-31~322~63~387~314~164~-426~-69~0.4543477~0~0~1~None~0~0, LightSource><845.3224><482.658><0.2717391~White~-179~-43~50~86.60254~1~0~None~0~0, LightBeam><569.749><404.05><-114~254~-86~274~89~28~-542~32~0.4652173~0~0~1~None~0~0, 
-FadePalette: 2, 0.2717391

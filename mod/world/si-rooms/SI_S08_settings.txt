@@ -1,3 +1,0 @@
-Template: SI_SettingsTemplate_Inside
-Clouds: 0.8369565
-Palette: 3

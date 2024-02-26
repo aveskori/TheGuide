@@ -1,8 +1,0 @@
-Template: NONE
-DangerType: Flood
-Grime: 0.5108696
-WaterReflectionAlpha: 0.5217391
-Palette: 37
-Effects: Darkness-0.25-20-20, WaterFluxFrequency-0.1304348-1010-563, WaterFluxMinLevel-0.3152174-1011-500, WaterFluxMaxLevel-0.7065217-1001-438, WaterFluxMaxDelay-0.2282609-1003-382, 
-PlacedObjects: LightSource><85.20496><1351.695><0.6086956~White~5~-174~50~86.60254~1~0~None~0.3804348~0, LightBeam><214.8694><1301.849><0~40~40~40~39~-1~63~106~0.7152172~0.5978261~0.5326087~0~Flash~0~0, 
-FadePalette: 33, 0, 0, 0, 0

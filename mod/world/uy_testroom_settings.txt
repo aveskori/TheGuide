@@ -1,4 +1,0 @@
-Template: NONE
-CeilingDrips: 0
-Palette: 14
-PlacedObjects: SeedCob><461.927><477.6569><0~0~7~10, 

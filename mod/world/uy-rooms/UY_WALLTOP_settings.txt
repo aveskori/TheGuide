@@ -1,7 +1,0 @@
-Template: NONE
-Clouds: 0.3695652
-Grime: 0.3913043
-Palette: 14
-EffectColorA: 4
-EffectColorB: 18
-Effects: Fog-0.7391304-20-20, CloudAdjustment-0.4891304-33-99, AboveCloudsView-0.5217391-275-234, 

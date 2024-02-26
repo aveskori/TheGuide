@@ -1,7 +1,0 @@
-Template: UY_SettingsTemplate_Sewer
-CeilingDrips: 0.5760869
-Palette: 10
-EffectColorA: 6
-EffectColorB: 5
-Effects: SkyAndLightBloom-0.01086957-430-388, Bloom-0-0-0, Flies-0.1086956-443-623, Wasp-0.09782609-0-0, Moth-0.04347826-327-267, FairyParticles-0.02173913-353-323, ReplaceEffectColorA-0.5434783-326-21-Color-1-0.8152174-0.3478261, ReplaceEffectColorB-0.5217391-298-143-Color-0.6521739-0.7065217-0.1195652, 
-PlacedObjects: LightSource><1004.182><514.9179><0.05434782~Environment~-163~-462~50~86.60254~1~0~None~0~0, LightSource><548.8107><368.6855><0.08695652~Environment~-324~50~50~86.60254~1~0~None~0~0, ColoredLightBeam><1903.997><412.7><15~362~345~362~365~-6~-349~-90~0.08478281~0.4891304~0~1~None~0.04347826~0~EffectColor1, ColoredLightBeam><1985.636><478.104><-50~391~229~388~199~-5~-408~-323~0.6847826~0.4782609~0~1~None~0~0~EffectColor1, LightSource><212.6938><562.0494><0.09782609~Environment~-189~-179~6~-199.3975~1~0~None~0~0, LightSource><797.6793><636.3129><0.0326087~Environment~167~-105~56~-203.3975~1~0~None~0~0, Lantern><240.8987><269.8662><0~0~0~9, ReliableSpear><151.9149><264.861><, LightSource><1891.558><550.3064><0.3043478~Environment~-366~-96~-425~-141.3975~1~0~None~0~0, LightSource><2234.348><463.8254><0.1413043~Environment~372~-55~50~86.60254~1~0~None~0~0, 
