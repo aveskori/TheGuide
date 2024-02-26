@@ -1,0 +1,10 @@
+Template: SI_SettingsTemplate_Inside
+DangerType: Rain
+Clouds: 0.7717391
+Palette: 3
+EffectColorA: 3
+EffectColorB: 2
+Effects: SkyAndLightBloom-0.03720574-27.11456-72.62222, SkyDandelions-0-27.86563-128.8445, 
+PlacedObjects: DandelionPeach><279.8974><266.8091><0~0~2~3, DandelionPeach><218.1576><269.142><0~0~2~3, DandelionPeach><330.0931><284.1759><0~0~3~3, ScavengerTreasury><1679.374><217.0933><295.8334~8.199997, LanternOnStick><1854.251><480.95><133~-83, LanternOnStick><1865.447><365.0345><118~-46, MultiplayerItem><1334.809><226.441><GuideSpear~17.32051~-10~1, 
+FadePalette: 2, 0.06521739, 0.06521739, 0.04347826
+WetTerrain: OFF
