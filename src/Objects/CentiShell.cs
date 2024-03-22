@@ -89,7 +89,7 @@ namespace Guide.Objects
         public float scaleY;
         public float hue;
         public float saturation;
-        
+        public Color col;
 
 
 
@@ -128,9 +128,11 @@ namespace Guide.Objects
         public float darkness;
         public Vector2 pos;
         public Vector2 vel;
+        
 
         private Color blackColor;
         private Color earthColor;
+        
 
         private readonly float rotationOffset;
 
@@ -228,8 +230,10 @@ namespace Guide.Objects
 
         public void ApplyPalette(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, RoomPalette palette)
         {            
+            
             sLeaser.sprites[0].color = palette.blackColor;
-            sLeaser.sprites[1].color = Color.HSVToRGB(Abstr.hue, Abstr.saturation, darkness);
+            sLeaser.sprites[1].color = Abstr.col;
+            //sLeaser.sprites[1].color = Color.HSVToRGB(Abstr.hue, Abstr.saturation, darkness);
             
         }
     }

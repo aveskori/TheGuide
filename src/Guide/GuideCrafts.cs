@@ -81,8 +81,8 @@ namespace Guide.Guide
 
                             AbstractPhysicalObject centiShell = new CentiShellAbstract(self.room.world, self.abstractCreature.pos, self.room.game.GetNewID())
                             {
-                                hue = ((item as Centipede).graphicsModule as CentipedeGraphics).hue,
-                                saturation = ((item as Centipede).graphicsModule as CentipedeGraphics).saturation
+                                col = ((item as Centipede).graphicsModule as CentipedeGraphics).ShellColor,
+                                //saturation = ((item as Centipede).graphicsModule as CentipedeGraphics).saturation
                             };
 
                             self.room.abstractRoom.AddEntity(centiShell);

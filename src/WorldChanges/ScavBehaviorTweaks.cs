@@ -21,13 +21,16 @@ namespace Guide.WorldChanges
         public static void Hooks()
         {
             On.ScavengerAI.CollectScore_PhysicalObject_bool += ScavengerAI_CollectScore_PhysicalObject_bool;
+            
+            
             On.ScavengerAI.DecideBehavior += ScavengerAI_FollowGuide;
             On.ScavengerAI.SocialEvent += ScavengerAI_SocialEvent; //GUIDE TAKING SCAV ITEMS DOESN'T DECREASE REP
             On.ScavengerAI.DecideBehavior += ScavengerAI_FeedGuide;
             On.Weapon.HitThisObject += Weapon_HitThisObject;
+            
 
             //BABIES
-            On.Scavenger.ctor += Scruffling_ctor;
+            /*On.Scavenger.ctor += Scruffling_ctor;
             On.ScavengerGraphics.InitiateSprites += ScavengerGraphics_InitiateSprites;
             On.ScavengerGraphics.Update += ScavengerGraphics_Update;
             On.ScavengerGraphics.DrawSprites += ScavengerGraphics_DrawSprites;
@@ -35,13 +38,49 @@ namespace Guide.WorldChanges
             On.ScavengerGraphics.ScavengerHand.ctor += ScavengerHand_ctor;
             On.ScavengerGraphics.ScavengerLeg.ctor += ScavengerLeg_ctor;
             //On.ScavengerGraphics.AddToContainer += ScavengerGraphics_AddToContainer;
-            
-            
-            
-           
+            */
+
+            //On.ScavengerGraphics.ApplyPalette += ScavengerGraphics_ApplyPalette;
+
+            //On.ScavengerAI.DecideBehavior += ScavengerAI_SpearControl;
             //On.ScavengerAI.DecideBehavior += LanternSpearControl;
             //On.ScavengerAI.ViolenceTypeAgainstCreature += LanternSpear_TargetCreature;
+            //On.ScavengerAI.CreatureSpotted += ScavengerAI_Spear_TargetCreature;
+            
         }
+
+        
+
+
+
+
+
+
+        /*private static void ScavengerGraphics_ApplyPalette(On.ScavengerGraphics.orig_ApplyPalette orig, ScavengerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, RoomPalette palette)
+        {
+            orig(self, sLeaser, rCam, palette);
+            string regionName = self.scavenger.room.world.region.name;
+            if (self != null && rCam.room != null && 
+                self.scavenger.GetScav().isWarden)
+            {
+                if(regionName == "SI" || regionName == "LC" || regionName == "UW")
+                {
+                    sLeaser.sprites[self.ShellSprite].color = new Color(0.1f, 0.98f, 0.1f);
+                }
+                if(regionName == "SL" || regionName == "LM")
+                {
+                    sLeaser.sprites[self.ShellSprite].color = new Color(0.1f, 0.1f, 0.98f);
+                }
+                if(regionName == "GW" || regionName == "DS" || regionName == "LF")
+                {
+                    sLeaser.sprites[self.ShellSprite].color = new Color(0.98f, 0.1f, 0.1f);
+                }
+                else
+                {
+                    sLeaser.sprites[self.ShellSprite].color = new Color(1f, 0.7f, 0f);
+                }
+            }
+        }*/
 
         /*private static void ScavengerGraphics_AddToContainer(On.ScavengerGraphics.orig_AddToContainer orig, ScavengerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, FContainer newContatiner)
         {
@@ -60,13 +99,14 @@ namespace Guide.WorldChanges
 
         private static bool Weapon_HitThisObject(On.Weapon.orig_HitThisObject orig, Weapon self, PhysicalObject obj)
         {            
-            if( self != null && obj != null &&
+            if( self != null && obj != null && !(self.thrownBy as Scavenger).GetScav().isBaby &&    //scav has to be adult
                 (self.thrownBy is Scavenger && obj is Player && (obj as Player).GetCat().IsGuide) ||    //if scavs throw spear at guide
                 (self.thrownBy is Player) && obj is Scavenger && (self.thrownBy as Player).GetCat().IsGuide)   //or if guide throw spear at scav
             {
-                return false;
+                
+                return false; //otherwise, wont hit guide
             }
-            return orig(self, obj);
+            return orig(self, obj); //babies can hit and be hit by guide cus funny
         }
 
         
@@ -76,11 +116,11 @@ namespace Guide.WorldChanges
             orig(self, owner, num, firstSprite);
             if (self.scavenger.GetScav().isBaby)
             {
-                self.legLength = 0.5f;
+                self.legLength *= 0.5f;
             }
             if (self.scavenger.GetScav().isWarden)
             {
-                self.legLength = 1.5f;
+                self.legLength *= 1.5f;
             }
         }
 
@@ -89,8 +129,12 @@ namespace Guide.WorldChanges
             orig(self, owner, num, firstSprite);
             if (self.scavenger.GetScav().isBaby)
             {
-                self.armLength = 0.3f;
+                self.armLength *= 0.3f;
                 
+            }
+            if (self.scavenger.GetScav().isWarden)
+            {
+                self.armLength *= 1.5f;
             }
         }
 
@@ -157,18 +201,21 @@ namespace Guide.WorldChanges
             }
             if (self.scavenger.GetScav().isWarden)
             {
+                
+
+
                 float mySize = 1.5f;
                 sLeaser.sprites[self.ChestSprite].scaleX *= 1f;
                 sLeaser.sprites[self.ChestSprite].scaleY *= 0.9f;
                 sLeaser.sprites[self.HipSprite].scale *= mySize;
-                sLeaser.sprites[self.HeadSprite].scale *= mySize;
+                sLeaser.sprites[self.HeadSprite].scale *= 1.8f;
 
-                /*Array.Resize(ref sLeaser.sprites, sLeaser.sprites.Length + 2);
+                //Array.Resize(ref sLeaser.sprites, sLeaser.sprites.Length + self.scavenger.armorPieces);
 
-                self.scavenger.GetScav().kingMask = sLeaser.sprites.Length;
+                /*self.scavenger.GetScav().kingMask = sLeaser.sprites.Length;
                 self.scavenger.GetScav().glyphMark = sLeaser.sprites.Length + 1;
 
-                sLeaser.sprites[self.scavenger.GetScav().kingMask] = self
+                sLeaser.sprites[self.MaskSprite] = self.maskGfx. 
                 sLeaser.sprites[self.scavenger.GetScav().glyphMark] = new FSprite("TinyGlyph1");*/
             }
         }
@@ -197,6 +244,7 @@ namespace Guide.WorldChanges
 
             if (self.GetScav().isWarden)
             {
+                self.armorPieces = 3;
                 float mySize = 1.5f;
                 self.bodyChunks[0].rad *= mySize;
                 self.bodyChunks[1].rad *= mySize;
@@ -210,10 +258,15 @@ namespace Guide.WorldChanges
                 self.dodgeSkill = 1f;
                 self.meleeSkill = 1f;
                 self.reactionSkill = 1f;
+
+                
             }
         }
 
-        
+        /*private static void ScavengerAI_SpearControl(On.ScavengerAI.orig_DecideBehavior orig, ScavengerAI self)
+        {
+            
+        }*/
 
         private static void ScavengerAI_FeedGuide(On.ScavengerAI.orig_DecideBehavior orig, ScavengerAI self)
         {
@@ -227,9 +280,9 @@ namespace Guide.WorldChanges
                 var item = self.scavenger.grasps[itemFind].grabbed; //find index value
 
                 
-                if (self.behavior == ScavengerAI.Behavior.Idle && guide.CurrentFood < guide.slugcatStats.foodToHibernate && self.scavenger.animation != null)
-                {  //If idle and (guide malnourished OR food below hib req) and animation is not null
-
+                if (self.behavior == ScavengerAI.Behavior.Idle && ((guide.CurrentFood < guide.slugcatStats.foodToHibernate) || 
+                    ModManager.ActiveMods.Any(x => x.id == "willowwisp.bellyplus")) && self.scavenger.animation != null)  //scavs will keep feeding guide despite current pip count if rotund world on, you're welcome willow <3
+                {   
                     if (self.scavenger.grasps[0]?.grabbed is not IPlayerEdible) //if item in slot 1 
                     {
                         self.scavenger.MoveItemBetweenGrasps(item, itemFind, 0);
@@ -343,10 +396,23 @@ namespace Guide.WorldChanges
 
         /*private static void ScavengerAI_Spear_TargetCreature(On.ScavengerAI.orig_CreatureSpotted orig, ScavengerAI self, bool firstSpot, Tracker.CreatureRepresentation otherCreature)
         {
-            // if LanternSpear stuck in otherCreature, see creature, go to attack
-            if (LanternSpear.Mode == LanternSpear.Mode.StuckInCreature)
-            {
+            orig(self, firstSpot, otherCreature);
+            Player guide = FindNearbyGuide(self.scavenger.room);
+            Room room = self.scavenger.room;
+            var spearList = room.updateList.OfType<LanternSpear>();
 
+
+            //attack
+            if (guide != null && self != null && spearList != null)
+            { //if lspear stuck in creature, target that creature
+
+                foreach (LanternSpear spear in spearList)
+                {
+                    if (spear.stuckInChunk != null && spear.stuckInChunk.owner is Creature)
+                    {
+
+                    }
+                }
             }
         }*/
 
@@ -375,12 +441,18 @@ namespace Guide.WorldChanges
         { //Custom Collect scores for extra items, plant consumables. Scavs will take and forage for these
             string regionName = self.scavenger.room.world.region.name;
             
-            if (self.scavenger.room != null && obj != null && FindNearbyGuide(self.scavenger.room) != null)
+            if (self.scavenger.room != null && obj != null && FindNearbyGuide(self.scavenger.room) != null && self.scavenger.room.world.game.IsStorySession)
             {
+               
                 if (self.scavenger.GetScav().isBaby)
                 {
+                    if(obj is Rock)
+                    {
+                        return 8;
+                    }
                     return 0;
                 }
+
                 if (obj is DangleFruit)
                 {
                     return 2;
@@ -425,6 +497,14 @@ namespace Guide.WorldChanges
                 if (obj is EggBugEgg || obj is Hazer)
                 {
                     return 4;
+                }
+                if(obj is Scavenger && (obj as Scavenger).GetScav().isBaby || obj is SwollenWaterNut)
+                {
+                    if (self.scavenger.room.abstractRoom.name.Contains("SCAVHAVEN"))
+                    {
+                        return 10;
+                    }
+                    return 8;
                 }
             }
             return orig(self, obj, weaponFiltered);

@@ -13,8 +13,8 @@ namespace Guide.WorldChanges
 {
     static class PebblesConversationOverride
     {
-        public static readonly GameFeature<bool> CustomConversations = GameBool("CustomConversations");
-        public static readonly Conversation.ID GuidePebblesConvo = new Conversation.ID("GuidePebblesConvo", true);
+        //public static readonly GameFeature<bool> CustomConversations = GameBool("CustomConversations");
+        //public static readonly Conversation.ID GuidePebblesConvo = new Conversation.ID("GuidePebblesConvo", true);
         public static void Hooks()
         {
 

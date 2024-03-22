@@ -3,6 +3,7 @@ using System.Linq;
 using BepInEx;
 using UnityEngine;
 using System.Runtime.CompilerServices;
+using Unity.Mathematics;
 
 using Fisobs.Core;
 using Mono.Cecil.Cil;
@@ -13,14 +14,14 @@ using SlugBase.DataTypes;
 using Guide.WorldChanges;
 using Guide.Creatures;
 using Guide.Objects;
-using Guide.Guide;
+
 
 
 namespace GuideSlugBase
 {
     [BepInDependency("slime-cubed.slugbase")]
     
-    [BepInPlugin(MOD_ID, "Guide", "0.5.0")]
+    [BepInPlugin(MOD_ID, "Guide", "0.3.1")]
     class Plugin : BaseUnityPlugin
     {
         private const string MOD_ID = "aveskori.guide";
@@ -38,7 +39,7 @@ namespace GuideSlugBase
             VanHooks.Hooks();
             Content.Register(new ChrLizCritob());
             CherryHooks.Hooks();
-            Content.Register(new molemousecritob());
+            //Content.Register(new molemousecritob());
             //Content.Register(new ScrufflingCritob());
             
             // Fisobs
@@ -46,8 +47,8 @@ namespace GuideSlugBase
             Content.Register(new HazerSacFisobs());
             HazerSac.Hooks();
             Content.Register(new LSpearFisobs());
-            Content.Register(new SCloverFisobs());
-            Content.Register(new CentiShellFisobs());
+            //****Content.Register(new SCloverFisobs());
+            //****Content.Register(new CentiShellFisobs());
 
 
             // Slugcat Hooks
@@ -59,7 +60,7 @@ namespace GuideSlugBase
             On.Centipede.Shock += Centipede_Shock; // if slippery, immune to centishocks
             On.Player.SpitOutOfShortCut += Player_SpitOutOfShortCut; //HUD HINTS
             //On.RegionGate.customKarmaGateRequirements += GuideGateFix;
-            GuideCrafts.Hooks();
+            //****GuideCrafts.Hooks();
             On.Player.GrabUpdate += BubbleFruitPop; //slippery ability causes bubblefruit to pop
 ;
 
@@ -511,6 +512,7 @@ namespace GuideSlugBase
                     self.slugcatStats.corridorClimbSpeedFac = 1.6f;
                     self.slugcatStats.poleClimbSpeedFac = 1.6f;
                     self.waterFriction = 0.99f;
+                    self.buoyancy = 0.9f;
                 }
                 //slippery countdown
                 if (self.GetCat().slipperyTime > 0)
@@ -594,7 +596,7 @@ public static class ScavSatusClass
         public ScavStatus(Scavenger scav)
         {
             UnityEngine.Random.seed = scav.abstractCreature.ID.RandomSeed;
-            if (UnityEngine.Random.value < 0.2f)
+            if (UnityEngine.Random.value < 0.2f && !scav.Elite && !scav.King)
             {
                 this.isBaby = true;
             }

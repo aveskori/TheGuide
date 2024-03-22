@@ -8,19 +8,57 @@
     <OldToolsVersion>2.0</OldToolsVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="../lib/*.dll">
+    <Reference Include="..\lib\Assembly-CSharp-firstpass.dll">
       <Private>false</Private>
+    </Reference>
+    <Reference Include="..\lib\BepInEx.dll">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="..\lib\Fisobs.dll">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="..\lib\HOOKS-Assembly-CSharp.dll">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="..\lib\Mono.Cecil.dll">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="..\lib\Mono.Cecil.Rocks.dll">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="..\lib\MonoMod.dll">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="..\lib\MonoMod.RuntimeDetour.dll">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="..\lib\MonoMod.Utils.dll">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="..\lib\PUBLIC-Assembly-CSharp.dll">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="..\lib\SlugBase.dll">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="..\lib\UnityEngine.CoreModule.dll">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="..\lib\UnityEngine.dll">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Accessibility">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Rain World\RainWorld_Data\Managed\Accessibility.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Mathematics">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Rain World\RainWorld_Data\Managed\Unity.Mathematics.dll</HintPath>
+	  <Private>false</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Class1.cs" />
     <Compile Remove="GuideGills.cs" />
     <Compile Remove="LanternSpear01.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="Nutils">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\workshop\content\312520\2959220220\plugins\Nutils.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Medium\" />
