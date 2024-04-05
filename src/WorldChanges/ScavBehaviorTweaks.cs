@@ -2,8 +2,9 @@
 using UnityEngine;
 using MoreSlugcats;
 using RWCustom;
-using Guide.Objects;
+//using Guide.Objects;
 using System.Linq;
+using Unity.Mathematics;
 using ScavengerCosmetic;
 
 namespace Guide.WorldChanges
@@ -27,10 +28,11 @@ namespace Guide.WorldChanges
             On.ScavengerAI.SocialEvent += ScavengerAI_SocialEvent; //GUIDE TAKING SCAV ITEMS DOESN'T DECREASE REP
             On.ScavengerAI.DecideBehavior += ScavengerAI_FeedGuide;
             On.Weapon.HitThisObject += Weapon_HitThisObject;
+
             
 
             //BABIES
-            /*On.Scavenger.ctor += Scruffling_ctor;
+            On.Scavenger.ctor += Scruffling_ctor;
             On.ScavengerGraphics.InitiateSprites += ScavengerGraphics_InitiateSprites;
             On.ScavengerGraphics.Update += ScavengerGraphics_Update;
             On.ScavengerGraphics.DrawSprites += ScavengerGraphics_DrawSprites;
@@ -38,7 +40,7 @@ namespace Guide.WorldChanges
             On.ScavengerGraphics.ScavengerHand.ctor += ScavengerHand_ctor;
             On.ScavengerGraphics.ScavengerLeg.ctor += ScavengerLeg_ctor;
             //On.ScavengerGraphics.AddToContainer += ScavengerGraphics_AddToContainer;
-            */
+            
 
             //On.ScavengerGraphics.ApplyPalette += ScavengerGraphics_ApplyPalette;
 
@@ -99,7 +101,7 @@ namespace Guide.WorldChanges
 
         private static bool Weapon_HitThisObject(On.Weapon.orig_HitThisObject orig, Weapon self, PhysicalObject obj)
         {            
-            if( self != null && obj != null && !(self.thrownBy as Scavenger).GetScav().isBaby &&    //scav has to be adult
+            if( self != null && obj != null && 
                 (self.thrownBy is Scavenger && obj is Player && (obj as Player).GetCat().IsGuide) ||    //if scavs throw spear at guide
                 (self.thrownBy is Player) && obj is Scavenger && (self.thrownBy as Player).GetCat().IsGuide)   //or if guide throw spear at scav
             {
@@ -173,17 +175,19 @@ namespace Guide.WorldChanges
             Player guide = FindNearbyGuide(self.scavenger.room);
 
             if (guide != null && !guide.inShortcut && guide.GetCat().IsGuide &&
-                self.scavenger.GetScav().isBaby && Custom.Dist(self.scavenger.mainBodyChunk.pos, guide.mainBodyChunk.pos) < 20)
+                self.scavenger.GetScav().isBaby && Custom.Dist(self.scavenger.mainBodyChunk.pos, guide.mainBodyChunk.pos) < 30)
             {
-                Limb myHand = self.hands[0];
-                Limb yourHand = (guide.graphicsModule as PlayerGraphics).hands[1];
-                yourHand.absoluteHuntPos = new Vector2(guide.mainBodyChunk.pos.x + 10, guide.mainBodyChunk.pos.y);
-                myHand.mode = Limb.Mode.HuntAbsolutePosition;
-                myHand.absoluteHuntPos = yourHand.absoluteHuntPos;
-                myHand.huntSpeed = 0.5f;
-                myHand.pos = yourHand.pos;
+                var midPoint = Vector2.Lerp(self.scavenger.mainBodyChunk.pos, guide.mainBodyChunk.pos, 0.5f);
                 
+                Limb myHand = self.hands[0];
+                Limb yourHand = (guide.graphicsModule as PlayerGraphics).hands[1];              
+                yourHand.mode = Limb.Mode.HuntAbsolutePosition;
+                myHand.mode = Limb.Mode.HuntAbsolutePosition;
+                myHand.absoluteHuntPos = midPoint;
+                yourHand.absoluteHuntPos = midPoint;
+                           
             }
+            
         }
 
         private static void ScavengerGraphics_InitiateSprites(On.ScavengerGraphics.orig_InitiateSprites orig, ScavengerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
@@ -441,6 +445,8 @@ namespace Guide.WorldChanges
         { //Custom Collect scores for extra items, plant consumables. Scavs will take and forage for these
             string regionName = self.scavenger.room.world.region.name;
             
+
+
             if (self.scavenger.room != null && obj != null && FindNearbyGuide(self.scavenger.room) != null && self.scavenger.room.world.game.IsStorySession)
             {
                
@@ -482,14 +488,14 @@ namespace Guide.WorldChanges
                     }
 
                 }
-                if (obj is GlowWeed || obj is LillyPuck || obj is SeedCob || obj is HazerSac)
+                if (obj is GlowWeed || obj is LillyPuck || obj is SeedCob)
                 {
                     return 7;
                 }
-                if (obj is LanternSpear)
+                /*if (obj is LanternSpear)
                 {
                     return 0;
-                }
+                }*/
                 if (obj is SlimeMold || obj is Centipede)
                 {
                     return 5;
@@ -514,12 +520,21 @@ namespace Guide.WorldChanges
         {
             orig(self);
             //if no threat detected, (if has food item) > set destination to player
+            Player closeGuide = FindNearbyGuide(self.scavenger.room);
             if (self.behavior == ScavengerAI.Behavior.Idle)
             {
-                Player closeGuide = FindNearbyGuide(self.scavenger.room);
+                
                 if (closeGuide != null && Custom.Dist(self.scavenger.mainBodyChunk.pos, closeGuide.mainBodyChunk.pos) > 200)
                 {
                     self.SetDestination(closeGuide.abstractCreature.pos); //self.scavenger.room.game.Players[0].pos
+                }
+            }
+            if (closeGuide.input[0].pckp)
+            {
+                if (closeGuide.input[0].thrw) { return; }
+                if (Custom.Dist(self.scavenger.mainBodyChunk.pos, closeGuide.mainBodyChunk.pos) > 30)
+                {
+                    self.SetDestination(closeGuide.abstractCreature.pos);
                 }
             }
         }

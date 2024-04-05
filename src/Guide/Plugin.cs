@@ -21,7 +21,7 @@ namespace GuideSlugBase
 {
     [BepInDependency("slime-cubed.slugbase")]
     
-    [BepInPlugin(MOD_ID, "Guide", "0.3.1")]
+    [BepInPlugin(MOD_ID, "Guide", "0.3.2")]
     class Plugin : BaseUnityPlugin
     {
         private const string MOD_ID = "aveskori.guide";
@@ -33,23 +33,23 @@ namespace GuideSlugBase
             On.RainWorld.OnModsInit += Extras.WrapInit(LoadResources);
             On.RainWorld.OnModsInit += RainWorld_OnModsInit;
             On.RainWorld.PostModsInit += RainWorld_PostModsInit;
-            
+            //  ****Fisobs Content
             // Critobs
             Content.Register(new VanLizCritob());
             VanHooks.Hooks();
             Content.Register(new ChrLizCritob());
             CherryHooks.Hooks();
             //Content.Register(new molemousecritob());
-            //Content.Register(new ScrufflingCritob());
+            
             
             // Fisobs
             //Content.Register(new CloversFisobs());
-            Content.Register(new HazerSacFisobs());
-            HazerSac.Hooks();
-            Content.Register(new LSpearFisobs());
+            //Content.Register(new HazerSacFisobs());
+            //HazerSac.Hooks();
+            //Content.Register(new LSpearFisobs());
             //****Content.Register(new SCloverFisobs());
             //****Content.Register(new CentiShellFisobs());
-
+            
 
             // Slugcat Hooks
             On.Player.Update += Player_Update;
@@ -621,13 +621,26 @@ public static class CritStatusClass
         public int harvestCount;
 
         public bool havenScav;
+
+        public bool isMonster;
+        public bool isInfant;
         
 
         public CritStatus(Creature crit)
         {
-            
-            
-            
+
+            UnityEngine.Random.seed = crit.abstractCreature.ID.RandomSeed;
+
+            if (UnityEngine.Random.value < 0.2f)
+            {
+                this.isMonster = true;
+            }
+            if (!isMonster && UnityEngine.Random.value < 0.1f)
+            {
+                this.isInfant = true;
+
+            }
+
 
         }
 
