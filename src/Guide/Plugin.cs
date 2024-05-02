@@ -33,6 +33,7 @@ namespace GuideSlugBase
             On.RainWorld.OnModsInit += Extras.WrapInit(LoadResources);
             On.RainWorld.OnModsInit += RainWorld_OnModsInit;
             On.RainWorld.PostModsInit += RainWorld_PostModsInit;
+            /*
             //  ****Fisobs Content
             // Critobs
             Content.Register(new VanLizCritob());
@@ -40,7 +41,7 @@ namespace GuideSlugBase
             Content.Register(new ChrLizCritob());
             CherryHooks.Hooks();
             //Content.Register(new molemousecritob());
-            
+            */
             
             // Fisobs
             //Content.Register(new CloversFisobs());
@@ -183,6 +184,8 @@ namespace GuideSlugBase
                 self.tail[i] = new TailSegment(self, segRad, (i == 0 ? 4 : 7) * (pup ? 0.5f : 1f), i > 0 ? self.tail[i - 1] : null, 0.85f, 1f, i == 0 ? 1f : 0.5f, true);
             }
 
+            
+
             var bp = self.bodyParts.ToList();
             bp.RemoveAll(x => x is TailSegment);
             bp.AddRange(self.tail);
@@ -210,29 +213,7 @@ namespace GuideSlugBase
             orig(self, sLeaser, rCam);
             if (!isGuide) return;
             
-            /*if (sLeaser.sprites[2] is TriangleMesh tail)
-            {
-                //tail.element = Futile.atlasManager.GetElementWithName(SpritePrefix + "TailTexture");
-                for (var i = tail.vertices.Length - 1; i >= 0; i--)
-                {
-                    var perc = i / 2 / (float)(tail.vertices.Length / 2);
-
-                    Vector2 uv;
-                    if (i % 2 == 0)
-                        uv = new Vector2(perc, 0f);
-                    else if (i < tail.vertices.Length - 1)
-                        uv = new Vector2(perc, 1f);
-                    else
-                        uv = new Vector2(1f, 0f);
-
-                    // Map UV values to the element
-                    uv.x = Mathf.Lerp(tail.element.uvBottomLeft.x, tail.element.uvTopRight.x, uv.x);
-                    uv.y = Mathf.Lerp(tail.element.uvBottomLeft.y, tail.element.uvTopRight.y, uv.y);
-
-                    tail.UVvertices[i] = uv;
-                }
-            }*/
-
+            //Add to array ~~~~~~~~~~~
             guide.BodySpotsSprite = sLeaser.sprites.Length;
             guide.HipsSpotsSprite = sLeaser.sprites.Length + 1;
             guide.LegsSpotsSprite = sLeaser.sprites.Length + 2;
@@ -245,21 +226,37 @@ namespace GuideSlugBase
             guide.TasselSpriteA[3] = sLeaser.sprites.Length + 8;
             guide.TasselSpriteA[4] = sLeaser.sprites.Length + 9;
 
-            Array.Resize(ref sLeaser.sprites, sLeaser.sprites.Length + 5 + 5); //Adds spots to sprite array, add five more for the danglefruit sptire
+            guide.TasselSpriteB[0] = sLeaser.sprites.Length + 10;
+            guide.TasselSpriteB[1] = sLeaser.sprites.Length + 11;
+            guide.TasselSpriteB[2] = sLeaser.sprites.Length + 12;
+            guide.TasselSpriteB[3] = sLeaser.sprites.Length + 13;
+            guide.TasselSpriteB[4] = sLeaser.sprites.Length + 14;
 
+            guide.TailSpots[0] = sLeaser.sprites.Length + 15;
+            guide.TailSpots[1] = sLeaser.sprites.Length + 16;
+            guide.TailSpots[2] = sLeaser.sprites.Length + 17;
+            guide.TailSpots[3] = sLeaser.sprites.Length + 18;
+            guide.TailSpots[4] = sLeaser.sprites.Length + 19;
+            
+
+            Array.Resize(ref sLeaser.sprites, sLeaser.sprites.Length + 5 + 5 + 5 + 10); //Adds spots to sprite array, add five more for the danglefruit sptire, add five more for inner tassel sprite
+
+            //~~~~~~~~~~~~~~~~~~~
+            //Assign sprites ~~~~~~~~~~
             sLeaser.sprites[guide.BodySpotsSprite] = new FSprite("pixel");
             sLeaser.sprites[guide.HipsSpotsSprite] = new FSprite("pixel");
             sLeaser.sprites[guide.LegsSpotsSprite] = new FSprite("pixel");
             sLeaser.sprites[guide.HeadGillsSprite] = new FSprite("pixel");
             sLeaser.sprites[guide.FaceBlushSprite] = new FSprite("pixel");
 
+           
+
             for(int i = 0; i < 5; i++)
             {
                 sLeaser.sprites[guide.TasselSpriteA[i]] = new FSprite("DangleFruit0A"); //adds 0, 1, 2, 3, 4
-            }
-            
-            
-            
+                sLeaser.sprites[guide.TasselSpriteB[i]] = new FSprite("DangleFruit0B");
+                sLeaser.sprites[guide.TailSpots[i]] = new FSprite("tinyStar");
+            }           
             
             guide.SetupColors();
 
@@ -289,13 +286,19 @@ namespace GuideSlugBase
             newContatiner.AddChild(sLeaser.sprites[guide.FaceBlushSprite]);
             sLeaser.sprites[guide.FaceBlushSprite].MoveInFrontOfOtherNode(sLeaser.sprites[9]);
 
+            
+
             for(int i = 0; i < 5; i++)
             {
                 newContatiner.AddChild(sLeaser.sprites[guide.TasselSpriteA[i]]);
                 sLeaser.sprites[guide.TasselSpriteA[i]].MoveInFrontOfOtherNode(sLeaser.sprites[2]);
-            }
 
-            
+                newContatiner.AddChild(sLeaser.sprites[guide.TasselSpriteB[i]]);
+                sLeaser.sprites[guide.TasselSpriteB[i]].MoveInFrontOfOtherNode(sLeaser.sprites[3]);
+
+                newContatiner.AddChild(sLeaser.sprites[guide.TailSpots[i]]);
+                sLeaser.sprites[guide.TailSpots[i]].MoveInFrontOfOtherNode(sLeaser.sprites[2]);
+            }           
 
         }
 
@@ -312,6 +315,7 @@ namespace GuideSlugBase
             for(int j = 0; j < 5; j++)
             {
                 sLeaser.sprites[guide.TasselSpriteA[j]].scale = 0.5f;
+                sLeaser.sprites[guide.TasselSpriteB[j]].scale = 0.5f;
             }
             
 
@@ -332,26 +336,44 @@ namespace GuideSlugBase
 
             
 
+            
+
             for(int i = 0; i < 5; i++)
             {
                 sLeaser.sprites[guide.TasselSpriteA[i]].color = guide.TasselAColor;
+                sLeaser.sprites[guide.TasselSpriteB[i]].color = guide.TasselBColor;
+                sLeaser.sprites[guide.TailSpots[i]].color = guide.SpotsColor;
             }
+          
 
+            //top row
             for(var i = 0; i < 3; i++)
             {
                 var offset = Custom.PerpendicularVector(Custom.DirVec(self.tail[i].pos, self.tail[i+1].pos)) * (self.tail[i].rad * 0.8f);
                 offset.y = Mathf.Abs(offset.y);
+                
 
                 sLeaser.sprites[guide.TasselSpriteA[i]].SetPosition((self.tail[i].pos + self.tail[i+1].pos) / 2 - camPos + offset);
-            }
 
+                sLeaser.sprites[guide.TasselSpriteB[i]].SetPosition((self.tail[i].pos + self.tail[i+1].pos)/2 - camPos + offset);
+
+               
+                
+            }
             
-            /*sLeaser.sprites[guide.TasselSpriteA[1]].SetPosition((self.tail[1].pos + self.tail[2].pos) / 2 - camPos + Custom.PerpendicularVector(Custom.DirVec(self.tail[1].pos, self.tail[2].pos)) * 9);
-            sLeaser.sprites[guide.TasselSpriteA[2]].SetPosition((self.tail[2].pos + self.tail[3].pos) / 2 - camPos + Custom.PerpendicularVector(Custom.DirVec(self.tail[2].pos, self.tail[3].pos)) * 9);*/
+
+            //bottom row
             sLeaser.sprites[guide.TasselSpriteA[3]].SetPosition(self.tail[1].pos - camPos);
             sLeaser.sprites[guide.TasselSpriteA[4]].SetPosition(self.tail[2].pos - camPos);
 
-
+            sLeaser.sprites[guide.TasselSpriteB[3]].SetPosition(self.tail[1].pos - camPos);
+            sLeaser.sprites[guide.TasselSpriteB[4]].SetPosition(self.tail[2].pos - camPos);                    
+            
+            for(int l = 0; l < 5; l++)
+            {
+                sLeaser.sprites[guide.TailSpots[l]].SetPosition(Vector2.Lerp(sLeaser.sprites[guide.TasselSpriteA[l]].GetPosition(), sLeaser.sprites[guide.TasselSpriteA[l + 1]].GetPosition(), 0.5f));
+            }                               
+            
 
 
             sLeaser.sprites[guide.BodySpotsSprite].element = Futile.atlasManager.GetElementWithName(SpritePrefix + "Spots_BodyA");
@@ -513,6 +535,7 @@ namespace GuideSlugBase
                     self.slugcatStats.poleClimbSpeedFac = 1.6f;
                     self.waterFriction = 0.99f;
                     self.buoyancy = 0.9f;
+                    
                 }
                 //slippery countdown
                 if (self.GetCat().slipperyTime > 0)
@@ -595,7 +618,7 @@ public static class ScavSatusClass
 
         public ScavStatus(Scavenger scav)
         {
-            UnityEngine.Random.seed = scav.abstractCreature.ID.RandomSeed;
+            /*UnityEngine.Random.seed = scav.abstractCreature.ID.RandomSeed;
             if (UnityEngine.Random.value < 0.2f && !scav.Elite && !scav.King)
             {
                 this.isBaby = true;
@@ -604,7 +627,7 @@ public static class ScavSatusClass
             {
                 this.isWarden = true;
                 
-            }
+            }*/
         }
     }
 
@@ -629,7 +652,7 @@ public static class CritStatusClass
         public CritStatus(Creature crit)
         {
 
-            UnityEngine.Random.seed = crit.abstractCreature.ID.RandomSeed;
+            /*UnityEngine.Random.seed = crit.abstractCreature.ID.RandomSeed;
 
             if (UnityEngine.Random.value < 0.2f)
             {
@@ -639,7 +662,7 @@ public static class CritStatusClass
             {
                 this.isInfant = true;
 
-            }
+            }*/
 
 
         }
@@ -676,13 +699,17 @@ public static class GuideStatusClass
         public int HeadGillsSprite;
         public int FaceBlushSprite;
         public int[] TasselSpriteA = new int[5];
-        public int[] TasselSpriteB;
+        public int[] TasselSpriteB = new int[5];
+        public int[] TailSpots = new int[5];
+        
 
         public Color BodyColor;
         public Color EyesColor;
         public Color GillsColor;
         public Color SpotsColor;
         public Color TasselAColor;
+        public Color TasselBColor;
+        
 
         public GuideStatus(Player player)
         {
@@ -706,6 +733,9 @@ public static class GuideStatusClass
             GillsColor = new PlayerColor("Gills").GetColor(pg) ?? Custom.hexToColor("26593c");
             SpotsColor = new PlayerColor("Spots").GetColor(pg) ?? Custom.hexToColor("60c0bb");
             TasselAColor = new PlayerColor("Tassels").GetColor(pg) ?? Custom.hexToColor("12a23e");
+            TasselBColor = new Color(TasselAColor.r - 5, TasselAColor.g - 5, TasselAColor.b - 5, 0.5f);
+            
+            
         }
     }
 

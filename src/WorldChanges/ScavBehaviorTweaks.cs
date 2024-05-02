@@ -445,74 +445,76 @@ namespace Guide.WorldChanges
         { //Custom Collect scores for extra items, plant consumables. Scavs will take and forage for these
             string regionName = self.scavenger.room.world.region.name;
             
-
-
-            if (self.scavenger.room != null && obj != null && FindNearbyGuide(self.scavenger.room) != null && self.scavenger.room.world.game.IsStorySession)
+            for (int i = 0; i < self.scavenger.room.game.Players.Count; i++)
             {
-               
-                if (self.scavenger.GetScav().isBaby)
+                if (self.scavenger.room != null && obj != null && self.scavenger.room.game.Players[i].realizedCreature is Player player && player.GetCat().IsGuide && self.scavenger.room.world.game.IsStorySession)
                 {
-                    if(obj is Rock)
-                    {
-                        return 8;
-                    }
-                    return 0;
-                }
 
-                if (obj is DangleFruit)
-                {
-                    return 2;
-                }
-                if (obj is WaterNut || obj is GooieDuck)
-                {
-                    if (self.scavenger.room.game.IsStorySession && regionName == "GW"
-                        || regionName == "LM" || regionName == "DS" || regionName == "SL")
+                    if (self.scavenger.GetScav().isBaby)
                     {
-                        return 7;
-                    }
-                    else
-                    {
-                        return 3;
+                        if (obj is Rock)
+                        {
+                            return 8;
+                        }
+                        return 0;
                     }
 
-                }
-                if (obj is DandelionPeach)
-                {
-                    if (self.scavenger.room.game.IsStorySession && regionName == "SI")
+                    if (obj is DangleFruit)
                     {
                         return 2;
                     }
-                    else
+                    if (obj is WaterNut || obj is GooieDuck)
+                    {
+                        if (self.scavenger.room.game.IsStorySession && regionName == "GW"
+                            || regionName == "LM" || regionName == "DS" || regionName == "SL")
+                        {
+                            return 7;
+                        }
+                        else
+                        {
+                            return 3;
+                        }
+
+                    }
+                    if (obj is DandelionPeach)
+                    {
+                        if (self.scavenger.room.game.IsStorySession && regionName == "SI")
+                        {
+                            return 2;
+                        }
+                        else
+                        {
+                            return 5;
+                        }
+
+                    }
+                    if (obj is GlowWeed || obj is LillyPuck || obj is SeedCob)
+                    {
+                        return 7;
+                    }
+                    /*if (obj is LanternSpear)
+                    {
+                        return 0;
+                    }*/
+                    if (obj is SlimeMold || obj is Centipede)
                     {
                         return 5;
                     }
-
-                }
-                if (obj is GlowWeed || obj is LillyPuck || obj is SeedCob)
-                {
-                    return 7;
-                }
-                /*if (obj is LanternSpear)
-                {
-                    return 0;
-                }*/
-                if (obj is SlimeMold || obj is Centipede)
-                {
-                    return 5;
-                }
-                if (obj is EggBugEgg || obj is Hazer)
-                {
-                    return 4;
-                }
-                if(obj is Scavenger && (obj as Scavenger).GetScav().isBaby || obj is SwollenWaterNut)
-                {
-                    if (self.scavenger.room.abstractRoom.name.Contains("SCAVHAVEN"))
+                    if (obj is EggBugEgg || obj is Hazer)
                     {
-                        return 10;
+                        return 4;
                     }
-                    return 8;
+                    if (obj is Scavenger && (obj as Scavenger).GetScav().isBaby || obj is SwollenWaterNut)
+                    {
+                        if (self.scavenger.room.abstractRoom.name.Contains("SCAVHAVEN"))
+                        {
+                            return 10;
+                        }
+                        return 8;
+                    }
                 }
             }
+          
             return orig(self, obj, weaponFiltered);
         }
 
@@ -521,7 +523,7 @@ namespace Guide.WorldChanges
             orig(self);
             //if no threat detected, (if has food item) > set destination to player
             Player closeGuide = FindNearbyGuide(self.scavenger.room);
-            if (self.behavior == ScavengerAI.Behavior.Idle)
+            if (self.behavior == ScavengerAI.Behavior.Idle || self.behavior == ScavengerAI.Behavior.Injured)
             {
                 
                 if (closeGuide != null && Custom.Dist(self.scavenger.mainBodyChunk.pos, closeGuide.mainBodyChunk.pos) > 200)
