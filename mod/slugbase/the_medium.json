@@ -1,0 +1,89 @@
+{
+	"id": "Medium",
+	"name": "The Medium",
+	"description": "Search for them. Set them free.",
+
+	"features": {
+		"color": "e2d3a4",
+		"custom_colors": [
+			{
+				"name": "Body",
+				"story": "e2d3a4",
+				"arena": [ "e2d3a4", "e8f5ca", "dbd9fb", "040d22" ]
+			},
+			{
+				"name": "Eyes",
+				"story": "030303",
+				"arena": [ "030303", "030303", "030303", "FFFFFF" ]
+			},
+			{
+				"name": "Gills",
+				"story": "e19436",
+				"arena": [ "e19436", "26593c", "7f67d8", "f0edd4" ]
+			},
+			{
+				"name": "Spots",
+				"story": "bf7c53",
+				"arena": [ "bf7c53", "60c0bb", "9d86de", "1b2d57" ]
+			},
+			{
+				"name": "Blush",
+				"story": "bf7c53",
+				"arena": [ "bf7c53", "60c0bb", "9d86de", "1b2d57" ]
+			},
+			{
+				"name": "Tendrils",
+				"story": "e19436",
+				"arena": [ "e19436", "12a23e", "7f67d8", "f0edd4" ]
+			}
+		],
+
+		"weight": [ 0.7, 0.4 ],
+		"tunnel_speed": 1.5,
+		"climb_speed": [ 1.4, 1.2 ],
+		"walk_speed": [ 1.4, 1.2 ],
+
+		"crouch_stealth": 1.6,
+		"throw_skill": 1,
+		"lung_capacity": 200,
+		"loudness": 0.4,
+		"back_spear": true,
+
+		"alignments": {
+			"Scavengers": {
+				"like": 20,
+			},
+			"Lizards": {
+				"like": -0.5,
+				"strength": 1
+			},
+			"Deer": {
+				"like": 250,
+				"strength": 1
+			}
+		},
+
+		"diet": {
+			"base": "Saint",
+			"corpses": 0.25,
+			"plants": 2,
+			"meat": 0.25
+		},
+		"food_min": 0,
+		"food_max": 8,
+
+		"start_room": "UY_TRAINSHELTER01",
+		"select_menu_scene": "Slugcat_Medium",
+		"select_menu_scene_ascended": "Ghost_Medium",
+		"sleep_scene": "Sleep_Medium",
+		"has_dreams": false,
+
+		"karma_cap": 1,
+
+		"cycle_length_min": 9,
+		"cycle_length_max": 12,
+		"perma_unlock_gates": true,
+		"world_state": ["Medium", "Saint"],
+		"timeline_after": "Saint"
+	}
+}
