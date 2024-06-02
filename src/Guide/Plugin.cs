@@ -269,8 +269,8 @@ namespace GuideSlugBase
             guide.TailSpots[3] = sLeaser.sprites.Length + 17;
             guide.TailSpots[4] = sLeaser.sprites.Length + 18;
 
-            guide.topGills = new UpperHavenGills(self, 19);
-            self.gills = new LowerHavenGills(self, 19 + guide.topGills.numberOfSprites);
+            guide.topGills = new UpperHavenGills(self, sLeaser.sprites.Length + 19);//fixed gills
+            self.gills = new LowerHavenGills(self, guide.topGills.startSprite + guide.topGills.numberOfSprites);
 
             Array.Resize(ref sLeaser.sprites, sLeaser.sprites.Length + 19 + self.gills.numberOfSprites + guide.topGills.numberOfSprites); //Adds body spots to sprite array (5), add five more for the danglefruit sprite (5), add five more for inner tassel sprite (5), tail spot sprites (5)
 
@@ -336,7 +336,7 @@ namespace GuideSlugBase
 
         }
 
-        private const string SpritePrefix = "GuideSprites_";
+        private const string SpritePrefix = "GuideSprites_";//What's this?
         private void PlayerGraphics_DrawSprites(On.PlayerGraphics.orig_DrawSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
         {
             orig(self, sLeaser, rCam, timeStacker, camPos);
@@ -829,6 +829,7 @@ public static class MediumStatusClass
 
         public int[] HeadTentacleSprite = new int[3];
         public int[] TailTentacleSprite = new int[4];
+        //might want to make some reusable Tentacle class tbh, trianglemeshes need a lot of variables
 
         public Color BodyColor;
         public Color EyesColor;
