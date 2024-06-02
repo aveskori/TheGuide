@@ -60,9 +60,6 @@
     <Compile Remove="GuideGills.cs" />
     <Compile Remove="LanternSpear01.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Medium\" />
-  </ItemGroup>
   <Target Name="GenerateMod" AfterTargets="PostBuildEvent">
     <ItemGroup>
       <RemovePlugins Include="../mod/plugins/*.dll" />

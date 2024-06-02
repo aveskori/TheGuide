@@ -16,6 +16,7 @@ using Guide.Creatures;
 using Guide.Objects;
 using Guide.Guide;
 using static GuideStatusClass;
+using Guide.Medium;
 
 
 
@@ -54,7 +55,7 @@ namespace GuideSlugBase
             Content.Register(new SCloverFisobs());
             Content.Register(new CentiShellFisobs());
             */
-            // Slugcat Hooks
+            // Guide Hooks (I should REALLY move some of these to their own class :sob:)
             On.Player.Update += Player_Update;
             On.Creature.Grasp.ctor += Grasp_ctor;
             PebblesConversationOverride.Hooks();
@@ -66,7 +67,10 @@ namespace GuideSlugBase
             //GuideCrafts.Hooks();
             On.Player.GrabUpdate += BubbleFruitPop; //slippery ability causes bubblefruit to pop
             On.Player.LungUpdate += Player_LungUpdate; //Infinite capacity lungs, no more panic swim
-;
+
+            //Medium Hooks (these are going to be in separate classes)
+            MediumAbilities.Hooks();
+
 
             // Custom Hooks -- Scavenger AI
             ScavBehaviorTweaks.Hooks();
@@ -78,8 +82,9 @@ namespace GuideSlugBase
 
         private void Player_LungUpdate(On.Player.orig_LungUpdate orig, Player self)
         {
-            if(self.IsGuide(out var guide))
+            if(self.IsGuide(out var guide) || self.IsMedium(out var medium))
             {
+               //basically makes infinite air and stops player from panicking while swimming  
                 if(self.airInLungs < 1f)
                 {
                     self.airInLungs = 1f;
@@ -585,7 +590,7 @@ namespace GuideSlugBase
             orig(self, eu);
         }
 
-
+        //extra hunts for other guide features?
         bool shownWaterHint = false;
         bool shownJellyHint = false;
         bool shownCentiHint = false;
