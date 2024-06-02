@@ -143,7 +143,7 @@ namespace GuideSlugBase
             }
             return;
         }
-
+        //(Pocky-Raisin) Try looking into slugBase savedata, it's intended to be used like that
         //HHH DOESNT WORK YET
         //(Visiting FP with a LanternSpear ticks SpearKey to true, Guide gains access to LC)
         /*private void GuideGateFix(On.RegionGate.orig_customKarmaGateRequirements orig, RegionGate self)
@@ -180,10 +180,22 @@ namespace GuideSlugBase
                 On.PlayerGraphics.InitiateSprites += PlayerGraphics_InitiateSprites;
                 On.PlayerGraphics.AddToContainer += PlayerGraphics_AddToContainer;
                 On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites;
+                On.PlayerGraphics.Update += PlayerGraphics_Update;
             }
             catch (Exception ex)
             {
                 Debug.LogException(ex);
+            }
+        }
+
+        private void PlayerGraphics_Update(On.PlayerGraphics.orig_Update orig, PlayerGraphics self)
+        {
+            orig(self);
+
+            if (self.IsGuide(out var guide))
+            {
+                self.gills?.Update();
+                guide.topGills?.Update();
             }
         }
 
@@ -237,39 +249,40 @@ namespace GuideSlugBase
             guide.BodySpotsSprite = sLeaser.sprites.Length;
             guide.HipsSpotsSprite = sLeaser.sprites.Length + 1;
             guide.LegsSpotsSprite = sLeaser.sprites.Length + 2;
-            guide.HeadGillsSprite = sLeaser.sprites.Length + 3;
-            guide.FaceBlushSprite = sLeaser.sprites.Length + 4;
+            guide.FaceBlushSprite = sLeaser.sprites.Length + 3;
 
-            guide.TasselSpriteA[0] = sLeaser.sprites.Length + 5;
-            guide.TasselSpriteA[1] = sLeaser.sprites.Length + 6;
-            guide.TasselSpriteA[2] = sLeaser.sprites.Length + 7;
-            guide.TasselSpriteA[3] = sLeaser.sprites.Length + 8;
-            guide.TasselSpriteA[4] = sLeaser.sprites.Length + 9;
+            guide.TasselSpriteA[0] = sLeaser.sprites.Length + 4;
+            guide.TasselSpriteA[1] = sLeaser.sprites.Length + 5;
+            guide.TasselSpriteA[2] = sLeaser.sprites.Length + 6;
+            guide.TasselSpriteA[3] = sLeaser.sprites.Length + 7;
+            guide.TasselSpriteA[4] = sLeaser.sprites.Length + 8;
 
-            guide.TasselSpriteB[0] = sLeaser.sprites.Length + 10;
-            guide.TasselSpriteB[1] = sLeaser.sprites.Length + 11;
-            guide.TasselSpriteB[2] = sLeaser.sprites.Length + 12;
-            guide.TasselSpriteB[3] = sLeaser.sprites.Length + 13;
-            guide.TasselSpriteB[4] = sLeaser.sprites.Length + 14;
+            guide.TasselSpriteB[0] = sLeaser.sprites.Length + 9;
+            guide.TasselSpriteB[1] = sLeaser.sprites.Length + 10;
+            guide.TasselSpriteB[2] = sLeaser.sprites.Length + 11;
+            guide.TasselSpriteB[3] = sLeaser.sprites.Length + 12;
+            guide.TasselSpriteB[4] = sLeaser.sprites.Length + 13;
 
-            guide.TailSpots[0] = sLeaser.sprites.Length + 15;
-            guide.TailSpots[1] = sLeaser.sprites.Length + 16;
-            guide.TailSpots[2] = sLeaser.sprites.Length + 17;
-            guide.TailSpots[3] = sLeaser.sprites.Length + 18;
-            guide.TailSpots[4] = sLeaser.sprites.Length + 19;
-            
+            guide.TailSpots[0] = sLeaser.sprites.Length + 14;
+            guide.TailSpots[1] = sLeaser.sprites.Length + 15;
+            guide.TailSpots[2] = sLeaser.sprites.Length + 16;
+            guide.TailSpots[3] = sLeaser.sprites.Length + 17;
+            guide.TailSpots[4] = sLeaser.sprites.Length + 18;
 
-            Array.Resize(ref sLeaser.sprites, sLeaser.sprites.Length + 20); //Adds body spots to sprite array (5), add five more for the danglefruit sprite (5), add five more for inner tassel sprite (5), tail spot sprites (5)
+            guide.topGills = new UpperHavenGills(self, 19);
+            self.gills = new LowerHavenGills(self, 19 + guide.topGills.numberOfSprites);
+
+            Array.Resize(ref sLeaser.sprites, sLeaser.sprites.Length + 19 + self.gills.numberOfSprites + guide.topGills.numberOfSprites); //Adds body spots to sprite array (5), add five more for the danglefruit sprite (5), add five more for inner tassel sprite (5), tail spot sprites (5)
 
             //~~~~~~~~~~~~~~~~~~~
             //Assign sprites ~~~~~~~~~~
             sLeaser.sprites[guide.BodySpotsSprite] = new FSprite("pixel");
             sLeaser.sprites[guide.HipsSpotsSprite] = new FSprite("pixel");
             sLeaser.sprites[guide.LegsSpotsSprite] = new FSprite("pixel");
-            sLeaser.sprites[guide.HeadGillsSprite] = new FSprite("pixel");
             sLeaser.sprites[guide.FaceBlushSprite] = new FSprite("pixel");
 
-           
+            guide.topGills.InitiateSprites(sLeaser, rCam);
+            self.gills.InitiateSprites(sLeaser, rCam);
 
             for(int i = 0; i < 5; i++)
             {
@@ -300,13 +313,14 @@ namespace GuideSlugBase
             newContatiner.AddChild(sLeaser.sprites[guide.LegsSpotsSprite]);
             sLeaser.sprites[guide.LegsSpotsSprite].MoveInFrontOfOtherNode(sLeaser.sprites[4]);
             
-            newContatiner.AddChild(sLeaser.sprites[guide.HeadGillsSprite]);
-            sLeaser.sprites[guide.HeadGillsSprite].MoveInFrontOfOtherNode(sLeaser.sprites[3]);
-            
             newContatiner.AddChild(sLeaser.sprites[guide.FaceBlushSprite]);
             sLeaser.sprites[guide.FaceBlushSprite].MoveInFrontOfOtherNode(sLeaser.sprites[9]);
 
-            
+            for (int j = guide.topGills.startSprite; j < self.gills.startSprite + self.gills.numberOfSprites; j++)
+            {
+                newContatiner.AddChild(sLeaser.sprites[j]);
+                sLeaser.sprites[j].MoveBehindOtherNode(sLeaser.sprites[9]);
+            }
 
             for(int i = 0; i < 5; i++)
             {
@@ -347,18 +361,22 @@ namespace GuideSlugBase
             
             sLeaser.sprites[guide.LegsSpotsSprite].Follow(sLeaser.sprites[4]);
             sLeaser.sprites[guide.LegsSpotsSprite].color = guide.SpotsColor;
-            
-            sLeaser.sprites[guide.HeadGillsSprite].Follow(sLeaser.sprites[3]);
-            sLeaser.sprites[guide.HeadGillsSprite].color = guide.GillsColor;
 
             sLeaser.sprites[guide.FaceBlushSprite].Follow(sLeaser.sprites[9]);
             sLeaser.sprites[guide.FaceBlushSprite].color = guide.SpotsColor;
 
-            
+            self.gills?.DrawSprites(sLeaser, rCam, timeStacker, camPos);
+            guide.topGills?.DrawSprites(sLeaser, rCam, timeStacker, camPos);
 
-            
+            self.gills?.SetGillColors(guide.BodyColor, guide.GillsColor);
+            guide.topGills?.SetGillColors(guide.BodyColor, guide.GillsColor);
 
-            for(int i = 0; i < 5; i++)
+            self.gills?.ApplyPalette(sLeaser, rCam, rCam.currentPalette);
+            guide.topGills?.ApplyPalette(sLeaser, rCam, rCam.currentPalette);
+
+
+
+            for (int i = 0; i < 5; i++)
             {
                 sLeaser.sprites[guide.TasselSpriteA[i]].color = guide.TasselAColor;
                 sLeaser.sprites[guide.TasselSpriteB[i]].color = guide.TasselBColor;
@@ -400,10 +418,6 @@ namespace GuideSlugBase
             if (Futile.atlasManager._allElementsByName.TryGetValue(SpritePrefix + "Spots_" + sLeaser.sprites[4].element.name, out var element))
             {
                 sLeaser.sprites[guide.LegsSpotsSprite].element = element;
-            }
-            if (Futile.atlasManager._allElementsByName.TryGetValue(SpritePrefix + "Gills_" + sLeaser.sprites[3].element.name, out element))
-            {
-                sLeaser.sprites[guide.HeadGillsSprite].element = element;
             }
             if (Futile.atlasManager._allElementsByName.TryGetValue(SpritePrefix + "Blush_" + sLeaser.sprites[9].element.name, out element))
             {
@@ -733,7 +747,8 @@ public static class GuideStatusClass
         public int BodySpotsSprite;
         public int HipsSpotsSprite;
         public int LegsSpotsSprite;
-        public int HeadGillsSprite;
+        //public int HeadGillsSprite;
+        public UpperHavenGills topGills;
         public int FaceBlushSprite;
         public int[] TasselSpriteA = new int[5];
         public int[] TasselSpriteB = new int[5];
@@ -804,7 +819,7 @@ public static class MediumStatusClass
         public readonly Player player;
 
         public bool spritesReady;
-        public int HeadGillsSprite;
+        //public int HeadGillsSprite;
         public int FaceBlushSprite;
         public int FaceEchoSprite;
         public int BodyEchoSprite;
@@ -844,4 +859,347 @@ public static class MediumStatusClass
     public static bool IsMedium(this PlayerGraphics pg, out MediumStatus medium) => IsMedium(pg.player, out medium);
 
     
+}
+
+public class LowerHavenGills : PlayerGraphics.AxolotlGills
+{
+    public LowerHavenGills(PlayerGraphics pg, int start, bool med = false) : base(pg, start)
+    {
+        MediumGills = med;
+        this.pGraphics = pg;
+        this.startSprite = start;
+        this.rigor = 0.5873646f;
+        float num = 1.310689f;
+        this.colored = true;
+        this.graphic = MediumGills ? 5 : 4;
+        this.graphicHeight = Futile.atlasManager.GetElementWithName("LizardScaleA" + this.graphic.ToString()).sourcePixelSize.y;
+        int num2 = MediumGills? 2 : 3;
+        this.scalesPositions = new Vector2[num2 * 2];
+        this.scaleObjects = new PlayerGraphics.AxolotlScale[this.scalesPositions.Length];
+        this.backwardsFactors = new float[this.scalesPositions.Length];
+        float num3 = 0.1542603f;
+        float num4 = 0.1759363f;
+        for (int i = 0; i < num2; i++)
+        {
+            float y = 0.03570603f;
+            float num5 = 0.659981f;
+            float num6 = 0.9722961f;
+            float num7 = 0.3644831f;
+            if (i == 1)
+            {
+                y = 0.02899241f;
+                num5 = 0.76459f;
+                num6 = 0.6056554f;
+                num7 = 0.9129724f;
+            }
+            if (i == 2)
+            {
+                y = 0.02639332f;
+                num5 = 0.7482835f;
+                num6 = 0.7223744f;
+                num7 = 0.4567381f;
+            }
+            for (int j = 0; j < 2; j++)
+            {
+                this.scalesPositions[i * 2 + j] = new Vector2((j != 0) ? num5 : (-num5), y);
+                this.scaleObjects[i * 2 + j] = new PlayerGraphics.AxolotlScale(pGraphics);
+                this.scaleObjects[i * 2 + j].length = Mathf.Lerp(2.5f, 15f, num * num6);
+                this.scaleObjects[i * 2 + j].width = Mathf.Lerp(0.65f, 1.2f, num3 * num);
+                this.backwardsFactors[i * 2 + j] = num4 * num7;
+            }
+        }
+        this.numberOfSprites = ((!this.colored) ? this.scalesPositions.Length : (this.scalesPositions.Length * 2));
+        this.spritesOverlap = PlayerGraphics.AxolotlGills.SpritesOverlap.InFront;
+    }
+
+    public new void DrawSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
+    {
+        if (this.pGraphics.owner == null)
+        {
+            return;
+        }
+        for (int i = this.startSprite + this.scalesPositions.Length - 1; i >= this.startSprite; i--)
+        {
+            Vector2 vector = new Vector2(sLeaser.sprites[9].x + camPos.x, sLeaser.sprites[9].y + camPos.y);
+            float f = 0f;
+            float num = 0f;
+            if (i < this.startSprite + this.scalesPositions.Length / 2)
+            {
+                vector.x -= 5f;
+            }
+            else
+            {
+                num = 180f;
+                vector.x += 5f;
+            }
+            sLeaser.sprites[i].x = vector.x - camPos.x;
+            sLeaser.sprites[i].y = vector.y - camPos.y;
+            sLeaser.sprites[i].rotation = Custom.AimFromOneVectorToAnother(vector, Vector2.Lerp(this.scaleObjects[i - this.startSprite].lastPos, this.scaleObjects[i - this.startSprite].pos, timeStacker)) + num;
+            sLeaser.sprites[i].scaleX = this.scaleObjects[i - this.startSprite].width * Mathf.Sign(f);
+            if (this.colored)
+            {
+                sLeaser.sprites[i + this.scalesPositions.Length].x = vector.x - camPos.x;
+                sLeaser.sprites[i + this.scalesPositions.Length].y = vector.y - camPos.y;
+                sLeaser.sprites[i + this.scalesPositions.Length].rotation = Custom.AimFromOneVectorToAnother(vector, Vector2.Lerp(this.scaleObjects[i - this.startSprite].lastPos, this.scaleObjects[i - this.startSprite].pos, timeStacker)) + num;
+                sLeaser.sprites[i + this.scalesPositions.Length].scaleX = this.scaleObjects[i - this.startSprite].width * Mathf.Sign(f);
+                if (i < this.startSprite + this.scalesPositions.Length / 2)
+                {
+                    sLeaser.sprites[i + this.scalesPositions.Length].scaleX *= -1f;
+                }
+                if (i >= this.startSprite + this.scalesPositions.Length / 2 && MediumGills)
+                {
+                    sLeaser.sprites[i].isVisible = false;
+                }
+            }
+            if (i < this.startSprite + this.scalesPositions.Length / 2)
+            {
+                sLeaser.sprites[i].scaleX *= -1f;
+            }
+            if (i >= this.startSprite + this.scalesPositions.Length / 2 && MediumGills)
+            {
+                sLeaser.sprites[i].isVisible = false;
+            }
+        }
+        for (int j = this.startSprite + this.scalesPositions.Length - 1; j >= this.startSprite; j--)
+        {
+            sLeaser.sprites[j].color = this.baseColor;
+            if (this.colored)
+            {
+                sLeaser.sprites[j + this.scalesPositions.Length].color = Color.Lerp(this.effectColor, this.baseColor, this.pGraphics.malnourished / 1.75f);
+            }
+        }
+    }
+
+    public bool MediumGills;
+}
+
+public class UpperHavenGills
+{
+    public UpperHavenGills(PlayerGraphics pg, int start, bool med = false)
+    {
+        xOffset = 3f;
+        yOffset = 5f;
+        MediumGills = med;
+
+        this.pGraphics = pg;
+        this.startSprite = start;
+        this.rigor = 0.5873646f;
+        float num = 1.310689f;
+        this.colored = true;
+        this.graphic = MediumGills? 5 : 4;
+        this.graphicHeight = Futile.atlasManager.GetElementWithName("LizardScaleA" + this.graphic.ToString()).sourcePixelSize.y;
+        int num2 = 1;
+        this.scalesPositions = new Vector2[num2 * 2];
+        this.scaleObjects = new PlayerGraphics.AxolotlScale[this.scalesPositions.Length];
+        this.backwardsFactors = new float[this.scalesPositions.Length];
+        float num3 = 0.1542603f;
+        float num4 = 0.1759363f;
+        for (int i = 0; i < num2; i++)
+        {
+            float x = 0.03570603f;
+            float num5 = 0.659981f;
+            float num6 = 0.9722961f;
+            float num7 = 0.3644831f;
+
+            for (int j = 0; j < 2; j++)
+            {
+                this.scalesPositions[i * 2 + j] = new Vector2((j != 0) ? x : (-x), num5);
+                this.scaleObjects[i * 2 + j] = new PlayerGraphics.AxolotlScale(pGraphics)
+                {
+                    length = Mathf.Lerp(2.5f, 15f, num * num6),
+                    width = Mathf.Lerp(0.65f, 1.2f, num3 * num)
+                };
+                this.backwardsFactors[i * 2 + j] = num4 * num7;
+            }
+        }
+        this.numberOfSprites = ((!this.colored) ? this.scalesPositions.Length : (this.scalesPositions.Length * 2));
+        this.spritesOverlap = SpritesOverlap.InFront;
+    }
+
+    public void Update()
+    {
+        for (int i = 0; i < this.scaleObjects.Length; i++)
+        {
+            Vector2 pos = this.pGraphics.owner.bodyChunks[0].pos;
+            Vector2 pos2 = this.pGraphics.owner.bodyChunks[1].pos;
+            float num = 0f;
+            float num2 = 0f;
+            int num3 = i % (this.scaleObjects.Length / 2);
+            float num4 = num2 / (float)(this.scaleObjects.Length / 2);
+            if (i >= this.scaleObjects.Length / 2)
+            {
+                num = 0f;
+                pos.x += xOffset;
+            }
+            else
+            {
+                pos.x -= xOffset;
+            }
+            pos.y += yOffset;
+            Vector2 a = Custom.rotateVectorDeg(Custom.DegToVec(0f), (float)num3 * num4 - num2 / 2f + num + 90f);
+            float f = Custom.VecToDeg(this.pGraphics.lookDirection);
+            Vector2 vector = Custom.rotateVectorDeg(Custom.DegToVec(0f), (float)num3 * num4 - num2 / 2f + num);
+            Vector2 a2 = Vector2.Lerp(vector, Custom.DirVec(pos2, pos), Mathf.Abs(f));
+            if (this.scalesPositions[i].x < 0.2f)
+            {
+                a2 -= a * Mathf.Pow(Mathf.InverseLerp(0.2f, 0f, this.scalesPositions[i].x), 2f) * 2f;
+            }
+            a2 = Vector2.Lerp(a2, vector, Mathf.Pow(this.backwardsFactors[i], 1f)).normalized;
+            Vector2 vector2 = pos + a2 * this.scaleObjects[i].length;
+            if (!Custom.DistLess(this.scaleObjects[i].pos, vector2, this.scaleObjects[i].length / 2f))
+            {
+                Vector2 a3 = Custom.DirVec(this.scaleObjects[i].pos, vector2);
+                float num5 = Vector2.Distance(this.scaleObjects[i].pos, vector2);
+                float num6 = this.scaleObjects[i].length / 2f;
+                this.scaleObjects[i].pos += a3 * (num5 - num6);
+                this.scaleObjects[i].vel += a3 * (num5 - num6);
+            }
+            this.scaleObjects[i].vel += Vector2.ClampMagnitude(vector2 - this.scaleObjects[i].pos, 10f) / Mathf.Lerp(5f, 1.5f, this.rigor);
+            this.scaleObjects[i].vel *= Mathf.Lerp(1f, 0.8f, this.rigor);
+            this.scaleObjects[i].ConnectToPoint(pos, this.scaleObjects[i].length, true, 0f, new Vector2(0f, 0f), 0f, 0f);
+            this.scaleObjects[i].Update();
+        }
+    }
+
+    public void DrawSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
+    {
+        if (this.pGraphics.owner == null)
+        {
+            return;
+        }
+        for (int i = this.startSprite + this.scalesPositions.Length - 1; i >= this.startSprite; i--)
+        {
+            Vector2 vector = new Vector2(sLeaser.sprites[9].x + camPos.x, sLeaser.sprites[9].y + camPos.y);
+            float f = 0f;
+            float num = 45f;
+            if (i < this.startSprite + this.scalesPositions.Length / 2)
+            {
+                vector.x -= xOffset;
+            }
+            else
+            {
+                //num = 180f;
+                vector.x += xOffset;
+            }
+            vector.y += yOffset;
+
+            sLeaser.sprites[i].x = vector.x - camPos.x;
+            sLeaser.sprites[i].y = vector.y - camPos.y;
+            sLeaser.sprites[i].rotation = Custom.AimFromOneVectorToAnother(vector, Vector2.Lerp(this.scaleObjects[i - this.startSprite].lastPos, this.scaleObjects[i - this.startSprite].pos, timeStacker)) + num;
+            sLeaser.sprites[i].scaleX = this.scaleObjects[i - this.startSprite].width * Mathf.Sign(f);
+
+            if (i >= this.startSprite + this.scalesPositions.Length / 2 && MediumGills)
+            {
+                sLeaser.sprites[i].isVisible = false;
+            }
+
+            if (this.colored)
+            {
+                sLeaser.sprites[i + this.scalesPositions.Length].x = vector.x - camPos.x;
+                sLeaser.sprites[i + this.scalesPositions.Length].y = vector.y - camPos.y;
+                sLeaser.sprites[i + this.scalesPositions.Length].rotation = Custom.AimFromOneVectorToAnother(vector, Vector2.Lerp(this.scaleObjects[i - this.startSprite].lastPos, this.scaleObjects[i - this.startSprite].pos, timeStacker)) + num;
+                sLeaser.sprites[i + this.scalesPositions.Length].scaleX = this.scaleObjects[i - this.startSprite].width * Mathf.Sign(f);
+                if (i < this.startSprite + this.scalesPositions.Length / 2)
+                {
+                    sLeaser.sprites[i + this.scalesPositions.Length].scaleX *= -1f;
+                }
+                if (i >= this.startSprite + this.scalesPositions.Length / 2 && MediumGills)
+                {
+                    sLeaser.sprites[i].isVisible = false;
+                }
+            }
+            if (i < this.startSprite + this.scalesPositions.Length / 2)
+            {
+                sLeaser.sprites[i].scaleX *= -1f;
+            }
+        }
+        for (int j = this.startSprite + this.scalesPositions.Length - 1; j >= this.startSprite; j--)
+        {
+            sLeaser.sprites[j].color = this.baseColor;
+            if (this.colored)
+            {
+                sLeaser.sprites[j + this.scalesPositions.Length].color = Color.Lerp(this.effectColor, this.baseColor, this.pGraphics.malnourished / 1.75f);
+            }
+        }
+    }
+
+    public void SetGillColors(Color baseCol, Color effectCol)
+    {
+        this.baseColor = baseCol;
+        this.effectColor = effectCol;
+    }
+    public void ApplyPalette(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, RoomPalette palette)
+    {
+        this.palette = palette;
+        for (int i = this.startSprite + this.scalesPositions.Length - 1; i >= this.startSprite; i--)
+        {
+            sLeaser.sprites[i].color = this.baseColor;
+            if (this.colored)
+            {
+                sLeaser.sprites[i + this.scalesPositions.Length].color = this.effectColor;
+            }
+        }
+    }
+    public void InitiateSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
+    {
+        for (int i = this.startSprite + this.scalesPositions.Length - 1; i >= this.startSprite; i--)
+        {
+            sLeaser.sprites[i] = new FSprite("LizardScaleA" + this.graphic.ToString(), true);
+            sLeaser.sprites[i].scaleY = this.scaleObjects[i - this.startSprite].length / this.graphicHeight;
+            sLeaser.sprites[i].anchorY = 0.1f;
+            if (this.colored)
+            {
+                sLeaser.sprites[i + this.scalesPositions.Length] = new FSprite("LizardScaleB" + this.graphic.ToString(), true);
+                sLeaser.sprites[i + this.scalesPositions.Length].scaleY = this.scaleObjects[i - this.startSprite].length / this.graphicHeight;
+                sLeaser.sprites[i + this.scalesPositions.Length].anchorY = 0.1f;
+            }
+        }
+    }
+
+    public PlayerGraphics.AxolotlScale[] scaleObjects;
+
+    public float[] backwardsFactors;
+
+    public int graphic;
+
+    public float graphicHeight;
+
+    public float rigor;
+
+    public float scaleX;
+
+    public bool colored;
+
+    public Vector2[] scalesPositions;
+
+    public PlayerGraphics pGraphics;
+
+    public int numberOfSprites;
+
+    public int startSprite;
+
+    public RoomPalette palette;
+
+    public UpperHavenGills.SpritesOverlap spritesOverlap;
+
+    public Color baseColor;
+
+    public Color effectColor;
+
+    public float xOffset;
+    public float yOffset;
+
+    public bool MediumGills;
+
+    public class SpritesOverlap : ExtEnum<SpritesOverlap>
+    {
+        // Token: 0x06004691 RID: 18065 RVA: 0x004BA8D5 File Offset: 0x004B8AD5
+        public SpritesOverlap(string value, bool register = false) : base(value, register)
+        {
+        }
+
+        public static readonly SpritesOverlap Behind = new("Behind", true);
+        public static readonly SpritesOverlap BehindHead = new("BehindHead", true);
+        public static readonly SpritesOverlap InFront = new("InFront", true);
+    }
 }
