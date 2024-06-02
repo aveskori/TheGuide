@@ -14,6 +14,8 @@ using SlugBase.DataTypes;
 using Guide.WorldChanges;
 using Guide.Creatures;
 using Guide.Objects;
+using Guide.Guide;
+using static GuideStatusClass;
 
 
 
@@ -21,7 +23,7 @@ namespace GuideSlugBase
 {
     [BepInDependency("slime-cubed.slugbase")]
     
-    [BepInPlugin(MOD_ID, "Guide", "0.3.2")]
+    [BepInPlugin(MOD_ID, "Guide", "0.4.0")]
     class Plugin : BaseUnityPlugin
     {
         private const string MOD_ID = "aveskori.guide";
@@ -33,25 +35,25 @@ namespace GuideSlugBase
             On.RainWorld.OnModsInit += Extras.WrapInit(LoadResources);
             On.RainWorld.OnModsInit += RainWorld_OnModsInit;
             On.RainWorld.PostModsInit += RainWorld_PostModsInit;
+            
             /*
-            //  ****Fisobs Content
+            //Fisobs Content
             // Critobs
             Content.Register(new VanLizCritob());
             VanHooks.Hooks();
             Content.Register(new ChrLizCritob());
             CherryHooks.Hooks();
             //Content.Register(new molemousecritob());
-            */
+            
             
             // Fisobs
             //Content.Register(new CloversFisobs());
-            //Content.Register(new HazerSacFisobs());
-            //HazerSac.Hooks();
-            //Content.Register(new LSpearFisobs());
-            //****Content.Register(new SCloverFisobs());
-            //****Content.Register(new CentiShellFisobs());
-            
-
+            Content.Register(new HazerSacFisobs());
+            HazerSac.Hooks();
+            Content.Register(new LSpearFisobs());
+            Content.Register(new SCloverFisobs());
+            Content.Register(new CentiShellFisobs());
+            */
             // Slugcat Hooks
             On.Player.Update += Player_Update;
             On.Creature.Grasp.ctor += Grasp_ctor;
@@ -61,8 +63,9 @@ namespace GuideSlugBase
             On.Centipede.Shock += Centipede_Shock; // if slippery, immune to centishocks
             On.Player.SpitOutOfShortCut += Player_SpitOutOfShortCut; //HUD HINTS
             //On.RegionGate.customKarmaGateRequirements += GuideGateFix;
-            //****GuideCrafts.Hooks();
+            //GuideCrafts.Hooks();
             On.Player.GrabUpdate += BubbleFruitPop; //slippery ability causes bubblefruit to pop
+            On.Player.LungUpdate += Player_LungUpdate; //Infinite capacity lungs, no more panic swim
 ;
 
             // Custom Hooks -- Scavenger AI
@@ -71,6 +74,18 @@ namespace GuideSlugBase
 
             //-- Stops the game from lagging when devtools is enabled and there's scavs in the world
             IL.DenFinder.TryAssigningDen += DenFinder_TryAssigningDen;
+        }
+
+        private void Player_LungUpdate(On.Player.orig_LungUpdate orig, Player self)
+        {
+            if(self.IsGuide(out var guide))
+            {
+                if(self.airInLungs < 1f)
+                {
+                    self.airInLungs = 1f;
+                }
+            }
+
         }
 
         private bool RotundWorld; //are we rotund??
@@ -239,7 +254,7 @@ namespace GuideSlugBase
             guide.TailSpots[4] = sLeaser.sprites.Length + 19;
             
 
-            Array.Resize(ref sLeaser.sprites, sLeaser.sprites.Length + 5 + 5 + 5 + 10); //Adds spots to sprite array, add five more for the danglefruit sptire, add five more for inner tassel sprite
+            Array.Resize(ref sLeaser.sprites, sLeaser.sprites.Length + 20); //Adds body spots to sprite array (5), add five more for the danglefruit sprite (5), add five more for inner tassel sprite (5), tail spot sprites (5)
 
             //~~~~~~~~~~~~~~~~~~~
             //Assign sprites ~~~~~~~~~~
@@ -318,7 +333,7 @@ namespace GuideSlugBase
                 sLeaser.sprites[guide.TasselSpriteB[j]].scale = 0.5f;
             }
             
-
+            //set color
             sLeaser.sprites[guide.BodySpotsSprite].Follow(sLeaser.sprites[0]);
             sLeaser.sprites[guide.BodySpotsSprite].color = guide.SpotsColor;
             
@@ -346,7 +361,7 @@ namespace GuideSlugBase
             }
           
 
-            //top row
+            //top row positions
             for(var i = 0; i < 3; i++)
             {
                 var offset = Custom.PerpendicularVector(Custom.DirVec(self.tail[i].pos, self.tail[i+1].pos)) * (self.tail[i].rad * 0.8f);
@@ -369,13 +384,13 @@ namespace GuideSlugBase
             sLeaser.sprites[guide.TasselSpriteB[3]].SetPosition(self.tail[1].pos - camPos);
             sLeaser.sprites[guide.TasselSpriteB[4]].SetPosition(self.tail[2].pos - camPos);                    
             
-            for(int l = 0; l < 5; l++)
+            for(int l = 0; l < 4; l++)
             {
                 sLeaser.sprites[guide.TailSpots[l]].SetPosition(Vector2.Lerp(sLeaser.sprites[guide.TasselSpriteA[l]].GetPosition(), sLeaser.sprites[guide.TasselSpriteA[l + 1]].GetPosition(), 0.5f));
             }                               
             
 
-
+            //spots pos
             sLeaser.sprites[guide.BodySpotsSprite].element = Futile.atlasManager.GetElementWithName(SpritePrefix + "Spots_BodyA");
             if (Futile.atlasManager._allElementsByName.TryGetValue(SpritePrefix + "Spots_" + sLeaser.sprites[4].element.name, out var element))
             {
@@ -521,7 +536,7 @@ namespace GuideSlugBase
                         sFlag = true;
                     }
                     
-                    if(self.FoodInStomach < self.slugcatStats.foodToHibernate) //if food in stomach is less than food to hibernate (Update = 40 fps, SlipperyTime = update rate * seconds
+                    if(self.FoodInStomach < self.slugcatStats.foodToHibernate) //if food in stomach is less than food to hibernate (Update = 40 tps, SlipperyTime = update rate * seconds
                     {
                         self.GetCat().slipperyTime = 40 * 30;
                     }
@@ -571,18 +586,24 @@ namespace GuideSlugBase
         }
 
 
-        bool shownHudHint = false;
+        bool shownWaterHint = false;
+        bool shownJellyHint = false;
+        bool shownCentiHint = false;
 
         //HUD HINT MESSAGE CHECK WHEN LEAVING A SHORTCUT
         private void Player_SpitOutOfShortCut(On.Player.orig_SpitOutOfShortCut orig, Player self, RWCustom.IntVector2 pos, Room newRoom, bool spitOutAllSticks)
         {
             orig(self, pos, newRoom, spitOutAllSticks);
 
-            if (!shownHudHint && self.slugcatStats.name.value == "Guide" && !self.dead && self.room != null && self.room.water && self.abstractCreature.world.game.IsStorySession && self.room.game.cameras[0].hud != null)
+            if (self.slugcatStats.name.value == "Guide" && !self.dead && self.room != null && self.abstractCreature.world.game.IsStorySession && self.room.game.cameras[0].hud != null)
             {
-                self.room.game.cameras[0].hud.textPrompt.AddMessage("Water is a friend", 20, 200, false, false);
-                self.room.game.cameras[0].hud.textPrompt.AddMessage("Submerging grants temporary buffs", 20, 200, false, false);
-                shownHudHint = true;
+                if (!shownWaterHint && self.room.water)
+                {
+                    self.room.game.cameras[0].hud.textPrompt.AddMessage("Water is a friend", 20, 200, false, false);
+                    self.room.game.cameras[0].hud.textPrompt.AddMessage("Submerging grants temporary buffs", 20, 200, false, false);
+                    shownWaterHint = true;
+                }
+                
             }
         }
 
@@ -612,13 +633,19 @@ public static class ScavSatusClass
     {
         public bool isBaby;
         public bool isWarden;
+        public bool isCompanion;
+
+        //public int age;
 
         public int kingMask;
         public int glyphMark;
 
         public ScavStatus(Scavenger scav)
         {
-            /*UnityEngine.Random.seed = scav.abstractCreature.ID.RandomSeed;
+
+            //age = scav.room.world.game.GetStorySession.saveState.cycleNumber;
+
+            UnityEngine.Random.seed = scav.abstractCreature.ID.RandomSeed;
             if (UnityEngine.Random.value < 0.2f && !scav.Elite && !scav.King)
             {
                 this.isBaby = true;
@@ -627,6 +654,11 @@ public static class ScavSatusClass
             {
                 this.isWarden = true;
                 
+            }
+
+            /*if(scav.abstractCreature.ID.number == 5144)
+            {
+                this.isCompanion = true;
             }*/
         }
     }
@@ -757,4 +789,54 @@ public static class GuideStatusClass
         sprite.anchorX = originalSprite.anchorX;
         sprite.anchorY = originalSprite.anchorY;
     }
+}
+
+public static class MediumStatusClass
+{
+    public class MediumStatus
+    {
+        public readonly bool IsMedium;
+        public readonly Player player;
+
+        public bool spritesReady;
+        public int HeadGillsSprite;
+        public int FaceBlushSprite;
+        public int FaceEchoSprite;
+        public int BodyEchoSprite;
+        public int HipsEchoSprite;
+        public int ArmEchoSprite;
+        public int LegEchoSprite;
+
+        public int[] HeadTentacleSprite = new int[3];
+        public int[] TailTentacleSprite = new int[4];
+
+        public Color BodyColor;
+        public Color EyesColor;
+        public Color GillsColor;
+
+        public MediumStatus(Player player)
+        {
+            IsMedium = player.slugcatStats.name.value == "Medium";
+            this.player = player;
+        }
+
+        public void SetupColors()
+        {
+            var pg = (PlayerGraphics)player.graphicsModule;
+
+            BodyColor = new PlayerColor("Body").GetColor(pg) ?? Custom.hexToColor("e8f5ca");
+            EyesColor = new PlayerColor("Eyes").GetColor(pg) ?? Custom.hexToColor("00271f");
+            GillsColor = new PlayerColor("Gills").GetColor(pg) ?? Custom.hexToColor("26593c");
+            
+        }
+
+        
+
+    }
+    private static readonly ConditionalWeakTable<Player, MediumStatus> CWT = new();
+    public static MediumStatus GetMed(this Player player) => CWT.GetValue(player, _ => new(player));
+    public static bool IsMedium(this Player player, out MediumStatus medium) => (medium = player.GetMed()).IsMedium;
+    public static bool IsMedium(this PlayerGraphics pg, out MediumStatus medium) => IsMedium(pg.player, out medium);
+
+    
 }

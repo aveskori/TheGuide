@@ -8,88 +8,136 @@ using UnityEngine;
 using static SlugBase.Features.FeatureTypes;
 using MoreSlugcats;
 using RWCustom;
+using GuideSlugBase;
 
 namespace Guide.WorldChanges
 {
     static class PebblesConversationOverride
     {
-        //public static readonly GameFeature<bool> CustomConversations = GameBool("CustomConversations");
-        //public static readonly Conversation.ID GuidePebblesConvo = new Conversation.ID("GuidePebblesConvo", true);
+        #region Enums
+        public static class ConvoID
+        {
+            public static Conversation.ID SSConvo_FirstTalk_Guide = new("SSConvo_FirstTalk_Guide", true);
+            public static Conversation.ID SSConvo_Talk_Guide = new("SSConvo_Talk_Guide", true);
+        }
+        public static class SubBehaviorID
+        {
+            public static SSOracleBehavior.SubBehavior.SubBehavID SSGuide = new("SSGuide", true);
+
+        }
+        public static class Action
+        {
+            public static SSOracleBehavior.Action SS_Init_Guide = new("SS_Init_Guide", true);
+            public static SSOracleBehavior.Action SS_MeetGuide = new("SS_Meet_Guide", true);
+            public static SSOracleBehavior.Action SS_MeetGuide_Images = new("SS_MeetGuide_Images", true);
+            public static SSOracleBehavior.Action SS_Talk_Guide = new("SS_Talk_Guide", true);
+        }
+        
+        
+        #endregion
+
         public static void Hooks()
         {
 
-            On.SSOracleBehavior.InitateConversation += SSOracleBehavior_InitateConversation;
+            //On.SSOracleBehavior.InitateConversation += SSOracleBehavior_InitateConversation;
+            On.SSOracleBehavior.PebblesConversation.AddEvents += PebblesConversation_AddEvents;
+            //On.SSOracleBehavior.SpecialEvent += PebblesConvo_AddObject;
+                      
         }
 
-        private static void SSOracleBehavior_InitateConversation(On.SSOracleBehavior.orig_InitateConversation orig, SSOracleBehavior self, Conversation.ID convoId, SSOracleBehavior.ConversationBehavior convBehav)
+        
+        //Literally dont even know what i was doing here tbh, i forgor lmaoo
+        /*private static void PebblesConvo_AddObject(On.SSOracleBehavior.orig_SpecialEvent orig, SSOracleBehavior self, string eventName)
         {
-            GuideStatusClass.GuideStatus guide = null;
-            if (self.oracle.room.game.Players[0].realizedCreature is Player player && player.slugcatStats.name.value != "Guide")
+            Vector2 startPos = self.lastPos;
+            Vector2 endPos = new(self.oracle.room.Height / 2, self.oracle.room.Width / 2);
+            var lightning = new LightningBolt(startPos, endPos, 1, 0.5f, 20f);
+        }*/
+
+        private static void PebblesConversation_AddEvents(On.SSOracleBehavior.PebblesConversation.orig_AddEvents orig, SSOracleBehavior.PebblesConversation self)
+        {
+            if (self.owner.oracle.room.game.Players[0].realizedCreature is Player player && player.slugcatStats.name.value != "Guide")
             {
-                orig(self, convoId, convBehav);
+                orig(self);
                 return;
             }
-            if (self.oracle.room.game.Players[0].realizedCreature is Player player1 && player1.slugcatStats.name.value == "Guide")
+            #region Helpers
+            void Say(string text)
             {
-                if (self.oracle.room.game.GetStorySession.saveState.miscWorldSaveData.SSaiConversationsHad == 1)
-                {
-                    self.action = MoreSlugcatsEnums.SSOracleBehaviorAction.MeetArty_Init;
-                    self.dialogBox.NewMessage("Is this reaching you?", 60);
-                    self.dialogBox.NewMessage("...", 60);
-                    self.action = MoreSlugcatsEnums.SSOracleBehaviorAction.Pebbles_SlumberParty;
-
-                    self.dialogBox.NewMessage("Why is it that you creatures insist on breaking into my structure and disrupting me?", 120);
-                    self.dialogBox.NewMessage("Strange beast. You don't look like a messenger.", 60);
-                    self.dialogBox.NewMessage("You have a deep connection to the scavenger population, it seems.", 60);
-                    self.dialogBox.NewMessage("Not that you care, but you are not the first slimy beast to crawl into my chamber.", 60);
-                    self.dialogBox.NewMessage("One crimson creature, with an explosive rage a few cycles ago. Two more creatures -- similar to yourself -- many, many cycles before that.", 60);
-                    self.dialogBox.NewMessage("Like you, they were stuck in a cycle. Like you, they cannot leave.", 60);
-                    self.dialogBox.NewMessage("There was not much I could do for them, just as there is not much I can do for you.", 60);
-                    self.dialogBox.NewMessage("Though, I believe I'm safe to assume that you do not desire ascension in the way others do.", 60);
-                    self.dialogBox.NewMessage("Your connection with the scavengers keeps you bound here.", 60);
-                    self.dialogBox.NewMessage("The crimson beast is currently cleaning up the roof of my structure.", 60);
-                    self.dialogBox.NewMessage("For your sake, and your friends' sakes, I would suggest leaving them be.", 60);
-                    self.dialogBox.NewMessage("Should they finish my task, I imagine they won't stop until every scavanger on my facility grounds is dead.", 60);
-                    self.dialogBox.NewMessage("Through whatever means of communication you employ with them, I strongly advise leaving.", 60);
-                    self.dialogBox.NewMessage("Go west, through the Farm Arrays. You will encounter the facility wall.", 60);
-                    self.dialogBox.NewMessage("There is a gate that I will unlock for you. My overseers will observe your journey.", 60);
-                    self.dialogBox.NewMessage("Once you and your family pass through, I will lock the gate. You cannot come back.", 60);
-                    self.dialogBox.NewMessage("Best of luck.", 60);
-                    self.dialogBox.NewMessage("Now leave.", 60);
-                    self.oracle.room.game.GetStorySession.saveState.miscWorldSaveData.SSaiConversationsHad++;
-
-                    self.action = SSOracleBehavior.Action.ThrowOut_Polite_ThrowOut;
-                    guide.SpearKey = true; //Lantern Spear gate key active
-                    return;
-                }
-                if (self.oracle.room.game.GetStorySession.saveState.miscWorldSaveData.SSaiConversationsHad == 2)
-                {
-                    self.action = SSOracleBehavior.Action.MeetWhite_SecondCurious;
-                    self.dialogBox.NewMessage("You're back?", 60);
-                    self.dialogBox.NewMessage("Come to disrupt me more, little beast?", 120);
-                    self.dialogBox.NewMessage("Or perhaps... you're curious about the other creatures I'd mentioned..?", 60);
-                    self.dialogBox.NewMessage("As I said before, they looked similar to you", 60);
-                    self.dialogBox.NewMessage("Unlike you, they sought a way out of this place.", 60);
-                    self.dialogBox.NewMessage("Past the Farm Arrays, where the land fissures, they found their solace.", 60);
-                    self.dialogBox.NewMessage("If, for some reason, you wish to abandon your new family for these creatures...", 60);
-                    self.dialogBox.NewMessage("Go there.", 60);
-                    self.dialogBox.NewMessage("Now, if you'll excuse me, I need to get back to work.", 60);
-                    self.oracle.room.game.GetStorySession.saveState.miscWorldSaveData.SSaiConversationsHad++;
-                    self.action = SSOracleBehavior.Action.ThrowOut_Polite_ThrowOut;
-                    return;
-                }
-                if (self.oracle.room.game.GetStorySession.saveState.miscWorldSaveData.SSaiConversationsHad == 3)
-                {
-                    self.action = SSOracleBehavior.Action.MeetWhite_Talking;
-                    self.dialogBox.NewMessage("I have nothing else for you.", 60);
-                    self.action = SSOracleBehavior.Action.ThrowOut_Polite_ThrowOut;
-                    return;
-                }
-
+                self.events.Add(new Conversation.TextEvent(self, 0, text, 0));
             }
-            orig(self, convoId, convBehav);
+            void Say2(string text, int initialWait, int textLinger)
+            {
+                self.events.Add(new Conversation.TextEvent(self, initialWait, text, textLinger));
+            }
+            void Wait(int initialWait)
+            {
+                self.events.Add(new Conversation.WaitEvent(self, initialWait));
+            }
+            void AddObject(int initialWait, string eventName)
+            {
+                self.events.Add(new Conversation.SpecialEvent(self, initialWait, eventName));
+            }
+            #endregion
+
+            if(self.id == Conversation.ID.Pebbles_White)
+            {
+                Say("Is this reaching you?");
+                Say2("...", 0, 5);
+                Say("You're not the first of your kind to crawl into my can, and I doubt you'll be the last.<LINE>" + "Understand?");
+                Wait(10);
+                Say("Strange beast. You do not look like a messanger,<LINE>" + "and you aren't carrying anything of value to me.");
+                //if has LSpear: "That tool you have. Did you make it yourself?"
+                //show displays of guide with scavengers?
+                Say("My overseers alert me to occurences on my facility grounds.<LINE>" + "Most of their notifications are useless.");
+                Say2("You, however...", 0, 5);
+                Say("You were taken from your family. Is that right?");
+                Wait(5);
+                Say("The expression on your face says so.");
+                //Vulture taking Guide snapshot
+                Say2("To this day, I'm unsure why that vulture took you so far.<LINE>" + "To this day, I'm unsure why you were saved.", 1, 5);
+                //snapshot of Scavengers killing the vulture
+                Say("Since our creators departed, boredom has made me more interested in day-to-day affairs.");
+                Say("So I watched you.");
+                Say2("You, and your family.", 0, 5);
+                //snapshot of momma slug and medium, snapshot of guide and the scavs
+                Say("I became... attached... to this story playing out on my facility grounds.");
+                Say("It is clear your new family lies with the Scavenger population.");
+                Say("Your old family has moved on.");
+                Say("Through my direction, they have taken the old path.");
+                Say("If you wish to join them, you will have to take that path as well.");
+                Wait(5);
+                Say("However...");
+                Say2("There is something I've neglected to inform you of...", 2, 5);
+                Say("As I've said, you aren't the first of your kind to crawl into my can.");
+                Say("A crimson creature with an explosive rage is currently...");
+                Say2("...cleaning up the top of my structure.", 5, 5);
+                Say("It has a hatred for your new family, and by extension it will hate you as well.<LINE>" + "No matter how similar you may be.");
+                Say("For their safety as well as your own, I would strongly advise you to guide them off of my facility grounds.");
+                Say("Being the genius that I am, I've already scouted a suitable home for you and your family.");
+                Say2("West of the Farm Arrays, past where the land fissures, stands a wall.<LINE>" + "This section of the wall was once a transport depot.", 0, 5);
+                Say("It moved both ancients and materials alike from the outer regions into my facility grounds.");
+                Say("Now, the sewers are flooded, and must of the rail support has decayed. It's overgrown with new life.");
+                Say("I believe a place like this will be perfect for you and your family.");
+                Say("Though it is locked behind a gate. I do not want to leave it open<LINE>" + "and risk the crimson beast following you out.");
+                Say("Just a moment...");
+                AddObject(5, "LightningBolt");
+                //Febbles makes the LSpear??
+                Say("I've placed a key within this object. It will grant you access through gates that would be otherwise inaccessible to you.");
+                Say("Now go.");
+                Say("Best of luck.");
+                return;
+            }
         }
 
+        
+
+        
 
     }
+
+    /*public class SSOracleMeetGuide : SSOracleBehavior.ConversationBehavior
+    {
+        public SSOracleMeetGuide(SSOracleBehavior owner) :  base(owner, )
+    }*/
 }
