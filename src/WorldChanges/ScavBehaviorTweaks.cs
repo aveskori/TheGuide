@@ -680,7 +680,7 @@ namespace Guide.WorldChanges
                         return 8;
                     }
                 }
-                return orig(self, obj, weaponFiltered);
+                
             }
           
             return orig(self, obj, weaponFiltered);

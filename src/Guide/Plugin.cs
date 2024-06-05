@@ -11,11 +11,13 @@ using MonoMod.Cil;
 using RWCustom;
 
 using SlugBase.DataTypes;
+using static SlugBase.Features.FeatureTypes;
 using Guide.WorldChanges;
 using Guide.Creatures;
 using Guide.Objects;
 using Guide.Guide;
-using static GuideStatusClass;
+using Guide.Medium;
+using SlugBase.Features;
 
 
 
@@ -23,11 +25,12 @@ namespace GuideSlugBase
 {
     [BepInDependency("slime-cubed.slugbase")]
     
-    [BepInPlugin(MOD_ID, "Guide", "0.4.0")]
+    [BepInPlugin(MOD_ID, "Haven", "0.4.0")]
     class Plugin : BaseUnityPlugin
     {
         private const string MOD_ID = "aveskori.guide";
         
+
 
         // Add hooks
         public void OnEnable()
@@ -44,29 +47,28 @@ namespace GuideSlugBase
             Content.Register(new ChrLizCritob());
             CherryHooks.Hooks();
             //Content.Register(new molemousecritob());
-            
+            */
             
             // Fisobs
             //Content.Register(new CloversFisobs());
             Content.Register(new HazerSacFisobs());
             HazerSac.Hooks();
+            Content.Register(new VoidSpearFisobs());
+            VoidSpear.Hooks();
             Content.Register(new LSpearFisobs());
             Content.Register(new SCloverFisobs());
             Content.Register(new CentiShellFisobs());
-            */
-            // Slugcat Hooks
+
+            // Guide Hooks (I should REALLY move some of these to their own class :sob:)
+            GuideAbilities.Hooks();
+            GuideCrafts.Hooks();
             On.Player.Update += Player_Update;
-            On.Creature.Grasp.ctor += Grasp_ctor;
+
+            //Medium Hooks (these are going to be in separate classes)
+            MediumAbilities.Hooks();
+
+
             PebblesConversationOverride.Hooks();
-            On.JellyFish.Collide += JellyFish_Collide;  //Guide immunity to jellyfish stuns
-            On.JellyFish.Update += JellyFish_Update; //AND JELLYFISH TICKLES...
-            On.Centipede.Shock += Centipede_Shock; // if slippery, immune to centishocks
-            On.Player.SpitOutOfShortCut += Player_SpitOutOfShortCut; //HUD HINTS
-            //On.RegionGate.customKarmaGateRequirements += GuideGateFix;
-            //GuideCrafts.Hooks();
-            On.Player.GrabUpdate += BubbleFruitPop; //slippery ability causes bubblefruit to pop
-            On.Player.LungUpdate += Player_LungUpdate; //Infinite capacity lungs, no more panic swim
-;
 
             // Custom Hooks -- Scavenger AI
             ScavBehaviorTweaks.Hooks();
@@ -76,17 +78,7 @@ namespace GuideSlugBase
             IL.DenFinder.TryAssigningDen += DenFinder_TryAssigningDen;
         }
 
-        private void Player_LungUpdate(On.Player.orig_LungUpdate orig, Player self)
-        {
-            if(self.IsGuide(out var guide))
-            {
-                if(self.airInLungs < 1f)
-                {
-                    self.airInLungs = 1f;
-                }
-            }
-
-        }
+        
 
         private bool RotundWorld; //are we rotund??
         private bool _postModsInit;
@@ -114,52 +106,8 @@ namespace GuideSlugBase
             }
         }
 
-        private void BubbleFruitPop(On.Player.orig_GrabUpdate orig, Player self, bool eu) //certified nut sweller
-        {
-            orig(self, eu);
-            
-            if (self.GetCat().IsGuide && self.GetCat().slippery
-                && ScavBehaviorTweaks.FindNearbyGuide(self.room) != null)  //Player is guide, guide is slippery, guide is not null
-            {
-                for(int i = 0; i < 2; i++)
-                {
-                    if (self.grasps[i] != null && self.grasps[i].grabbed is WaterNut) //grasps arent null, grasp is waternut
-                    {
-
-                        (self.grasps[i].grabbed as WaterNut).swellCounter--;
-                        if ((self.grasps[i].grabbed as WaterNut).swellCounter < 1)
-                        {
-                            (self.grasps[i].grabbed as WaterNut).Swell();
-                        }
-                        return;
-                    }
-                    return;
-                }
-            }
-            return;
-        }
-        //(Pocky-Raisin) Try looking into slugBase savedata, it's intended to be used like that
-        //HHH DOESNT WORK YET
-        //(Visiting FP with a LanternSpear ticks SpearKey to true, Guide gains access to LC)
-        /*private void GuideGateFix(On.RegionGate.orig_customKarmaGateRequirements orig, RegionGate self)
-        {
-            orig(self);
-            GuideStatusClass.GuideStatus guide = null;
-            if (ModManager.MSC && self.room.abstractRoom.name == "GATE_UW_LC" && guide.SpearKey)
-            {
-                int num;
-                if (int.TryParse(self.karmaRequirements[0].value, out num))
-                {
-                    self.karmaRequirements[0] = RegionGate.GateRequirement.OneKarma;
-                }
-                int num2;
-                if (int.TryParse(self.karmaRequirements[1].value, out num2))
-                {
-                    self.karmaRequirements[1] = RegionGate.GateRequirement.OneKarma;
-                }
-            }
-            
-        }*/
+        
+        
 
         private static bool IsInit;
         private void RainWorld_OnModsInit(On.RainWorld.orig_OnModsInit orig, RainWorld self)
@@ -171,7 +119,7 @@ namespace GuideSlugBase
                 if (IsInit) return;
                 IsInit = true;
              
-                On.PlayerGraphics.ctor += PlayerGraphics_ctor;
+                //On.PlayerGraphics.ctor += PlayerGraphics_ctor;
                 On.PlayerGraphics.InitiateSprites += PlayerGraphics_InitiateSprites;
                 On.PlayerGraphics.AddToContainer += PlayerGraphics_AddToContainer;
                 On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites;
@@ -194,7 +142,7 @@ namespace GuideSlugBase
             }
         }
 
-        private void PlayerGraphics_ctor(On.PlayerGraphics.orig_ctor orig, PlayerGraphics self, PhysicalObject ow)
+        /*private void PlayerGraphics_ctor(On.PlayerGraphics.orig_ctor orig, PlayerGraphics self, PhysicalObject ow)
         {
             orig(self, ow);
             if (!self.IsGuide(out var guide)) return;
@@ -217,7 +165,7 @@ namespace GuideSlugBase
             bp.RemoveAll(x => x is TailSegment);
             bp.AddRange(self.tail);
             self.bodyParts = bp.ToArray();
-        }
+        }*/
 
         private void PlayerGraphics_InitiateSprites(On.PlayerGraphics.orig_InitiateSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
         {
@@ -331,7 +279,7 @@ namespace GuideSlugBase
 
         }
 
-        private const string SpritePrefix = "GuideSprites_";//What's this?
+        private const string SpritePrefix = "GuideSprites_";//What's this? (Vigaro put this in when adding the spots in DrawSprites)
         private void PlayerGraphics_DrawSprites(On.PlayerGraphics.orig_DrawSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
         {
             orig(self, sLeaser, rCam, timeStacker, camPos);
@@ -418,6 +366,7 @@ namespace GuideSlugBase
             {
                 sLeaser.sprites[guide.FaceBlushSprite].element = element;
             }
+
             
             var hipsElement = Futile.atlasManager.GetElementWithName(SpritePrefix + "Spots_HipsA");
             if (self.player.bodyMode == Player.BodyModeIndex.Stand)
@@ -460,7 +409,6 @@ namespace GuideSlugBase
             }
         }
 
-
         private void DenFinder_TryAssigningDen(ILContext il)
         {
             //dont write to log if devtools enabled
@@ -475,70 +423,10 @@ namespace GuideSlugBase
             cursor.Emit(OpCodes.And);
         }
 
-        private void Centipede_Shock(On.Centipede.orig_Shock orig, Centipede self, PhysicalObject shockObj)
-        {
-            //check if player guide AND slippery, else run orig
-            if(shockObj is Player && (shockObj as Player).slugcatStats.name.value == "Guide" && (shockObj as Player).GetCat().slippery)
-            {
-                self.room.PlaySound(SoundID.Centipede_Shock, 1f, 1.5f, 0.5f);
-                self.LoseAllGrasps();
-                self.room.PlaySound(SoundID.Slugcat_Bite_Centipede, 1f, 2f, 0.75f);
-                return;
-            }
-            else
-            {
-                orig(self, shockObj);
-            }
-        }
-
-        private void JellyFish_Collide(On.JellyFish.orig_Collide orig, JellyFish self, PhysicalObject otherObject, int myChunk, int otherChunk)
-        {
-            if((otherObject as Player).slugcatStats?.name?.value == "Guide")
-            {
-                self.room.PlaySound(SoundID.Slugcat_Bite_Centipede, self.bodyChunks[0], false, 1.5f, 1.5f);
-                return;
-            }
-            else
-            {
-                orig(self, otherObject, myChunk, otherChunk);
-            }
-        }
-
-        private void JellyFish_Update(On.JellyFish.orig_Update orig, JellyFish self, bool eu)
-        {
-            orig(self, eu);
-            //DON'T GRAB ONTO GUIDE
-            for (int i = 0; i < self.tentacles.Length; i++)
-            {
-                if (self.latchOnToBodyChunks[i] != null && self.latchOnToBodyChunks[i].owner is Player player && player.slugcatStats?.name?.value == "Guide")
-                {
-                    self.latchOnToBodyChunks[i] = null; //LET GO
-                }
-            }
-        }
-
-        private void Grasp_ctor(On.Creature.Grasp.orig_ctor orig, Creature.Grasp self, Creature grabber, PhysicalObject grabbed, int graspUsed, int chunkGrabbed, Creature.Grasp.Shareability shareability, float dominance, bool pacifying)
-        {
-            //check if player guide and slippery true, release grasp
-            orig(self, grabber, grabbed, graspUsed, chunkGrabbed, shareability, dominance, pacifying);
-            if (grabbed is Player player && (grabbed as Player).slugcatStats.name.value == "Guide")
-            {
-
-                if (grabbed.grabbedBy.Count > 0 && player.GetCat().slippery == true)
-                {
-                    self.grabber.room.PlaySound(SoundID.Water_Nut_Swell, grabbed.bodyChunks[1], false, 1f, 2f, false);
-                    grabber.ReleaseGrasp(graspUsed);
-                    grabbed.AllGraspsLetGoOfThisObject(true);
-                    player.GetCat().slipperyTime = 40 * 15;
-                    player.GetCat().slippery = true;
-                }
-
-            }
-        }
-
         private void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
         {
             bool sFlag = false;
+
             if (self.GetCat().IsGuide)
             {
                 //when underwater, slippery = true, countdown starts
@@ -584,42 +472,33 @@ namespace GuideSlugBase
                     self.slugcatStats.corridorClimbSpeedFac = 1f;
                     self.slugcatStats.poleClimbSpeedFac = 1f;
                 }
-
+                if (self.GetCat().harvestCounter < 40 && self.input[0].pckp && self.input[0].y > 0)
+                {
+                    self.GetCat().harvestCounter++;
+                }
+                else if (self.GetCat().harvestCounter > 0)
+                {
+                    self.GetCat().harvestCounter--;
+                }
             }
-
-
-            if (self.GetCat().harvestCounter < 40 && self.input[0].pckp && self.input[0].y > 0)
+            if (self.GetMed().IsMedium)
             {
-                self.GetCat().harvestCounter++;
+                if(self.GetMed().craftCounter < 40 && self.input[0].pckp && self.input[0].y > 0)
+                {
+                    self.GetMed().craftCounter++;
+                }
+                else if(self.GetMed().craftCounter > 0)
+                {
+                    self.GetMed().craftCounter--;
+                }
             }
-            else if (self.GetCat().harvestCounter > 0)
-            {
-                self.GetCat().harvestCounter--;
-            }
+
+            
             orig(self, eu);
         }
 
-
-        bool shownWaterHint = false;
-        bool shownJellyHint = false;
-        bool shownCentiHint = false;
-
-        //HUD HINT MESSAGE CHECK WHEN LEAVING A SHORTCUT
-        private void Player_SpitOutOfShortCut(On.Player.orig_SpitOutOfShortCut orig, Player self, RWCustom.IntVector2 pos, Room newRoom, bool spitOutAllSticks)
-        {
-            orig(self, pos, newRoom, spitOutAllSticks);
-
-            if (self.slugcatStats.name.value == "Guide" && !self.dead && self.room != null && self.abstractCreature.world.game.IsStorySession && self.room.game.cameras[0].hud != null)
-            {
-                if (!shownWaterHint && self.room.water)
-                {
-                    self.room.game.cameras[0].hud.textPrompt.AddMessage("Water is a friend", 20, 200, false, false);
-                    self.room.game.cameras[0].hud.textPrompt.AddMessage("Submerging grants temporary buffs", 20, 200, false, false);
-                    shownWaterHint = true;
-                }
-                
-            }
-        }
+        //extra hunts for other guide features?
+        
 
         
 
@@ -628,6 +507,7 @@ namespace GuideSlugBase
         {
             Futile.atlasManager.LoadImage("atlases/icon_LanternSpear");
             Futile.atlasManager.LoadImage("atlases/icon_clover");
+
             Futile.atlasManager.LoadAtlas("guidesprites/body-spots");
             Futile.atlasManager.LoadAtlas("guidesprites/face-blush");
             Futile.atlasManager.LoadAtlas("guidesprites/head");
@@ -637,89 +517,19 @@ namespace GuideSlugBase
             Futile.atlasManager.LoadAtlas("guidesprites/hipsright-spots");
             Futile.atlasManager.LoadAtlas("guidesprites/legs-spots");
             Futile.atlasManager.LoadAtlas("guidesprites/tail");
+
+            Futile.atlasManager.LoadAtlas("mediumsprites/armright");
+            Futile.atlasManager.LoadAtlas("mediumsprites/bodyecho");
+            Futile.atlasManager.LoadAtlas("mediumsprites/faceleft");
+            Futile.atlasManager.LoadAtlas("mediumsprites/faceright");
+            Futile.atlasManager.LoadAtlas("mediumsprites/headecho");
+            Futile.atlasManager.LoadAtlas("mediumsprites/hips");
+            Futile.atlasManager.LoadAtlas("mediumsprites/legsleft");
         }
     }
 }
 
-public static class ScavSatusClass
-{
-    public class ScavStatus
-    {
-        public bool isBaby;
-        public bool isWarden;
-        public bool isCompanion;
 
-        //public int age;
-
-        public int kingMask;
-        public int glyphMark;
-
-        public ScavStatus(Scavenger scav)
-        {
-
-            //age = scav.room.world.game.GetStorySession.saveState.cycleNumber;
-
-            UnityEngine.Random.seed = scav.abstractCreature.ID.RandomSeed;
-            if (UnityEngine.Random.value < 0.2f && !scav.Elite && !scav.King)
-            {
-                this.isBaby = true;
-            }
-            if(!isBaby && UnityEngine.Random.value < 0.1f)
-            {
-                this.isWarden = true;
-                
-            }
-
-            /*if(scav.abstractCreature.ID.number == 5144)
-            {
-                this.isCompanion = true;
-            }*/
-        }
-    }
-
-    private static readonly ConditionalWeakTable<Scavenger, ScavStatus> ScavCWT = new();
-    public static ScavStatus GetScav(this Scavenger scav) => ScavCWT.GetValue(scav, _ => new(scav));
-
-}
-
-public static class CritStatusClass
-{
-    public class CritStatus
-    {
-        public bool isHarvested;
-        public int harvestCount;
-
-        public bool havenScav;
-
-        public bool isMonster;
-        public bool isInfant;
-        
-
-        public CritStatus(Creature crit)
-        {
-
-            /*UnityEngine.Random.seed = crit.abstractCreature.ID.RandomSeed;
-
-            if (UnityEngine.Random.value < 0.2f)
-            {
-                this.isMonster = true;
-            }
-            if (!isMonster && UnityEngine.Random.value < 0.1f)
-            {
-                this.isInfant = true;
-
-            }*/
-
-
-        }
-
-        
-    }
-    private static readonly ConditionalWeakTable<Creature, CritStatus> CritCWT = new();
-    public static CritStatus GetCrit(this Creature crit) => CritCWT.GetValue(crit, _ => new(crit));
-
-
-}
 
 public static class GuideStatusClass
 {
@@ -830,13 +640,20 @@ public static class MediumStatusClass
         //might want to make some reusable Tentacle class tbh, trianglemeshes need a lot of variables
 
         public Color BodyColor;
+        public Color BlushColor;
         public Color EyesColor;
         public Color GillsColor;
+        public Color EchoColor;
+        public Color BlackColor;
+
+        public int craftCounter; //timer for crafting
 
         public MediumStatus(Player player)
         {
             IsMedium = player.slugcatStats.name.value == "Medium";
             this.player = player;
+            craftCounter = 0;
+            BlackColor = Color.black;
         }
 
         public void SetupColors()
@@ -844,9 +661,10 @@ public static class MediumStatusClass
             var pg = (PlayerGraphics)player.graphicsModule;
 
             BodyColor = new PlayerColor("Body").GetColor(pg) ?? Custom.hexToColor("e8f5ca");
+            BlushColor = new PlayerColor("Blush").GetColor(pg) ?? Custom.hexToColor("bf7c53");
             EyesColor = new PlayerColor("Eyes").GetColor(pg) ?? Custom.hexToColor("00271f");
             GillsColor = new PlayerColor("Gills").GetColor(pg) ?? Custom.hexToColor("26593c");
-            
+            EchoColor = new PlayerColor("Echo").GetColor(pg) ?? Custom.hexToColor("fcc203");
         }
 
         
@@ -856,6 +674,7 @@ public static class MediumStatusClass
     public static MediumStatus GetMed(this Player player) => CWT.GetValue(player, _ => new(player));
     public static bool IsMedium(this Player player, out MediumStatus medium) => (medium = player.GetMed()).IsMedium;
     public static bool IsMedium(this PlayerGraphics pg, out MediumStatus medium) => IsMedium(pg.player, out medium);
+    
 
     
 }

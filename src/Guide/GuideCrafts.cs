@@ -21,8 +21,6 @@ namespace Guide.Guide
         public static void Hooks()
         {
             On.Player.GrabUpdate += Player_GrabUpdate;
-
-
         }
 
         private static void Player_GrabUpdate(On.Player.orig_GrabUpdate orig, Player self, bool eu)
@@ -41,7 +39,7 @@ namespace Guide.Guide
             
             
 
-            if (ScavBehaviorTweaks.FindNearbyGuide(self.room) != null)
+            if (self.room != null)
             {
                 if(self.GetCat().harvestCounter > 0)
                 {
@@ -97,7 +95,7 @@ namespace Guide.Guide
                         }
 
                     }
-                    return;
+                    
                     
                 }
             }
