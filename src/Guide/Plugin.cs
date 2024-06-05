@@ -815,12 +815,15 @@ public static class MediumStatusClass
 
         public bool spritesReady;
         //public int HeadGillsSprite;
+        public int BodySpotSprite;
+        public int HipSpotSprite;
         public int FaceBlushSprite;
         public int FaceEchoSprite;
         public int BodyEchoSprite;
         public int HipsEchoSprite;
         public int ArmEchoSprite;
         public int LegEchoSprite;
+        public UpperHavenGills topGills;
 
         public int[] HeadTentacleSprite = new int[3];
         public int[] TailTentacleSprite = new int[4];
@@ -974,7 +977,7 @@ public class UpperHavenGills
     public UpperHavenGills(PlayerGraphics pg, int start, bool med = false)
     {
         xOffset = 3f;
-        yOffset = 5f;
+        yOffset = 4f;
         MediumGills = med;
 
         this.pGraphics = pg;
@@ -1067,7 +1070,7 @@ public class UpperHavenGills
         {
             Vector2 vector = new Vector2(sLeaser.sprites[9].x + camPos.x, sLeaser.sprites[9].y + camPos.y);
             float f = 0f;
-            float num = 45f;
+            float num = 50f;
             if (i < this.startSprite + this.scalesPositions.Length / 2)
             {
                 vector.x -= xOffset;
