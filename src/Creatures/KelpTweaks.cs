@@ -10,7 +10,7 @@ namespace Guide.Creatures
     internal class KelpTweaks
     {
         public KelpTweaks() { }
-
+        /*
         public static void Hooks()
         {
             On.TentaclePlantGraphics.ApplyPalette += TentaclePlantGraphics_ApplyPalette;
@@ -50,5 +50,6 @@ namespace Guide.Creatures
         {
             throw new NotImplementedException();
         }
+        */
     }
 }
