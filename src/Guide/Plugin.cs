@@ -18,6 +18,7 @@ using Guide.Objects;
 using Guide.Guide;
 using Guide.Medium;
 using SlugBase.Features;
+using System.Diagnostics.Eventing.Reader;
 
 
 
@@ -53,8 +54,6 @@ namespace GuideSlugBase
             //Content.Register(new CloversFisobs());
             Content.Register(new HazerSacFisobs());
             HazerSac.Hooks();
-            Content.Register(new VoidSpearFisobs());
-            VoidSpear.Hooks();
             Content.Register(new LSpearFisobs());
             Content.Register(new SCloverFisobs());
             Content.Register(new CentiShellFisobs());
@@ -66,6 +65,7 @@ namespace GuideSlugBase
 
             //Medium Hooks (these are going to be in separate classes)
             MediumAbilities.Hooks();
+            MediumGraphics.Hooks();
 
 
             PebblesConversationOverride.Hooks();
@@ -76,6 +76,8 @@ namespace GuideSlugBase
 
             //-- Stops the game from lagging when devtools is enabled and there's scavs in the world
             IL.DenFinder.TryAssigningDen += DenFinder_TryAssigningDen;
+            Content.Register(new VoidSpearFisobs());
+            VoidSpear.Hooks();
         }
 
         
@@ -119,15 +121,39 @@ namespace GuideSlugBase
                 if (IsInit) return;
                 IsInit = true;
              
-                //On.PlayerGraphics.ctor += PlayerGraphics_ctor;
+                On.PlayerGraphics.ctor += PlayerGraphics_ctor;
                 On.PlayerGraphics.InitiateSprites += PlayerGraphics_InitiateSprites;
                 On.PlayerGraphics.AddToContainer += PlayerGraphics_AddToContainer;
                 On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites;
                 On.PlayerGraphics.Update += PlayerGraphics_Update;
+                On.PlayerGraphics.ApplyPalette += PlayerGraphics_ApplyPalette;
             }
             catch (Exception ex)
             {
                 Debug.LogException(ex);
+            }
+        }
+
+        private void PlayerGraphics_ApplyPalette(On.PlayerGraphics.orig_ApplyPalette orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, RoomPalette palette)
+        {
+            orig(self, sLeaser, rCam, palette);
+
+            if (self.IsGuide(out var guide))
+            {
+                sLeaser.sprites[guide.FaceBlush[1]].color = Color.Lerp(guide.BlushColor, guide.BodyColor, 0.4f);
+                sLeaser.sprites[guide.FaceBlush[0]].color = guide.BlushColor;
+                sLeaser.sprites[guide.HipBlush].color = guide.BlushColor;
+                sLeaser.sprites[guide.TailTextures[1]].color = guide.BlushColor;
+                sLeaser.sprites[guide.TailTextures[0]].color = guide.SpotsColor;
+                sLeaser.sprites[guide.HipSpots].color = guide.SpotsColor;
+                guide.topGills?.SetGillColors(guide.BodyColor, guide.GillsColor);
+                guide.topGills?.ApplyPalette(sLeaser, rCam, palette);
+                self.gills?.SetGillColors(guide.BodyColor, guide.GillsColor);
+                self.gills?.ApplyPalette(sLeaser, rCam, palette);
+                for (int i = 0; i < 6; i++)
+                {
+                    sLeaser.sprites[guide.TasselSprite[i]].color = guide.TasselColor;
+                }
             }
         }
 
@@ -142,11 +168,11 @@ namespace GuideSlugBase
             }
         }
 
-        /*private void PlayerGraphics_ctor(On.PlayerGraphics.orig_ctor orig, PlayerGraphics self, PhysicalObject ow)
+        private void PlayerGraphics_ctor(On.PlayerGraphics.orig_ctor orig, PlayerGraphics self, PhysicalObject ow)
         {
             orig(self, ow);
             if (!self.IsGuide(out var guide)) return;
-
+            /*
             const int length = 4;
             const float wideness = 1.5f;
             const float roundness = 0.9f;
@@ -158,14 +184,27 @@ namespace GuideSlugBase
                 var segRad = Mathf.Lerp(6f, 1f, Mathf.Pow((i + 1f) / length, wideness)) * (1f + Mathf.Sin(i / (float)length * (float)Math.PI) * roundness);
                 self.tail[i] = new TailSegment(self, segRad, (i == 0 ? 4 : 7) * (pup ? 0.5f : 1f), i > 0 ? self.tail[i - 1] : null, 0.85f, 1f, i == 0 ? 1f : 0.5f, true);
             }
-
-            
+            */
+            if (self.RenderAsPup)
+            {
+                self.tail[0] = new(self, 9f, 2f, null, 0.85f, 1.0f, 1.0f, true);
+                self.tail[1] = new(self, 7f, 3.5f, self.tail[0], 0.85f, 1.0f, 0.5f, true);
+                self.tail[2] = new(self, 5f, 3.5f, self.tail[1], 0.85f, 1.0f, 0.5f, true);
+                self.tail[3] = new(self, 3f, 3.5f, self.tail[2], 0.85f, 1.0f, 0.5f, true);
+            }
+            else
+            {
+                self.tail[0] = new(self, 9f, 4f, null, 0.85f, 1.0f, 1.0f, true);
+                self.tail[1] = new(self, 7f, 7f, self.tail[0], 0.85f, 1.0f, 0.5f, true);
+                self.tail[2] = new(self, 5f, 7f, self.tail[1], 0.85f, 1.0f, 0.5f, true);
+                self.tail[3] = new(self, 3f, 7f, self.tail[2], 0.85f, 1.0f, 0.5f, true);
+            }
 
             var bp = self.bodyParts.ToList();
             bp.RemoveAll(x => x is TailSegment);
             bp.AddRange(self.tail);
             self.bodyParts = bp.ToArray();
-        }*/
+        }
 
         private void PlayerGraphics_InitiateSprites(On.PlayerGraphics.orig_InitiateSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
         {
@@ -187,53 +226,75 @@ namespace GuideSlugBase
 
             orig(self, sLeaser, rCam);
             if (!isGuide) return;
-            
+
+            guide.StartIndex = sLeaser.sprites.Length;
+
+            int start = guide.StartIndex;
             //Add to array ~~~~~~~~~~~
-            guide.BodySpotsSprite = sLeaser.sprites.Length;
-            guide.HipsSpotsSprite = sLeaser.sprites.Length + 1;
-            guide.LegsSpotsSprite = sLeaser.sprites.Length + 2;
-            guide.FaceBlushSprite = sLeaser.sprites.Length + 3;
+            guide.HipSpots = start;
+            guide.HipBlush = start + 1;
 
-            guide.TasselSpriteA[0] = sLeaser.sprites.Length + 4;
-            guide.TasselSpriteA[1] = sLeaser.sprites.Length + 5;
-            guide.TasselSpriteA[2] = sLeaser.sprites.Length + 6;
-            guide.TasselSpriteA[3] = sLeaser.sprites.Length + 7;
-            guide.TasselSpriteA[4] = sLeaser.sprites.Length + 8;
+            guide.FaceBlush = new int[2];
+            guide.FaceBlush[0] = start + 2;
+            guide.FaceBlush[1] = start + 3;
 
-            guide.TasselSpriteB[0] = sLeaser.sprites.Length + 9;
-            guide.TasselSpriteB[1] = sLeaser.sprites.Length + 10;
-            guide.TasselSpriteB[2] = sLeaser.sprites.Length + 11;
-            guide.TasselSpriteB[3] = sLeaser.sprites.Length + 12;
-            guide.TasselSpriteB[4] = sLeaser.sprites.Length + 13;
+            guide.TasselSprite = new int[6];
+            guide.TasselSprite[0] = start + 4;
+            guide.TasselSprite[1] = start + 5;
+            guide.TasselSprite[2] = start + 6;
+            guide.TasselSprite[3] = start + 7;
+            guide.TasselSprite[4] = start + 8;
+            guide.TasselSprite[5] = start + 9;
 
-            guide.TailSpots[0] = sLeaser.sprites.Length + 14;
-            guide.TailSpots[1] = sLeaser.sprites.Length + 15;
-            guide.TailSpots[2] = sLeaser.sprites.Length + 16;
-            guide.TailSpots[3] = sLeaser.sprites.Length + 17;
-            guide.TailSpots[4] = sLeaser.sprites.Length + 18;
+            guide.TailTextures = new int[2];
+            guide.TailTextures[0] = start + 10;
+            guide.TailTextures[1] = start + 11;
 
-            guide.topGills = new UpperHavenGills(self, sLeaser.sprites.Length + 19);//fixed gills
+            guide.topGills = new UpperHavenGills(self, start + 12);//fixed gills
             self.gills = new LowerHavenGills(self, guide.topGills.startSprite + guide.topGills.numberOfSprites);
 
-            Array.Resize(ref sLeaser.sprites, sLeaser.sprites.Length + 19 + self.gills.numberOfSprites + guide.topGills.numberOfSprites); //Adds body spots to sprite array (5), add five more for the danglefruit sprite (5), add five more for inner tassel sprite (5), tail spot sprites (5)
-
+            Array.Resize(ref sLeaser.sprites, start + 12 + self.gills.numberOfSprites + guide.topGills.numberOfSprites); //Adds body spots to sprite array (5), add five more for the danglefruit sprite (5), add five more for inner tassel sprite (5), tail spot sprites (5)
+            guide.EndIndex = sLeaser.sprites.Length;
             //~~~~~~~~~~~~~~~~~~~
             //Assign sprites ~~~~~~~~~~
-            sLeaser.sprites[guide.BodySpotsSprite] = new FSprite("pixel");
-            sLeaser.sprites[guide.HipsSpotsSprite] = new FSprite("pixel");
-            sLeaser.sprites[guide.LegsSpotsSprite] = new FSprite("pixel");
-            sLeaser.sprites[guide.FaceBlushSprite] = new FSprite("pixel");
+            for (int j = guide.StartIndex; j < guide.EndIndex; j++)
+            {
+                sLeaser.sprites[j] = new FSprite("pixel");
+            }
 
             guide.topGills.InitiateSprites(sLeaser, rCam);
             self.gills.InitiateSprites(sLeaser, rCam);
 
-            for(int i = 0; i < 5; i++)
+            for (int b = 0; b < 2; b++)
             {
-                sLeaser.sprites[guide.TasselSpriteA[i]] = new FSprite("DangleFruit0A"); //adds 0, 1, 2, 3, 4
-                sLeaser.sprites[guide.TasselSpriteB[i]] = new FSprite("DangleFruit0B");
-                sLeaser.sprites[guide.TailSpots[i]] = new FSprite("tinyStar");
-            }           
-            
+                TriangleMesh.Triangle[] TailTris = new TriangleMesh.Triangle[]
+{
+                    new TriangleMesh.Triangle(0, 1, 2),
+                    new TriangleMesh.Triangle(1, 2, 3),
+                    new TriangleMesh.Triangle(4, 5, 6),
+                    new TriangleMesh.Triangle(5, 6, 7),
+                    new TriangleMesh.Triangle(8, 9, 10),
+                    new TriangleMesh.Triangle(9, 10, 11),
+                    new TriangleMesh.Triangle(12, 13, 14),
+                    new TriangleMesh.Triangle(2, 3, 4),
+                    new TriangleMesh.Triangle(3, 4, 5),
+                    new TriangleMesh.Triangle(6, 7, 8),
+                    new TriangleMesh.Triangle(7, 8, 9),
+                    new TriangleMesh.Triangle(10, 11, 12),
+                    new TriangleMesh.Triangle(11, 12, 13)
+};
+                TriangleMesh Mesh = new("Futile_White", TailTris, false, false);
+
+                sLeaser.sprites[guide.TailTextures[b]] = Mesh;
+            }
+
+            for (int m = 0; m < 6; m++)
+            {
+                sLeaser.sprites[guide.TasselSprite[m]] = new FSprite("GuideTassel");
+                sLeaser.sprites[guide.TasselSprite[m]].anchorY = 0.25f;
+            }
+
+
             guide.SetupColors();
 
             guide.SpritesReady = true;
@@ -247,164 +308,244 @@ namespace GuideSlugBase
 
             newContatiner ??= rCam.ReturnFContainer("Midground");
 
-            newContatiner.AddChild(sLeaser.sprites[guide.BodySpotsSprite]);
-            sLeaser.sprites[guide.BodySpotsSprite].MoveInFrontOfOtherNode(sLeaser.sprites[0]);
-            
-            newContatiner.AddChild(sLeaser.sprites[guide.HipsSpotsSprite]);
-            sLeaser.sprites[guide.HipsSpotsSprite].MoveInFrontOfOtherNode(sLeaser.sprites[1]);
-            
-            newContatiner.AddChild(sLeaser.sprites[guide.LegsSpotsSprite]);
-            sLeaser.sprites[guide.LegsSpotsSprite].MoveInFrontOfOtherNode(sLeaser.sprites[4]);
-            
-            newContatiner.AddChild(sLeaser.sprites[guide.FaceBlushSprite]);
-            sLeaser.sprites[guide.FaceBlushSprite].MoveInFrontOfOtherNode(sLeaser.sprites[9]);
+            for (int k = guide.StartIndex; k < guide.EndIndex; k++)
+            {
+                newContatiner.AddChild(sLeaser.sprites[k]);
+            }
+
+            sLeaser.sprites[2].MoveBehindOtherNode(sLeaser.sprites[0]);
+
+            sLeaser.sprites[guide.HipSpots].MoveInFrontOfOtherNode(sLeaser.sprites[4]);
+            sLeaser.sprites[guide.HipBlush].MoveInFrontOfOtherNode(sLeaser.sprites[4]);
+            sLeaser.sprites[guide.FaceBlush[1]].MoveBehindOtherNode(sLeaser.sprites[9]);
+            sLeaser.sprites[guide.FaceBlush[0]].MoveBehindOtherNode(sLeaser.sprites[9]);
 
             for (int j = guide.topGills.startSprite; j < self.gills.startSprite + self.gills.numberOfSprites; j++)
             {
                 newContatiner.AddChild(sLeaser.sprites[j]);
-                sLeaser.sprites[j].MoveBehindOtherNode(sLeaser.sprites[9]);
+                sLeaser.sprites[j].MoveBehindOtherNode(sLeaser.sprites[guide.FaceBlush[1]]);
             }
 
-            for(int i = 0; i < 5; i++)
+            for (int b = 0; b < 6; b++)
             {
-                newContatiner.AddChild(sLeaser.sprites[guide.TasselSpriteA[i]]);
-                sLeaser.sprites[guide.TasselSpriteA[i]].MoveInFrontOfOtherNode(sLeaser.sprites[2]);
+                sLeaser.sprites[guide.TasselSprite[b]].MoveInFrontOfOtherNode(sLeaser.sprites[2]);
+            }
 
-                newContatiner.AddChild(sLeaser.sprites[guide.TasselSpriteB[i]]);
-                sLeaser.sprites[guide.TasselSpriteB[i]].MoveInFrontOfOtherNode(sLeaser.sprites[3]);
-
-                newContatiner.AddChild(sLeaser.sprites[guide.TailSpots[i]]);
-                sLeaser.sprites[guide.TailSpots[i]].MoveInFrontOfOtherNode(sLeaser.sprites[2]);
-            }           
+            sLeaser.sprites[guide.TailTextures[0]].MoveInFrontOfOtherNode(sLeaser.sprites[2]);
+            sLeaser.sprites[guide.TailTextures[1]].MoveInFrontOfOtherNode(sLeaser.sprites[2]);
 
         }
+
 
         private const string SpritePrefix = "GuideSprites_";//What's this? (Vigaro put this in when adding the spots in DrawSprites)
         private void PlayerGraphics_DrawSprites(On.PlayerGraphics.orig_DrawSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
         {
             orig(self, sLeaser, rCam, timeStacker, camPos);
 
-            
+            void UpdateReplacement(int num, string tofind)
+            {
+                try
+                {
+                    if (true)
+                    {
+                        if (!sLeaser.sprites[num].element.name.Contains("Guide") && sLeaser.sprites[num].element.name.StartsWith(tofind)) sLeaser.sprites[num].SetElementByName("Guide" + sLeaser.sprites[num].element.name);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError(e.ToString());
+                }
+            }
+            void UpdateCustom(int findindex, string find, string replace, int customindex)
+            {
+                try
+                {
+                    string origelement = sLeaser.sprites[findindex].element.name;
+
+                    origelement = origelement.Replace(find, replace);
+
+                    sLeaser.sprites[customindex].SetElementByName(origelement);
+                    sLeaser.sprites[customindex].Follow(sLeaser.sprites[findindex]);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError(e.ToString());
+                }
+            }
 
             if (!self.IsGuide(out var guide)) return;
 
-            sLeaser.sprites[1].scaleX += 0.15f;
-            for(int j = 0; j < 5; j++)
-            {
-                sLeaser.sprites[guide.TasselSpriteA[j]].scale = 0.5f;
-                sLeaser.sprites[guide.TasselSpriteB[j]].scale = 0.5f;
-            }
-            
-            //set color
-            sLeaser.sprites[guide.BodySpotsSprite].Follow(sLeaser.sprites[0]);
-            sLeaser.sprites[guide.BodySpotsSprite].color = guide.SpotsColor;
-            
-            sLeaser.sprites[guide.HipsSpotsSprite].Follow(sLeaser.sprites[1]);
-            sLeaser.sprites[guide.HipsSpotsSprite].color = guide.SpotsColor;
-            
-            sLeaser.sprites[guide.LegsSpotsSprite].Follow(sLeaser.sprites[4]);
-            sLeaser.sprites[guide.LegsSpotsSprite].color = guide.SpotsColor;
+            sLeaser.sprites[1].scaleX += 0.2f;
 
-            sLeaser.sprites[guide.FaceBlushSprite].Follow(sLeaser.sprites[9]);
-            sLeaser.sprites[guide.FaceBlushSprite].color = guide.SpotsColor;
+            UpdateReplacement(3, "HeadA");
+            UpdateReplacement(4, "LegsA");
+            UpdateReplacement(5, "PlayerArm");
+            UpdateReplacement(6, "PlayerArm");
+
+            UpdateCustom(9, "Face", "GuideMask1", guide.FaceBlush[0]);
+            UpdateCustom(9, "Face", "GuideMask2", guide.FaceBlush[1]);
 
             self.gills?.DrawSprites(sLeaser, rCam, timeStacker, camPos);
             guide.topGills?.DrawSprites(sLeaser, rCam, timeStacker, camPos);
 
-            self.gills?.SetGillColors(guide.BodyColor, guide.GillsColor);
-            guide.topGills?.SetGillColors(guide.BodyColor, guide.GillsColor);
-
-            self.gills?.ApplyPalette(sLeaser, rCam, rCam.currentPalette);
-            guide.topGills?.ApplyPalette(sLeaser, rCam, rCam.currentPalette);
-
-
-
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 2; i++)
             {
-                sLeaser.sprites[guide.TasselSpriteA[i]].color = guide.TasselAColor;
-                sLeaser.sprites[guide.TasselSpriteB[i]].color = guide.TasselBColor;
-                sLeaser.sprites[guide.TailSpots[i]].color = guide.SpotsColor;
-            }
-          
+                var tailangle = Custom.AimFromOneVectorToAnother(self.tail[0].pos, self.tail[3].pos);
+                bool rightsBehind = false;
+                bool leftsBehind = false;
+                string tailElement = "Right";
 
-            //top row positions
-            for(var i = 0; i < 3; i++)
-            {
-                var offset = Custom.PerpendicularVector(Custom.DirVec(self.tail[i].pos, self.tail[i+1].pos)) * (self.tail[i].rad * 0.8f);
-                offset.y = Mathf.Abs(offset.y);
-                
-
-                sLeaser.sprites[guide.TasselSpriteA[i]].SetPosition((self.tail[i].pos + self.tail[i+1].pos) / 2 - camPos + offset);
-
-                sLeaser.sprites[guide.TasselSpriteB[i]].SetPosition((self.tail[i].pos + self.tail[i+1].pos)/2 - camPos + offset);
-
-               
-                
-            }
-            
-
-            //bottom row
-            sLeaser.sprites[guide.TasselSpriteA[3]].SetPosition(self.tail[1].pos - camPos);
-            sLeaser.sprites[guide.TasselSpriteA[4]].SetPosition(self.tail[2].pos - camPos);
-
-            sLeaser.sprites[guide.TasselSpriteB[3]].SetPosition(self.tail[1].pos - camPos);
-            sLeaser.sprites[guide.TasselSpriteB[4]].SetPosition(self.tail[2].pos - camPos);                    
-            
-            for(int l = 0; l < 4; l++)
-            {
-                sLeaser.sprites[guide.TailSpots[l]].SetPosition(Vector2.Lerp(sLeaser.sprites[guide.TasselSpriteA[l]].GetPosition(), sLeaser.sprites[guide.TasselSpriteA[l + 1]].GetPosition(), 0.5f));
-            }                               
-            
-
-            //spots pos
-            sLeaser.sprites[guide.BodySpotsSprite].element = Futile.atlasManager.GetElementWithName(SpritePrefix + "Spots_BodyA");
-            if (Futile.atlasManager._allElementsByName.TryGetValue(SpritePrefix + "Spots_" + sLeaser.sprites[4].element.name, out var element))
-            {
-                sLeaser.sprites[guide.LegsSpotsSprite].element = element;
-            }
-            if (Futile.atlasManager._allElementsByName.TryGetValue(SpritePrefix + "Blush_" + sLeaser.sprites[9].element.name, out element))
-            {
-                sLeaser.sprites[guide.FaceBlushSprite].element = element;
-            }
-
-            
-            var hipsElement = Futile.atlasManager.GetElementWithName(SpritePrefix + "Spots_HipsA");
-            if (self.player.bodyMode == Player.BodyModeIndex.Stand)
-            {
-                if (self.player.bodyChunks[1].vel.x < -3f)
+                if ((tailangle is > 0 and < 30) || (tailangle is < 0 and > -30))
                 {
-                    hipsElement = Futile.atlasManager.GetElementWithName(SpritePrefix + "Spots_LeftHipsA");
+                    //all in front of tail
+                    rightsBehind = false;
+                    leftsBehind = false;
+                    tailElement = "Top";
                 }
-                else if (self.player.bodyChunks[1].vel.x > 3f)
+                else if ((tailangle is > 150 and < 180) || (tailangle is < -150 and > -180) || self.player.room.gravity == 0f)
                 {
-                    hipsElement = Futile.atlasManager.GetElementWithName(SpritePrefix + "Spots_RightHipsA");
+                    //all behind tail
+                    rightsBehind = true;
+                    leftsBehind = true;
+                    tailElement = "Bottom";
                 }
-            }
-            else if (self.player.bodyMode == Player.BodyModeIndex.Crawl || self.player.bodyMode == Player.BodyModeIndex.CorridorClimb || self.player.bodyMode == Player.BodyModeIndex.ClimbIntoShortCut)
-            {
-                var headPos = Vector2.Lerp(self.drawPositions[0, 1], self.drawPositions[0, 0], timeStacker);
-                var legsPos = Vector2.Lerp(self.drawPositions[1, 1], self.drawPositions[1, 0], timeStacker);
-                var bodyAngle = Custom.AimFromOneVectorToAnother(legsPos, headPos);
+                else
+                {
+                    if (tailangle > 0)
+                    {
+                        rightsBehind = false;
+                        leftsBehind = true;
+                        tailElement = "Right";
+                    }
+                    else
+                    {
+                        rightsBehind = true;
+                        leftsBehind = false;
+                        tailElement = "Left";
+                    }
+                }
 
-                if (bodyAngle < -30 && bodyAngle > -150)
-                {
-                    hipsElement = Futile.atlasManager.GetElementWithName(SpritePrefix + "Spots_LeftHipsA");
-                }
-                else if (bodyAngle > 30 && bodyAngle < 150)
-                {
-                    hipsElement = Futile.atlasManager.GetElementWithName(SpritePrefix + "Spots_RightHipsA");
-                }
-            }
+                var tailSuffix = i == 0? "A" : "B";
+                var tail = sLeaser.sprites[guide.TailTextures[i]] as TriangleMesh;
 
-            sLeaser.sprites[guide.HipsSpotsSprite].element = hipsElement;
-            
-            sLeaser.sprites[guide.LegsSpotsSprite].MoveInFrontOfOtherNode(sLeaser.sprites[4]);
-            
-            foreach (var sprite in sLeaser.sprites)
-            {
-                if (Futile.atlasManager._allElementsByName.TryGetValue(SpritePrefix + sprite.element.name, out var newElement))
+                if (sLeaser.sprites[2] is TriangleMesh baseMesh)
                 {
-                    sprite.element = newElement;
+                    if (tail != null)
+                    {
+                        for (int k = 0; k < baseMesh.vertices.Length; k++)
+                        {
+                            tail.MoveVertice(k, new Vector2(baseMesh.vertices[k].x, baseMesh.vertices[k].y));
+                        }
+                    }
+                }
+
+                if ("GuideTail" + tailElement + tailSuffix != sLeaser.sprites[guide.TailTextures[i]].element.name)
+                {
+                    tail.element = Futile.atlasManager.GetElementWithName("GuideTail" + tailElement + tailSuffix);
+
+                    for (var q = tail.vertices.Length - 1; q >= 0; q--)
+                    {
+                        var perc = q / 2 / (float)(tail.vertices.Length / 2);
+
+                        Vector2 uv;
+                        if (q % 2 == 0)
+                            uv = new Vector2(perc, 0f);
+                        else if (q < tail.vertices.Length - 1)
+                            uv = new Vector2(perc, 1f);
+                        else
+                            uv = new Vector2(1f, 0f);
+
+                        // Map UV values to the element
+                        uv.x = Mathf.Lerp(tail.element.uvBottomLeft.x, tail.element.uvTopRight.x, uv.x);
+                        uv.y = Mathf.Lerp(tail.element.uvBottomLeft.y, tail.element.uvTopRight.y, uv.y);
+
+                        tail.UVvertices[q] = uv;
+                    }
+                }
+                var mainbody = i == 0 ? sLeaser.sprites[guide.HipBlush] : sLeaser.sprites[guide.HipSpots];
+                mainbody.Follow(sLeaser.sprites[1]);
+                mainbody.rotation -= 180f;
+                var mainangle = sLeaser.sprites[0].rotation;
+                string mainsuffix;
+                if ((mainangle is > 0 and < 20) || (mainangle is < 0 and > -20))
+                {
+                    mainsuffix = "Front";
+                }
+                else if ((mainangle is > 20 and < 130) || (mainangle is < -20 and > -130))
+                {
+                    mainsuffix = "Side";
+
+                    if (mainangle is < -20 and > -120)
+                    {
+                        mainbody.scaleX *= -1;
+                    }
+                    else
+                    {
+                        mainbody.scaleX *= 1;
+                    }
+                }
+                else
+                {
+                    mainsuffix = "Back";
+                }
+
+                mainbody.SetElementByName("Guide" + (i == 0? "Blush" : "Spots") + mainsuffix);
+
+                for (int k = 0; k < 3; k++)
+                {
+                    var tasselRight = i == 0;
+
+                    FSprite tassel;
+                    if (tasselRight)
+                    {
+                        tassel = sLeaser.sprites[guide.TasselSprite[k]];
+                    }
+                    else
+                    {
+                        tassel = sLeaser.sprites[guide.TasselSprite[k + 3]];
+                    }
+                    if (self.RenderAsPup) tassel.isVisible = false;
+                    tassel.scale = Mathf.Lerp(1f, 0.4f, (k + 1) / 3f);
+                    if (tasselRight)
+                    {
+                        if (rightsBehind) tassel.MoveBehindOtherNode(sLeaser.sprites[2]);
+                        else tassel.MoveInFrontOfOtherNode(sLeaser.sprites[guide.TailTextures[0]]);
+                    }
+                    else
+                    {
+                        if (leftsBehind) tassel.MoveBehindOtherNode(sLeaser.sprites[2]);
+                        else tassel.MoveInFrontOfOtherNode(sLeaser.sprites[guide.TailTextures[0]]);
+                    }
+
+                    //tail spine positions
+                    float TasselspineLerp;
+                    if (k == 0) TasselspineLerp = 0.25f;
+                    else if (k == 1) TasselspineLerp = 0.45f;
+                    else if (k == 2) TasselspineLerp = 0.65f;
+                    else TasselspineLerp = 0.65f;
+
+                    if (tasselRight && leftsBehind != rightsBehind) TasselspineLerp -= 0.075f;//slight data adjustments for if the tail is at a side angle
+
+                    var tasselTail = self.SpinePosition(TasselspineLerp, timeStacker);
+                    Vector2 TasselPos;
+                    float TasselAngle;
+                    if (rightsBehind == leftsBehind)//both on same layer(Tail face up or face down)?
+                    {
+                        TasselAngle = -50f * (tasselRight ? 1f : -1f) + Custom.VecToDeg(tasselTail.dir);
+                        TasselPos = tasselTail.pos + tasselTail.perp * (tasselTail.rad * (tasselRight ? 0.6f : -0.6f));
+                    }
+                    else
+                    {
+                        TasselAngle = -50f * (tailangle > 0 ? 1f : -1f) + Custom.VecToDeg(tasselTail.dir);
+                        var tasselPerp = tasselTail.perp;
+                        if (tasselPerp.y <= 0) tasselPerp *= -1;
+
+                        TasselPos = tasselTail.pos + tasselPerp * (tasselTail.rad * 0.75f);
+
+                    }
+
+                    tassel.SetPosition(TasselPos - camPos);
+                    tassel.rotation = TasselAngle;
                 }
             }
         }
@@ -425,17 +566,18 @@ namespace GuideSlugBase
 
         private void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
         {
-            bool sFlag = false;
+            bool sFlag = !self.GetCat().slippery;
+
+            orig(self, eu);
 
             if (self.GetCat().IsGuide)
             {
                 //when underwater, slippery = true, countdown starts
-                if (self.animation == Player.AnimationIndex.DeepSwim)
+                if (self.Submersion > 0.33f)
                 {
-                    if (!sFlag)
+                    if (sFlag)
                     {
                         self.room.PlaySound(SoundID.Red_Lizard_Spit_Hit_Player, 0f, 0.50f, 1f);
-                        sFlag = true;
                     }
                     
                     if(self.FoodInStomach < self.slugcatStats.foodToHibernate) //if food in stomach is less than food to hibernate (Update = 40 tps, SlipperyTime = update rate * seconds
@@ -455,6 +597,12 @@ namespace GuideSlugBase
                     
                 }
                 //slippery countdown
+                /*
+                "tunnel_speed": 1.5,
+		        "climb_speed": [ 1, 1.2 ],
+		        "walk_speed": [ 1.3, 1.5 ],
+                    Guide JSON values interfering with run speed code, removed them*/
+
                 if (self.GetCat().slipperyTime > 0)
                 {
                     self.GetCat().slipperyTime--;
@@ -467,7 +615,6 @@ namespace GuideSlugBase
                 else
                 {
                     self.GetCat().slippery = false;
-                    sFlag = false;
                     self.slugcatStats.runspeedFac = 1f;
                     self.slugcatStats.corridorClimbSpeedFac = 1f;
                     self.slugcatStats.poleClimbSpeedFac = 1f;
@@ -492,9 +639,6 @@ namespace GuideSlugBase
                     self.GetMed().craftCounter--;
                 }
             }
-
-            
-            orig(self, eu);
         }
 
         //extra hunts for other guide features?
@@ -508,15 +652,14 @@ namespace GuideSlugBase
             Futile.atlasManager.LoadImage("atlases/icon_LanternSpear");
             Futile.atlasManager.LoadImage("atlases/icon_clover");
 
-            Futile.atlasManager.LoadAtlas("guidesprites/body-spots");
-            Futile.atlasManager.LoadAtlas("guidesprites/face-blush");
-            Futile.atlasManager.LoadAtlas("guidesprites/head");
-            Futile.atlasManager.LoadAtlas("guidesprites/head-gills");
-            Futile.atlasManager.LoadAtlas("guidesprites/hips-spots");
-            Futile.atlasManager.LoadAtlas("guidesprites/hipsleft-spots");
-            Futile.atlasManager.LoadAtlas("guidesprites/hipsright-spots");
-            Futile.atlasManager.LoadAtlas("guidesprites/legs-spots");
-            Futile.atlasManager.LoadAtlas("guidesprites/tail");
+            Futile.atlasManager.LoadAtlas("guidesprites/GuideArm");
+            Futile.atlasManager.LoadAtlas("guidesprites/GuideHead");
+            Futile.atlasManager.LoadAtlas("guidesprites/GuideLegs");
+            Futile.atlasManager.LoadAtlas("guidesprites/GuideMainBody");
+            Futile.atlasManager.LoadAtlas("guidesprites/GuideMask1");
+            Futile.atlasManager.LoadAtlas("guidesprites/GuideMask2");
+            Futile.atlasManager.LoadAtlas("guidesprites/GuideTail");
+            Futile.atlasManager.LoadAtlas("guidesprites/GuideTassel");
 
             Futile.atlasManager.LoadAtlas("mediumsprites/armright");
             Futile.atlasManager.LoadAtlas("mediumsprites/bodyecho");
@@ -548,24 +691,25 @@ public static class GuideStatusClass
         public readonly bool IsGuide;
         public readonly Player player;
 
-        public bool SpritesReady;
-        public int BodySpotsSprite;
-        public int HipsSpotsSprite;
-        public int LegsSpotsSprite;
-        //public int HeadGillsSprite;
+        public int HipSpots;
+        public int HipBlush;
         public UpperHavenGills topGills;
-        public int FaceBlushSprite;
-        public int[] TasselSpriteA = new int[5];
-        public int[] TasselSpriteB = new int[5];
-        public int[] TailSpots = new int[5];
-        
+
+        public int[] TailTextures = new int[2];
+        public int[] FaceBlush = new int[2];
+        public int[] TasselSprite = new int[6];
+
+        public int StartIndex;
+        public int EndIndex;
+        public bool SpritesReady;
+
 
         public Color BodyColor;
         public Color EyesColor;
         public Color GillsColor;
         public Color SpotsColor;
-        public Color TasselAColor;
-        public Color TasselBColor;
+        public Color TasselColor;
+        public Color BlushColor;
         
 
         public GuideStatus(Player player)
@@ -589,10 +733,8 @@ public static class GuideStatusClass
             EyesColor = new PlayerColor("Eyes").GetColor(pg) ?? Custom.hexToColor("00271f");
             GillsColor = new PlayerColor("Gills").GetColor(pg) ?? Custom.hexToColor("26593c");
             SpotsColor = new PlayerColor("Spots").GetColor(pg) ?? Custom.hexToColor("60c0bb");
-            TasselAColor = new PlayerColor("Tassels").GetColor(pg) ?? Custom.hexToColor("12a23e");
-            TasselBColor = new Color(TasselAColor.r - 5, TasselAColor.g - 5, TasselAColor.b - 5, 0.5f);
-            
-            
+            BlushColor = new PlayerColor("Blush").GetColor(pg) ?? Custom.hexToColor("60c0bb");
+            TasselColor = new PlayerColor("Tassels").GetColor(pg) ?? Custom.hexToColor("12a23e");
         }
     }
 
@@ -634,10 +776,7 @@ public static class MediumStatusClass
         public int ArmEchoSprite;
         public int LegEchoSprite;
         public UpperHavenGills topGills;
-
-        public int[] HeadTentacleSprite = new int[3];
-        public int[] TailTentacleSprite = new int[4];
-        //might want to make some reusable Tentacle class tbh, trianglemeshes need a lot of variables
+        public MedTentacle[] tentacles;
 
         public Color BodyColor;
         public Color BlushColor;
@@ -679,6 +818,48 @@ public static class MediumStatusClass
     
 }
 
+public class MedTentacle
+{
+    public int sprite;
+    public TailSegment[] segments;
+
+    public MedTentacle(TailSegment[] segments)
+    {
+        this.segments = segments;
+    }
+}
+
+public class MedFaceTentacle : MedTentacle
+{
+    public Vector2 FacePos;
+    public Vector2 CamPos;
+    public Vector2 Offset;
+    public MedFaceTentacle(TailSegment[] segs, Vector2 facePos, Vector2 camPos, Vector2 offset) : base(segs)
+    {
+        segments = segs;
+        FacePos = facePos;
+        CamPos = camPos;
+        Offset = offset;
+    }
+}
+
+public class MedTailTentacle : MedTentacle
+{
+    public int fromSeg;
+    public int toSeg;
+    public float segLerp;
+    public float outerOffset;
+
+    public MedTailTentacle(TailSegment[] segs, int from, int to, float lerp, float outer) : base(segs)
+    {
+        segments = segs;
+        fromSeg = from;
+        toSeg = to;
+        segLerp = lerp;
+        outerOffset = outer;
+    }
+}
+
 public class LowerHavenGills : PlayerGraphics.AxolotlGills
 {
     public LowerHavenGills(PlayerGraphics pg, int start, bool med = false) : base(pg, start)
@@ -689,7 +870,7 @@ public class LowerHavenGills : PlayerGraphics.AxolotlGills
         this.rigor = 0.5873646f;
         float num = 1.310689f;
         this.colored = true;
-        this.graphic = MediumGills ? 5 : 4;
+        this.graphic = MediumGills ? 1 : 6;
         this.graphicHeight = Futile.atlasManager.GetElementWithName("LizardScaleA" + this.graphic.ToString()).sourcePixelSize.y;
         int num2 = MediumGills? 2 : 3;
         this.scalesPositions = new Vector2[num2 * 2];
@@ -787,6 +968,21 @@ public class LowerHavenGills : PlayerGraphics.AxolotlGills
             }
         }
     }
+    public new void InitiateSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
+    {
+        for (int i = this.startSprite + this.scalesPositions.Length - 1; i >= this.startSprite; i--)
+        {
+            sLeaser.sprites[i] = new FSprite("LizardScaleA" + this.graphic.ToString(), true);
+            sLeaser.sprites[i].scaleY = this.scaleObjects[i - this.startSprite].length / this.graphicHeight * (MediumGills ? 1f : 0.5f);
+            sLeaser.sprites[i].anchorY = 0.1f;
+            if (this.colored)
+            {
+                sLeaser.sprites[i + this.scalesPositions.Length] = new FSprite("LizardScaleB" + this.graphic.ToString(), true);
+                sLeaser.sprites[i + this.scalesPositions.Length].scaleY = this.scaleObjects[i - this.startSprite].length / this.graphicHeight * (MediumGills ? 1f : 0.5f);
+                sLeaser.sprites[i + this.scalesPositions.Length].anchorY = 0.1f;
+            }
+        }
+    }
 
     public bool MediumGills;
 }
@@ -804,7 +1000,7 @@ public class UpperHavenGills
         this.rigor = 0.5873646f;
         float num = 1.310689f;
         this.colored = true;
-        this.graphic = MediumGills? 5 : 4;
+        this.graphic = MediumGills? 1 : 6;
         this.graphicHeight = Futile.atlasManager.GetElementWithName("LizardScaleA" + this.graphic.ToString()).sourcePixelSize.y;
         int num2 = 1;
         this.scalesPositions = new Vector2[num2 * 2];
@@ -963,12 +1159,12 @@ public class UpperHavenGills
         for (int i = this.startSprite + this.scalesPositions.Length - 1; i >= this.startSprite; i--)
         {
             sLeaser.sprites[i] = new FSprite("LizardScaleA" + this.graphic.ToString(), true);
-            sLeaser.sprites[i].scaleY = this.scaleObjects[i - this.startSprite].length / this.graphicHeight;
+            sLeaser.sprites[i].scaleY = (this.scaleObjects[i - this.startSprite].length / this.graphicHeight) * (MediumGills? 1f : 1f);
             sLeaser.sprites[i].anchorY = 0.1f;
             if (this.colored)
             {
                 sLeaser.sprites[i + this.scalesPositions.Length] = new FSprite("LizardScaleB" + this.graphic.ToString(), true);
-                sLeaser.sprites[i + this.scalesPositions.Length].scaleY = this.scaleObjects[i - this.startSprite].length / this.graphicHeight;
+                sLeaser.sprites[i + this.scalesPositions.Length].scaleY = this.scaleObjects[i - this.startSprite].length / this.graphicHeight * (MediumGills ? 1f : 1f);
                 sLeaser.sprites[i + this.scalesPositions.Length].anchorY = 0.1f;
             }
         }
