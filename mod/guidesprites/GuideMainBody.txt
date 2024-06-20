@@ -1,0 +1,60 @@
+{"frames": {
+
+"GuideBlushBack.png":
+{
+	"frame": {"x":0,"y":0,"w":14,"h":20},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":14,"h":20},
+	"sourceSize": {"w":14,"h":20}
+},
+"GuideBlushFront.png":
+{
+	"frame": {"x":0,"y":20,"w":14,"h":20},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":14,"h":20},
+	"sourceSize": {"w":14,"h":20}
+},
+"GuideBlushSide.png":
+{
+	"frame": {"x":0,"y":40,"w":14,"h":20},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":14,"h":20},
+	"sourceSize": {"w":14,"h":20}
+},
+"GuideSpotsBack.png":
+{
+	"frame": {"x":0,"y":60,"w":14,"h":20},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":14,"h":20},
+	"sourceSize": {"w":14,"h":20}
+},
+"GuideSpotsFront.png":
+{
+	"frame": {"x":0,"y":80,"w":14,"h":20},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":14,"h":20},
+	"sourceSize": {"w":14,"h":20}
+},
+"GuideSpotsSide.png":
+{
+	"frame": {"x":0,"y":100,"w":14,"h":20},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":14,"h":20},
+	"sourceSize": {"w":14,"h":20}
+}},
+"meta": {
+	"app": "https://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "GuideMainBody.png",
+	"format": "RGBA8888",
+	"size": {"w":14,"h":120},
+	"scale": "1",
+	"smartupdate": "$TexturePacker:SmartUpdate:08f9d2af571dbf629465bcdd62e8e77c:8354c321468ebe055d4ea4b50d6518d2:c531483ac5d29796840a9b3eedf179e7$"
+}
+}

@@ -7,7 +7,7 @@
 		"color": "e2d3a4",
 		"custom_colors": [
 			{
-				"name": "Body",
+				"name": "Body",	
 				"story": "e2d3a4",
 				"arena": [ "e2d3a4", "e8f5ca", "dbd9fb", "040d22" ]
 			},
