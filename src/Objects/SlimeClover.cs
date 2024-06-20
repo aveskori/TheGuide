@@ -162,7 +162,8 @@ namespace Guide.Objects
             collisionLayer = 1;
             waterFriction = 0.95f;
             buoyancy = 1.1f;
-            puffCount = Mathf.Max(5, (int)(UnityEngine.Random.value * 8));
+            puffCount = 3;
+                //Mathf.Max(5, (int)(UnityEngine.Random.value * 8));
 
             //DO WE ACTUALLY NEED THIS?
             UnityEngine.Random.State state = UnityEngine.Random.state;
@@ -261,14 +262,14 @@ namespace Guide.Objects
         public void InitiateSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam) //override
         {
             //POPCORN VERSION
-            sLeaser.sprites = new FSprite[3 + puffCount];
+            sLeaser.sprites = new FSprite[3 + 3];
             sLeaser.sprites[0] = new FSprite("JetFishEyeA", true);
             sLeaser.sprites[1] = new FSprite("JetFishEyeA", true);
             sLeaser.sprites[2] = new FSprite("tinyStar", true);
-            for (int i = 0; i < puffCount; i++)
+            for (int i = 0; i < 3; i++)
             {
                 sLeaser.sprites[3 + i] = new FSprite("SkyDandelion", true);
-                sLeaser.sprites[3 + i].scale = 0.9f + Mathf.Sin((float)(this.AbstrConsumable.ID.number + i * puffCount)) / 10f;
+                sLeaser.sprites[3 + i].scale = 0.9f + Mathf.Sin((float)(this.AbstrConsumable.ID.number + i * 3)) / 10f;
             }
 
             AddToContainer(sLeaser, rCam, null);
@@ -290,13 +291,13 @@ namespace Guide.Objects
 
             //funny puffs
             float num = 8f + Mathf.Sin((float)AbstrConsumable.ID.RandomSeed);
-            for (int i = 0; i < puffCount; i++)
+            for (int i = 0; i < 3; i++)
             {
-                float num2 = Mathf.Lerp(90f, 170f, (float)(puffCount - 1) / 8f);
+                float num2 = Mathf.Lerp(90f, 170f, (float)(3 - 1) / 8f);
                 float num3 = 0f - num2 / 2f;
-                Vector2 vector3 = Custom.RotateAroundOrigo(vector2, num3 + num2 * ((float)i / (float)(puffCount - 1)));
+                Vector2 vector3 = Custom.RotateAroundOrigo(vector2, num3 + num2 * ((float)i / (float)(3 - 1)));
                 sLeaser.sprites[3 + i].rotation = Custom.VecToDeg(vector2);
-                float num4 = num * sLeaser.sprites[2 + i].scale + 0.2f * Mathf.Sin(swayer + (float)(i * puffCount));
+                float num4 = num * sLeaser.sprites[2 + i].scale + 0.2f * Mathf.Sin(swayer + (float)(i * 3));
                 sLeaser.sprites[3 + i].x = vector.x + vector3.x * num4 - camPos.x;
                 sLeaser.sprites[3 + i].y = vector.y + vector3.y * num4 - camPos.y;
             }
@@ -313,7 +314,7 @@ namespace Guide.Objects
             sLeaser.sprites[0].color = color;
             sLeaser.sprites[1].color = color + new Color((41 / 255), (99 / 255), (67 / 255)) * Mathf.Lerp(1f, 0.15f, rCam.PaletteDarkness());
             sLeaser.sprites[2].color = Color.Lerp(new Color((137 / 255), (238 / 255), (232 / 255)), palette.blackColor, 0.3f);
-            for(int i = 0; i < puffCount; i++)
+            for(int i = 0; i < 3; i++)
             {
                 sLeaser.sprites[3 + i].color = Color.Lerp(new Color((229 / 255), (137 / 255), (238 / 255)), new Color((137 / 255), (209 / 255), (238 / 255)), 0.3f);
             }

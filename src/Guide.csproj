@@ -47,6 +47,9 @@
     <Reference Include="Accessibility">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Rain World\RainWorld_Data\Managed\Accessibility.dll</HintPath>
     </Reference>
+    <Reference Include="Nutils">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\workshop\content\312520\2959220220\plugins\Nutils.dll</HintPath>
+    </Reference>
     <Reference Include="SlugBase">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\workshop\content\312520\2933196558\newest\plugins\SlugBase.dll</HintPath>
     </Reference>

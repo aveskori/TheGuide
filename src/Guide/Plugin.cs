@@ -54,7 +54,6 @@ namespace GuideSlugBase
             Content.Register(new HazerSacFisobs());
             HazerSac.Hooks();
             Content.Register(new VoidSpearFisobs());
-            VoidSpear.Hooks();
             Content.Register(new LSpearFisobs());
             Content.Register(new SCloverFisobs());
             Content.Register(new CentiShellFisobs());
@@ -66,7 +65,7 @@ namespace GuideSlugBase
 
             //Medium Hooks (these are going to be in separate classes)
             MediumAbilities.Hooks();
-
+            
 
             PebblesConversationOverride.Hooks();
 
@@ -645,6 +644,7 @@ public static class MediumStatusClass
         public Color BlackColor;
 
         public int craftCounter; //timer for crafting
+        public int jumpCounter;
 
         public MediumStatus(Player player)
         {
@@ -652,6 +652,7 @@ public static class MediumStatusClass
             this.player = player;
             craftCounter = 0;
             BlackColor = Color.black;
+            
         }
 
         public void SetupColors()
@@ -1018,4 +1019,11 @@ public class UpperHavenGills
         public static readonly SpritesOverlap BehindHead = new("BehindHead", true);
         public static readonly SpritesOverlap InFront = new("InFront", true);
     }
+}
+
+public class HavenEchoTendrils
+{
+    //sLeaser.sprites[x] = TriangleMesh.MakeLongMesh(6, true, true);
+    //overlap sprites for outline effect?
+    //also lerp color from base to end, black to gold
 }

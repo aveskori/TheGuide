@@ -587,7 +587,9 @@ namespace Guide.WorldChanges
 
         private static int ScavengerAI_CollectScore_PhysicalObject_bool(On.ScavengerAI.orig_CollectScore_PhysicalObject_bool orig, ScavengerAI self, PhysicalObject obj, bool weaponFiltered)
         { //Custom Collect scores for extra items, plant consumables. Scavs will take and forage for these
-            string regionName = self.scavenger.room.world.region.name;
+            if (!self.scavenger.room.game.IsStorySession) return orig(self, obj, weaponFiltered);
+            string regionName = self.scavenger.room.world.region.name;          
+            
             
             /* 
              * 0 - Lantern Spear, Everything but rock if isBaby

@@ -7,6 +7,7 @@ using Fisobs.Items;
 using Fisobs.Properties;
 using Fisobs.Sandbox;
 using MoreSlugcats;
+using Unity.Mathematics;
 
 namespace Guide.Objects
 {
@@ -156,45 +157,12 @@ namespace Guide.Objects
         {
 
 
-            Random.State state = Random.state;
-            Random.InitState(abstractPhysicalObject.ID.RandomSeed);
+            UnityEngine.Random.State state = UnityEngine.Random.state;
+            UnityEngine.Random.InitState(abstractPhysicalObject.ID.RandomSeed);
             //this.rag = new Vector2[Random.Range(4, Random.Range(4, 10)), 6];
             this.rag = new Vector2[6, 6]; //WE CAN CHOOSE TO MAKE THE RAG THE SAME LENGTH EACH TIME
-            Random.state = state;
-
-            //THIS STUFF IS ALL INHERITED FROM SPEARS ALREADY
-            /*
-            float mass = 40f;
-            var positions = new List<Vector2>();
-
-            positions.Add(Vector2.zero);
-
-            bodyChunks = new BodyChunk[positions.Count];
-
-            //create body chunk (collider)
-            for (int i = 0; i < bodyChunks.Length; i++)
-            {
-                bodyChunks[i] = new BodyChunk(this, i, Vector2.zero, 30f, mass / bodyChunks.Length);
-            }
-
-            bodyChunks = new BodyChunk[1];
-            bodyChunks[0] = new BodyChunk(this, 0, new Vector2(0f, 0f), 5f, 0.07f);
-            bodyChunkConnections = new PhysicalObject.BodyChunkConnection[0];
-
-
-            airFriction = 0.999f;
-            gravity = 0.9f;
-            bounce = 0.4f;
-            surfaceFriction = 0.4f;
-            collisionLayer = 2;
-            waterFriction = 0.98f;
-            buoyancy = 0.4f;
-            GoThroughFloors = false;
-            pivotAtTip = false;
-            lastPivotAtTip = false;
-            stuckBodyPart = -1;
-            firstChunk.loudness = 7f;
-            */
+            UnityEngine.Random.state = state;
+         
             //LANTERN PARTS
             flicker = new float[2, 3];
             for (int i = 0; i < flicker.GetLength(0); i++)
@@ -210,7 +178,7 @@ namespace Guide.Objects
         public LightSource lightSource;
         public Color ragColor; //IN EXPLOSIVESPEAR IT'S CALLED redColor BUT THIS WILL DO
 
-        private SharedPhysics.TerrainCollisionData scratchTerrainCollisionData = new SharedPhysics.TerrainCollisionData();
+        public SharedPhysics.TerrainCollisionData scratchTerrainCollisionData = new SharedPhysics.TerrainCollisionData();
         private float conRad = 7f;
 
 
@@ -226,9 +194,6 @@ namespace Guide.Objects
         {
             base.PlaceInRoom(placeRoom);
             ResetRag();
-
-            //Vector2 center = placeRoom.MiddleOfTile(abstractPhysicalObject.pos); //NO DONT DO THIS
-            //bodyChunks[0].HardSetPosition(new Vector2(0, 0) * 20f + center);
         }
 
         //PROBABLY NEED THIS TOO?...
@@ -250,7 +215,7 @@ namespace Guide.Objects
                 rag[i, 2] -= rotation * Mathf.InverseLerp(1f, 0f, i) * 0.8f;
                 rag[i, 4] = rag[i, 3];
                 rag[i, 3] = (rag[i, 3] + rag[i, 5] * Custom.LerpMap(Vector2.Distance(rag[i, 0], rag[i, 1]), 1f, 18f, 0.05f, 0.3f)).normalized;
-                rag[i, 5] = (rag[i, 5] + Custom.RNV() * Random.value * Mathf.Pow(Mathf.InverseLerp(1f, 18f, Vector2.Distance(rag[i, 0], rag[i, 1])), 0.3f)).normalized;
+                rag[i, 5] = (rag[i, 5] + Custom.RNV() * UnityEngine.Random.value * Mathf.Pow(Mathf.InverseLerp(1f, 18f, Vector2.Distance(rag[i, 0], rag[i, 1])), 0.3f)).normalized;
                 if (room.PointSubmerged(rag[i, 0]))
                 {
                     rag[i, 2] *= Custom.LerpMap(rag[i, 2].magnitude, 1f, 10f, 1f, 0.5f, Mathf.Lerp(1.4f, 0.4f, t));
@@ -308,58 +273,7 @@ namespace Guide.Objects
                     rag[j, 0] = RagAttachPos(1f);
                     rag[j, 2] *= 0f;
                 }
-            }
-            //spear update
-            //NONO, WE DON'T NEED TO DO THIS AGAIN. BASE.UPDATE() RUNS ALL THIS
-            /*
-            this.lastPivotAtTip = this.pivotAtTip;
-            this.pivotAtTip = (base.mode == Weapon.Mode.Thrown || base.mode == Weapon.Mode.StuckInCreature);
-            if (this.addPoles && this.room.readyForAI)
-            {
-                if (this.abstractSpear.stuckInWallCycles >= 0)
-                {
-                    this.wasHorizontalBeam[1] = this.room.GetTile(this.stuckInWall.Value).horizontalBeam;
-                    this.room.GetTile(this.stuckInWall.Value).horizontalBeam = true;
-                    for (int k = -1; k < 2; k += 2)
-                    {
-                        this.wasHorizontalBeam[k + 1] = this.room.GetTile(this.stuckInWall.Value + new Vector2(20f * (float)k, 0f)).horizontalBeam;
-                        if (!this.room.GetTile(this.stuckInWall.Value + new Vector2(20f * (float)k, 0f)).Solid)
-                        {
-                            this.room.GetTile(this.stuckInWall.Value + new Vector2(20f * (float)k, 0f)).horizontalBeam = true;
-                        }
-                    }
-                }
-                else
-                {
-                    this.wasHorizontalBeam[1] = this.room.GetTile(this.stuckInWall.Value).verticalBeam;
-                    this.room.GetTile(this.stuckInWall.Value).verticalBeam = true;
-                    for (int m = -1; m < 2; m += 2)
-                    {
-                        this.wasHorizontalBeam[m + 1] = this.room.GetTile(this.stuckInWall.Value + new Vector2(0f, 20f * (float)m)).verticalBeam;
-                        if (!this.room.GetTile(this.stuckInWall.Value + new Vector2(0f, 20f * (float)m)).Solid)
-                        {
-                            this.room.GetTile(this.stuckInWall.Value + new Vector2(0f, 20f * (float)m)).verticalBeam = true;
-                        }
-                    }
-                }
-                this.addPoles = false;
-                this.hasHorizontalBeamState = true;
-            }
-            */
-
-
-
-
-
-
-            //Lantern Update
-
-
-            //Lantern l = new Lantern(abstractPhysicalObject);
-
-
-            //Debug.Log($"%%%%% LANTERN FOR STATEMENT%%%%%");
-
+            }           
 
             if (lightSource == null)
             {
@@ -383,11 +297,11 @@ namespace Guide.Objects
             for (int i = 0; i < flicker.GetLength(0); i++)
             {
                 flicker[i, 1] = flicker[i, 0];
-                flicker[i, 0] += Mathf.Pow(Random.value, 3f) * 0.1f * (Random.value < 0.5f ? -1f : 1f);
+                flicker[i, 0] += Mathf.Pow(UnityEngine.Random.value, 3f) * 0.1f * (UnityEngine.Random.value < 0.5f ? -1f : 1f);
                 flicker[i, 0] = Custom.LerpAndTick(flicker[i, 0], flicker[i, 2], 0.05f, 0.033333335f);
-                if (Random.value < 0.2f)
+                if (UnityEngine.Random.value < 0.2f)
                 {
-                    flicker[i, 2] = 1f + Mathf.Pow(Random.value, 3f) * 0.2f * (Random.value < 0.5f ? -1f : 1f);
+                    flicker[i, 2] = 1f + Mathf.Pow(UnityEngine.Random.value, 3f) * 0.2f * (UnityEngine.Random.value < 0.5f ? -1f : 1f);
                 }
                 flicker[i, 2] = Mathf.Lerp(flicker[i, 2], 1f, 0.01f);
             }
@@ -476,7 +390,7 @@ namespace Guide.Objects
             Vector2 vector0 = Vector2.Lerp(firstChunk.lastPos, firstChunk.pos, timeStacker);
             if (vibrate > 0)
             {
-                vector0 += Custom.DegToVec(Random.value * 360f) * 2f * Random.value;
+                vector0 += Custom.DegToVec(UnityEngine.Random.value * 360f) * 2f * UnityEngine.Random.value;
             }
             Vector3 v = Vector3.Slerp(lastRotation, rotation, timeStacker);
             //for (int i = 1; i >= 0; i--) //THIS NORMALLY CHECKS FOR EXPLOSIVE OR BUG SPEAR
@@ -534,7 +448,7 @@ namespace Guide.Objects
             //FORGOT A FEW
             if (blink > 0)
             {
-                if (blink > 1 && Random.value < 0.5f)
+                if (blink > 1 && UnityEngine.Random.value < 0.5f)
                 {
                     sLeaser.sprites[1].color = new Color(1f, 1f, 1f);
                 }

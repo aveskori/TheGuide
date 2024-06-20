@@ -26,7 +26,7 @@ namespace Guide.Medium
         public static void Hooks()
         {
             //ctor
-            On.Player.ctor += Medium_ctor;
+            //On.Player.ctor += Medium_ctor;
             //On.PlayerGraphics.ctor += PlayerGraphics_ctor;
 
 
@@ -179,14 +179,6 @@ namespace Guide.Medium
 
         }*/
 
-        private static void Medium_ctor(On.Player.orig_ctor orig, Player self, AbstractCreature abstractCreature, World world)
-        {
-            orig(self, abstractCreature, world);
-            if (self.GetMed().IsMedium)
-            {
-                self.setPupStatus(true);
-            }
-            
-        }
+        
     }
 }

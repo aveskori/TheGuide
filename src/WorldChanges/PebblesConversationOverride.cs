@@ -9,6 +9,7 @@ using static SlugBase.Features.FeatureTypes;
 using MoreSlugcats;
 using RWCustom;
 using GuideSlugBase;
+using Guide.Objects;
 
 namespace Guide.WorldChanges
 {
@@ -56,6 +57,7 @@ namespace Guide.WorldChanges
 
         private static void PebblesConversation_AddEvents(On.SSOracleBehavior.PebblesConversation.orig_AddEvents orig, SSOracleBehavior.PebblesConversation self)
         {
+            
             if (self.owner.oracle.room.game.Players[0].realizedCreature is Player player && player.slugcatStats.name.value != "Guide")
             {
                 orig(self);
@@ -77,6 +79,12 @@ namespace Guide.WorldChanges
             void AddObject(int initialWait, string eventName)
             {
                 self.events.Add(new Conversation.SpecialEvent(self, initialWait, eventName));
+            }
+            void AddSpear()
+            {
+                AbstractPhysicalObject lSpear = new LSpearAbstract(self.owner.oracle.room.world, self.owner.oracle.abstractPhysicalObject.pos, self.owner.oracle.room.game.GetNewID());
+                self.owner.oracle.room.abstractRoom.AddEntity(lSpear);
+                lSpear.RealizeInRoom();
             }
             #endregion
 
@@ -121,8 +129,9 @@ namespace Guide.WorldChanges
                 Say("I believe a place like this will be perfect for you and your family.");
                 Say("Though it is locked behind a gate. I do not want to leave it open<LINE>" + "and risk the crimson beast following you out.");
                 Say("Just a moment...");
-                AddObject(5, "LightningBolt");
+                
                 //Febbles makes the LSpear??
+                AddSpear();
                 Say("I've placed a key within this object. It will grant you access through gates that would be otherwise inaccessible to you.");
                 Say("Now go.");
                 Say("Best of luck.");

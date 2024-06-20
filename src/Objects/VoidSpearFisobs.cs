@@ -121,78 +121,69 @@ namespace Guide.Objects
         //public new bool bugSpear => true;
         
 
-        public static void Hooks()
-        {
-            //On.Spear.InitiateSprites += Spear_InitiateSprites;
-            //On.Spear.DrawSprites += Spear_DrawSprites;
-            On.Spear.ApplyPalette += Spear_ApplyPalette;
-            new Hook(typeof(Spear).GetMethod("bugSpear", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), SpearGetterHook);
-        }
 
-        
 
-        public static bool SpearGetterHook(Func<Spear, bool> orig, Spear self)
+        public override void ApplyPalette(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, RoomPalette palette)
         {
-            if (self != null && self is VoidSpear)
-            {
-                return true;
-            }
-            return orig(self);
-        }
-
-        private static void Spear_ApplyPalette(On.Spear.orig_ApplyPalette orig, Spear self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, RoomPalette palette)
-        {
-            orig(self, sLeaser, rCam, palette);
             Color spearColor = new Color(1f, 0.8f, 0f);
-            if (self is VoidSpear)
-            {
-                sLeaser.sprites[1].color = palette.blackColor;
-                sLeaser.sprites[0].color = spearColor;
-                return;
-            }
-            
+            sLeaser.sprites[1].color = palette.blackColor;
+            sLeaser.sprites[0].color = spearColor;
+
         }
 
-        /*private static void Spear_DrawSprites(On.Spear.orig_DrawSprites orig, Spear self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
+
+        public override void DrawSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
         {
-            orig(self, sLeaser, rCam, timeStacker, camPos);
-            Vector2 vector = Vector2.Lerp(self.firstChunk.lastPos, self.firstChunk.pos, timeStacker);
-            if (self.vibrate > 0)
+            
+            Vector2 vector = Vector2.Lerp(this.firstChunk.lastPos, this.firstChunk.pos, timeStacker);
+            if (this.vibrate > 0)
             {
                 vector += Custom.DegToVec(UnityEngine.Random.value * 360f) * 2f * UnityEngine.Random.value;
             }
-            Vector3 v = Vector3.Slerp(self.lastRotation, self.rotation, timeStacker);
+            Vector3 v = Vector3.Slerp(this.lastRotation, this.rotation, timeStacker);
             for (int i = 1; i >= 0; i--)
             {
                 sLeaser.sprites[i].x = vector.x - camPos.x;
                 sLeaser.sprites[i].y = vector.y - camPos.y;
-                sLeaser.sprites[i].anchorY = Mathf.Lerp(self.lastPivotAtTip ? 0.85f : 0.5f, self.pivotAtTip ? 0.85f : 0.5f, timeStacker);
+                sLeaser.sprites[i].anchorY = Mathf.Lerp(this.lastPivotAtTip ? 0.85f : 0.5f, this.pivotAtTip ? 0.85f : 0.5f, timeStacker);
                 sLeaser.sprites[i].rotation = Custom.AimFromOneVectorToAnother(new Vector2(0f, 0f), v);
             }
-            if (self.blink > 0 && UnityEngine.Random.value < 0.5f)
+            if (this.blink > 0 && UnityEngine.Random.value < 0.5f)
             {
-                sLeaser.sprites[1].color = self.blinkColor;
+                sLeaser.sprites[1].color = this.blinkColor;
             }
             else
             {
-                sLeaser.sprites[1].color = self.color;
+                sLeaser.sprites[1].color = this.color;
             }
             
         }
 
-        private static void Spear_InitiateSprites(On.Spear.orig_InitiateSprites orig, Spear self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
+        public override void InitiateSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
         {
-            orig(self, sLeaser, rCam);
-            if (self is VoidSpear)
+            sLeaser.sprites = new FSprite[2];
+            sLeaser.sprites[1] = new FSprite("FireBugSpear", true);
+            sLeaser.sprites[0] = new FSprite("FireBugSpearColor", true);
+            
+            AddToContainer(sLeaser, rCam, null);
+        }
+
+        public override void AddToContainer(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, FContainer newContainer)
+        {
+            
+            if (newContainer == null)
             {
-                sLeaser.sprites = new FSprite[2];
-                sLeaser.sprites[1] = new FSprite("FireBugSpear", true);
-                sLeaser.sprites[0] = new FSprite("FireBugSpearColor", true);
+                newContainer = rCam.ReturnFContainer("Items");
             }
-            self.AddToContainer(sLeaser, rCam, null);
-        }*/
+            for (int i = 0; i < sLeaser.sprites.Length; i++)
+            {
+                sLeaser.sprites[i].RemoveFromContainer();
+            }
 
+            newContainer.AddChild(sLeaser.sprites[1]);
+            newContainer.AddChild(sLeaser.sprites[0]);
 
+        }
 
         public VoidSpear(VoidSpearAbstract abstr, World world) : base(abstr, world)
         {
@@ -210,6 +201,11 @@ namespace Guide.Objects
         public override void Grabability(Player player, ref Player.ObjectGrabability grabability)
         {
             grabability = Player.ObjectGrabability.OneHand;
+        }
+        public override void ScavWeaponUseScore(Scavenger scav, ref int score)
+        {
+            base.ScavWeaponUseScore(scav, ref score);
+            score = 0;
         }
     }
 }
