@@ -27,7 +27,7 @@ namespace Guide.WorldChanges
                 //age = scav.room.world.game.GetStorySession.saveState.cycleNumber;
 
                 UnityEngine.Random.seed = scav.abstractCreature.ID.RandomSeed;
-                if (UnityEngine.Random.value < 0.2f && !scav.Elite && !scav.King)
+                /*if (UnityEngine.Random.value < 0.2f && !scav.Elite && !scav.King)
                 {
                     this.isBaby = true;
                 }
@@ -35,7 +35,7 @@ namespace Guide.WorldChanges
                 {
                     this.isWarden = true;
 
-                }
+                }*/
 
                 /*if(scav.abstractCreature.ID.number == 5144)
                 {

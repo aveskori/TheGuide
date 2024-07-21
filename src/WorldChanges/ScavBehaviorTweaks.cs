@@ -693,21 +693,24 @@ namespace Guide.WorldChanges
             
             //if no threat detected, (if has food item) > set destination to player
             Player closeGuide = FindNearbyGuide(self.scavenger.room);
+            if (closeGuide.GetCat().IsGuide)
+            {
+                if (self.behavior == ScavengerAI.Behavior.Idle || self.behavior == ScavengerAI.Behavior.Injured)
+                {
+                    if (closeGuide != null && Custom.Dist(self.scavenger.mainBodyChunk.pos, closeGuide.mainBodyChunk.pos) > 50 || (Custom.Dist(self.scavenger.mainBodyChunk.pos, closeGuide.mainBodyChunk.pos) > 100))
+                    {
+                        self.SetDestination(closeGuide.abstractCreature.pos); //self.scavenger.room.game.Players[0].pos
+                    }
+                }
+                if (self.scavenger.GetScav().isCompanion && self.scavenger.grabbedBy.Any())
+                {
+                    if (closeGuide != null && Custom.Dist(self.scavenger.mainBodyChunk.pos, closeGuide.mainBodyChunk.pos) > 1 || (Custom.Dist(self.scavenger.mainBodyChunk.pos, closeGuide.mainBodyChunk.pos) > 1))
+                    {
+                        self.SetDestination(closeGuide.abstractCreature.pos); //self.scavenger.room.game.Players[0].pos
+                    }
+                }
+            }
             
-            if(self.behavior == ScavengerAI.Behavior.Idle || self.behavior == ScavengerAI.Behavior.Injured)
-            {
-                if (closeGuide != null && Custom.Dist(self.scavenger.mainBodyChunk.pos, closeGuide.mainBodyChunk.pos) > 50 || (Custom.Dist(self.scavenger.mainBodyChunk.pos, closeGuide.mainBodyChunk.pos) > 100))
-                {
-                    self.SetDestination(closeGuide.abstractCreature.pos); //self.scavenger.room.game.Players[0].pos
-                }
-            }
-            if (self.scavenger.GetScav().isCompanion && self.scavenger.grabbedBy.Any())
-            {
-                if (closeGuide != null && Custom.Dist(self.scavenger.mainBodyChunk.pos, closeGuide.mainBodyChunk.pos) > 1 || (Custom.Dist(self.scavenger.mainBodyChunk.pos, closeGuide.mainBodyChunk.pos) > 1))
-                {
-                    self.SetDestination(closeGuide.abstractCreature.pos); //self.scavenger.room.game.Players[0].pos
-                }
-            }
             orig(self);
         }
 

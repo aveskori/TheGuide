@@ -48,33 +48,33 @@ namespace GuideSlugBase
             Content.Register(new LSpearFisobs());
             Content.Register(new SCloverFisobs());
             Content.Register(new CentiShellFisobs());
-
+            Content.Register(new VoidSpearFisobs());
+            
             // Guide Hooks
             GuideAbilities.Hooks();
             GuideCrafts.Hooks();
             On.Player.Update += Player_Update;
-
-            //Medium Hooks (these are going to be in separate classes)
+            
+            // Medium Hooks (these are going to be in separate classes)
             MediumAbilities.Hooks();
             //MediumGraphics.Hooks();
-
-
+            
             PebblesConversationOverride.Hooks();
-
+            
             // Custom Hooks -- Scavenger AI
             ScavBehaviorTweaks.Hooks();
             
-
             //-- Stops the game from lagging when devtools is enabled and there's scavs in the world
             IL.DenFinder.TryAssigningDen += DenFinder_TryAssigningDen;
+
             
             // Critobs
-            Content.Register(new VanLizCritob());
+            /*Content.Register(new VanLizCritob());
             VanHooks.Hooks();
             Content.Register(new ChrLizCritob());
             CherryHooks.Hooks();
-            //Content.Register(new molemousecritob());
-            Content.Register(new VoidSpearFisobs());
+            //Content.Register(new molemousecritob());*/
+            
         }
 
 
@@ -784,6 +784,7 @@ public static class MediumStatusClass
 
         public int craftCounter; //timer for crafting
         public int jumpCounter;
+        public bool echoJumped;
 
         public MediumStatus(Player player)
         {

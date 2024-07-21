@@ -6,6 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 
+
+
 namespace Guide.WorldChanges
 {
     public static class CritStatusClass
@@ -19,6 +21,10 @@ namespace Guide.WorldChanges
 
             public bool isMonster;
             public bool isInfant;
+
+            public Player player;
+
+            public bool voidStabbed;
 
 
             public CritStatus(Creature crit)
@@ -36,7 +42,7 @@ namespace Guide.WorldChanges
 
                 }*/
 
-
+                
             }
 
 
