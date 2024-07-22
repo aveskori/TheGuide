@@ -247,6 +247,7 @@ namespace Guide.Objects
                 sLeaser.sprites[1].color = this.color;
             }
             sLeaser.sprites[0].color = Color.white;
+            sLeaser.sprites[0].alpha = 1f;
             
             base.DrawSprites(sLeaser, rCam, timeStacker, camPos);
             if (slatedForDeletetion || room != rCam.room)
@@ -256,12 +257,10 @@ namespace Guide.Objects
         }
         public override void ApplyPalette(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, RoomPalette palette)
         {
+            base.ApplyPalette(sLeaser, rCam, palette);
             this.color = palette.blackColor;
             sLeaser.sprites[1].color = this.color;
             sLeaser.sprites[0].color = new Color(1f, 0.8f, 0.1f);
-            base.ApplyPalette(sLeaser, rCam, palette);
-
-
         }
 
 

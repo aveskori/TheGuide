@@ -27,6 +27,9 @@ namespace Guide.WorldChanges
     {
         public static void Hooks()
         {
+            /*
+             * MAN at this point imma do the void cosmetics myself fts. 
+             */
             On.LizardGraphics.InitiateSprites += LizardGraphics_InitiateSprites; //adds shader to crit sprites
             
             On.LizardGraphics.DrawSprites += LizardGraphics_DrawSprites; //disolve sprites if voidStabbed

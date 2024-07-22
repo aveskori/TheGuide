@@ -14,9 +14,6 @@
     <Reference Include="..\lib\BepInEx.dll">
       <Private>false</Private>
     </Reference>
-    <Reference Include="..\lib\Fisobs.dll">
-      <Private>false</Private>
-    </Reference>
     <Reference Include="..\lib\HOOKS-Assembly-CSharp.dll">
       <Private>false</Private>
     </Reference>
@@ -46,6 +43,9 @@
     </Reference>
     <Reference Include="Accessibility">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Rain World\RainWorld_Data\Managed\Accessibility.dll</HintPath>
+    </Reference>
+    <Reference Include="Fisobs">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\workshop\content\312520\2920541687\newest\plugins\Fisobs.dll</HintPath>
     </Reference>
     <Reference Include="Nutils">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\workshop\content\312520\2959220220\plugins\Nutils.dll</HintPath>

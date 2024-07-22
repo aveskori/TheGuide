@@ -1,14 +1,16 @@
-﻿using System.Collections.Generic;
-using System;
-using Noise;
-using RWCustom;
+﻿using System;
 using UnityEngine;
 using Fisobs.Core;
 using Fisobs.Items;
 using Fisobs.Properties;
 using Fisobs.Sandbox;
 using MoreSlugcats;
-using Unity.Mathematics;
+using RWCustom;
+using System.Collections.Generic;
+using System.Security.Cryptography;
+using System.Runtime.CompilerServices;
+using MonoMod.RuntimeDetour;
+
 
 namespace Guide.Objects
 {
